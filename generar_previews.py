@@ -1,131 +1,87 @@
 import os
-from PIL import Image, ImageDraw, ImageFont
-
-ANCHO = 1080
-ALTO = 1920
-
-# ============================
-#   FUNCIONES DE TEXTO
-# ============================
-
-def medir_texto(draw, texto, font):
-    bbox = draw.textbbox((0, 0), texto, font=font)
-    return bbox[2] - bbox[0], bbox[3] - bbox[1]
-
-def crear_imagen_texto(texto, output_path):
-
-    # ======== 1) DETECTAR LARGO DEL TEXTO ========
-    lineas_brutas = texto.splitlines()
-    total_caracteres = len(texto)
-    total_lineas_archivo = len([l for l in lineas_brutas if l.strip()])
-
-    # Reglas basadas en la cantidad de texto
-    if total_caracteres > 900 or total_lineas_archivo >= 14:
-        tam_fuente = 62
-        espacio_vertical = 16
-        ajuste_y = -40
-    elif total_caracteres > 650 or total_lineas_archivo >= 10:
-        tam_fuente = 72
-        espacio_vertical = 18
-        ajuste_y = -20
-    else:
-        tam_fuente = 82
-        espacio_vertical = 22
-        ajuste_y = +40
-
-    # ======== 2) CREAR IMAGEN ========
-    img = Image.new("RGBA", (ANCHO, ALTO), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-
-    try:
-        font = ImageFont.truetype("DejaVuSans.ttf", tam_fuente)
-    except:
-        font = ImageFont.load_default()
+import sys
+from generar_video import (
+    crear_fondo,
+    crear_imagen_texto,
+    crear_imagen_titulo,
+    ANCHO,
+    ALTO
+)
+from PIL import Image
 
 
-    # ======== 3) PROCESAR LÍNEAS RESPETANDO SALTOS ========
-    ancho_max = 980
-    lineas_finales = []
+# ============================================================
+#           GENERAR PREVIEW DE UNA ORACIÓN (IMAGEN)
+# ============================================================
+def generar_preview_oracion(path_in, path_out):
+    # texto completo
+    with open(path_in, "r", encoding="utf-8") as f:
+        texto = f.read()
 
-    for linea in lineas_brutas:
-        if not linea.strip():
-            lineas_finales.append("")
-            continue
+    # título desde el nombre
+    base = os.path.splitext(os.path.basename(path_in))[0]
+    titulo = base.replace("_", " ").title()
 
-        w, _ = medir_texto(draw, linea, font)
+    # 1) Fondo + gradiente (llamamos directamente tu función)
+    fondo, grad_clip = crear_fondo(30)
 
-        if w <= ancho_max:
-            lineas_finales.append(linea)
-        else:
-            palabras = linea.split(" ")
-            tmp = ""
-            for p in palabras:
-                prueba = tmp + p + " "
-                w2, _ = medir_texto(draw, prueba, font)
-                if w2 <= ancho_max:
-                    tmp = prueba
-                else:
-                    lineas_finales.append(tmp)
-                    tmp = p + " "
-            lineas_finales.append(tmp)
+    # Convertimos gradiente a PIL y lo mezclamos
+    grad_img = grad_clip.get_frame(0)
+    grad_pil = Image.fromarray(grad_img)
 
-    # Amén más abajo
-    if lineas_finales and lineas_finales[-1].strip().lower() == "amén":
-        lineas_finales.append("")
+    # Fondo PIL
+    fondo_pil = Image.fromarray(fondo.get_frame(0))
 
-    # ======== 4) POSICIONAR EL BLOQUE (CON OFFSET EXTRA) ========
-    _, h_linea = medir_texto(draw, "A", font)
-    total_altura = len(lineas_finales) * (h_linea + espacio_vertical)
+    # Asegurarse de que grad_pil tenga el mismo tamaño que fondo_pil antes de mezclar
+    if fondo_pil.size != grad_pil.size:
+        grad_pil = grad_pil.resize(fondo_pil.size)
 
-    offset_extra = -100  # <<< SUBE EL TEXTO 100 px
-    y = (ALTO - total_altura) // 2 + ajuste_y + offset_extra
+    # Mezclamos fondo + gradiente
+    fondo_pil = Image.alpha_composite(fondo_pil.convert("RGBA"), grad_pil.convert("RGBA"))
 
-    # ======== 5) DIBUJAR TEXTO (contorno + sombra + blanco) ========
-    for linea in lineas_finales:
-        w, h = medir_texto(draw, linea, font)
-        x = (ANCHO - w) // 2
+    # 2) Renderizar título
+    titulo_path = "textos/preview_titulo.png"
+    crear_imagen_titulo(titulo, titulo_path)
+    titulo_img = Image.open(titulo_path).convert("RGBA")
 
-        # Contorno grueso
-        for dx, dy in [
-            (-4,-4),(4,-4),(-4,4),(4,4),
-            (-4,0),(4,0),(0,-4),(0,4)
-        ]:
-            draw.text((x+dx, y+dy), linea, font=font, fill=(0,0,0,255))
+    # 3) Renderizar texto principal
+    texto_path = "textos/preview_texto.png"
+    crear_imagen_texto(texto, texto_path)
+    texto_img = Image.open(texto_path).convert("RGBA")
 
-        # Sombra suave
-        draw.text((x+2, y+2), linea, font=font, fill=(0,0,0,120))
+    # 4) Componer todo en una imagen final
+    canvas = fondo_pil.convert("RGBA")
 
-        # Texto blanco
-        draw.text((x, y), linea, font=font, fill=(255,255,255,255))
+    # Posicionar título
+    canvas.alpha_composite(titulo_img, (0, 120))
 
-        y += h + espacio_vertical
+    # Posicionar texto centrado vertical
+    y_texto = int((ALTO - texto_img.height) // 2) + 60
+    canvas.alpha_composite(texto_img, (0, y_texto))
 
-    img.save(output_path)
+    # 5) Guardar preview final
+    canvas.save(path_out)
+    print(f"📸 Preview generada → {path_out}")
 
 
-# ============================
-#   GENERAR PREVIEWS
-# ============================
+# ============================================================
+#      COMANDO PRINCIPAL: generar varias previews
+# ============================================================
+def generar_previews(cantidad):
+    carpeta = "textos/oraciones"
+    archivos = os.listdir(carpeta)
+    seleccion = archivos[:cantidad]
 
-def generar_previews():
-    carpeta_oraciones = "textos/oraciones"
-    carpeta_salida = "previews"
+    os.makedirs("previews", exist_ok=True)
 
-    os.makedirs(carpeta_salida, exist_ok=True)
+    for archivo in seleccion:
+        path_in = f"{carpeta}/{archivo}"
+        nombre = os.path.splitext(archivo)[0]
+        path_out = f"previews/{nombre}.png"
 
-    archivos = sorted(os.listdir(carpeta_oraciones))
-    print(f"Generando previews para {len(archivos)} oraciones...\n")
+        generar_preview_oracion(path_in, path_out)
 
-    for i, archivo in enumerate(archivos, start=1):
-        ruta = os.path.join(carpeta_oraciones, archivo)
-        with open(ruta, "r", encoding="utf-8") as f:
-            texto = f.read()
-
-        salida = os.path.join(carpeta_salida, f"texto_{i}.png")
-        print(f" ✔ Creado -> {salida}")
-        crear_imagen_texto(texto, salida)
-
-    print("\nFinalizado. Revisa la carpeta /previews/")
 
 if __name__ == "__main__":
-    generar_previews()
+    cantidad = int(sys.argv[1]) if len(sys.argv) > 1 else 3
+    generar_previews(cantidad)
