@@ -5,11 +5,13 @@
 import os
 import random
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, UnidentifiedImageError
 from moviepy.editor import ImageClip, AudioFileClip, CompositeVideoClip
 from moviepy.video.fx.fadein import fadein
 from moviepy.video.fx.fadeout import fadeout
+import json
+
 
 # --------------------------------------------
 #                 CONSTANTES
@@ -20,7 +22,7 @@ ALTO = 1920
 
 # Oraciones
 ORACION_LINEAS_MAX = 10
-SEGUNDOS_BLOQUE_ORACION = 15
+SEGUNDOS_BLOQUE_ORACION = 25
 
 # Salmos
 MAX_ESTROFAS = 7
@@ -229,12 +231,9 @@ def crear_imagen_texto(texto, output):
                     tmp = p + " "
             final.append(tmp)
 
-    if final and final[-1].strip().lower() == "amén":
-        final.append("")
-
     _, h_linea = medir_texto(draw, "A", font)
     total_h = len(final) * (h_linea + esp)
-    y = (ALTO - total_h) // 2 + 80
+    y = (ALTO - total_h) // 2 - 30
 
     for l in final:
         w, h = medir_texto(draw, l, font)
@@ -254,6 +253,26 @@ def crear_imagen_texto(texto, output):
         y += h + esp
 
     img.save(output)
+
+
+
+# --------------------------------------------
+#            CALCULAR DURACION
+# --------------------------------------------
+
+def calcular_duracion_bloque(lineas):
+    """
+    Determina automáticamente la duración de un bloque según
+    su cantidad de líneas reales (no vacías).
+    """
+    n = len([l for l in lineas.splitlines() if l.strip()])
+
+    if n <= 7:
+        return 20
+    elif n <= 12:
+        return 28
+    else:
+        return 35
 
 
 # --------------------------------------------
@@ -455,11 +474,28 @@ def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
 
 def dividir_en_bloques(texto, max_lineas=8):
     lineas = [l for l in texto.splitlines() if l.strip()]
-    bloques = []
 
+    bloques = []
     for i in range(0, len(lineas), max_lineas):
-        bloque = "\n".join(lineas[i : i + max_lineas])
-        bloques.append(bloque)
+        bloque_lineas = lineas[i : i + max_lineas]
+        bloques.append("\n".join(bloque_lineas))
+
+    # -----------------------------------------------------------------
+    # REGRA ESPECIAL: si el ÚLTIMO bloque tiene SOLO "Amén", únelo al
+    # bloque anterior (para que no haya una pantalla solo con Amén).
+    # Esto cubre exactamente el caso de 11ª línea = Amén.
+    # -----------------------------------------------------------------
+    if len(bloques) >= 2:
+        ult = bloques[-1]
+        ult_lineas = [l for l in ult.splitlines() if l.strip()]
+
+        if (
+            len(ult_lineas) == 1
+            and ult_lineas[0].strip().lower().rstrip(".") in ["amén", "amen", "Amén", "Amen"]
+        ):
+            # pegar el Amén al bloque anterior
+            bloques[-2] = bloques[-2] + "\n" + ult_lineas[0]
+            bloques.pop()  # eliminar bloque solo-Amén
 
     return bloques
 
@@ -480,42 +516,52 @@ def crear_video_oracion(path_in, path_out):
     # líneas reales (sin líneas vacías)
     lineas_real = [l for l in texto.splitlines() if l.strip()]
 
-    # si la oración es larga, dividir en bloques de hasta ORACION_LINEAS_MAX líneas
     if len(lineas_real) > ORACION_LINEAS_MAX:
         bloques = dividir_en_bloques(texto, max_lineas=ORACION_LINEAS_MAX)
-        dur_total = len(bloques) * SEGUNDOS_BLOQUE_ORACION
-        print(f"[ORACION] '{titulo}' dividida en {len(bloques)} bloques")
+
+        # Duración automática sumando duración real de cada bloque
+        dur_total = 0
+        duraciones = []
+
+        for b in bloques:
+            dur = calcular_duracion_bloque(b)
+            duraciones.append(dur)
+            dur_total += dur
+
+            print(f"[ORACION] '{titulo}' dividida en {len(bloques)} bloques (duración total: {dur_total}s)")
     else:
         bloques = [texto]
-        dur_total = 30
-        print(f"[ORACION] '{titulo}' cabe en un solo bloque")
+        dur_total = calcular_duracion_bloque(texto)
+        print(f"[ORACION] '{titulo}' cabe en un solo bloque ({dur_total}s)")
 
-    # fondo y gradiente
     fondo, grad = crear_fondo(dur_total)
 
-    # título
     img_t = "titulo.png"
     crear_imagen_titulo(titulo, img_t)
     titulo_clip = ImageClip(img_t).set_duration(dur_total).set_position(("center", 120))
 
-    # bloques de texto
     clips = []
     t = 0
     for b in bloques:
+        if not b.strip():
+            continue
+
         tmp = "bloque.png"
         crear_imagen_texto(b, tmp)
 
-        # cada bloque dura SEGUNDOS_BLOQUE_ORACION y entra con fade-in
+        # duración automática según tamaño del bloque
+        dur_bloque = calcular_duracion_bloque(b)
+
         if len(bloques) == 1:
             c = (
                 ImageClip(tmp)
-                .set_duration(SEGUNDOS_BLOQUE_ORACION)
+                .set_duration(dur_bloque)
                 .set_position("center")
             )
         else:
             c = (
                 ImageClip(tmp)
-                .set_duration(SEGUNDOS_BLOQUE_ORACION)
+                .set_duration(dur_bloque)
                 .set_position("center")
                 .fx(fadein, 1)
                 .set_start(t)
@@ -524,10 +570,7 @@ def crear_video_oracion(path_in, path_out):
         clips.append(c)
         t += SEGUNDOS_BLOQUE_ORACION
 
-    # audio
     audio = crear_audio(dur_total)
-
-    # video final (con watermark dentro de crear_video_base)
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
 
 
@@ -589,26 +632,75 @@ def crear_video_salmo(path_in, path_out):
 #           CREAR VARIOS VIDEOS
 # --------------------------------------------
 
+HISTORIAL = "historial.json"
+
+def cargar_historial():
+    if not os.path.exists(HISTORIAL):
+        return {"oraciones": [], "salmos": []}
+
+    try:
+        with open(HISTORIAL, "r") as f:
+            contenido = f.read().strip()
+            if not contenido:
+                # archivo vacío → crear estructura nueva
+                return {"oraciones": [], "salmos": []}
+
+            return json.loads(contenido)
+
+    except Exception as e:
+        print(f"[HISTORIAL] Archivo corrupto, se regenerará. Error: {e}")
+        return {"oraciones": [], "salmos": []}
+
+def guardar_historial(data):
+    with open(HISTORIAL, "w") as f:
+        json.dump(data, f, indent=4)
+
+def elegir_no_repetido(archivos, historial, dias_no_repetir=7):
+    hoy = datetime.now()
+    limite = hoy - timedelta(days=dias_no_repetir)
+
+    usados = {h["nombre"] for h in historial if datetime.fromisoformat(h["fecha"]) > limite}
+
+    disponibles = [a for a in archivos if a.replace(".txt", "") not in usados]
+
+    if not disponibles:
+        # si ya usamos todo → reiniciar
+        historial.clear()
+        disponibles = archivos
+
+    elegido = random.choice(disponibles)
+    historial.append({"nombre": elegido.replace(".txt", ""), "fecha": hoy.isoformat()})
+    return elegido
+
 def crear_videos_del_dia(cantidad, modo):
+    hist = cargar_historial()
 
     carpeta = "textos/salmos" if modo == "salmo" else "textos/oraciones"
-    archivos = os.listdir(carpeta)
-    seleccion = random.sample(archivos, min(cantidad, len(archivos)))
+    archivos = [a for a in os.listdir(carpeta) if a.endswith(".txt")]
 
-    fecha = datetime.now().strftime("%Y%m%d")
+    for _ in range(cantidad):
+        elegido = elegir_no_repetido(
+            archivos,
+            hist["salmos"] if modo == "salmo" else hist["oraciones"],
+            dias_no_repetir=7
+        )
 
-    for i, a in enumerate(seleccion, 1):
-        entrada = f"{carpeta}/{a}"
-        salida = f"videos/video_{fecha}_{i}_{modo}.mp4"
-        print(f" Generando ({modo}) -> {salida}")
+        entrada = f"{carpeta}/{elegido}"
+
+        base = elegido.replace(".txt", "")
+        subfolder = "oraciones" if modo == "oracion" else "salmos"
+        salida = f"videos/{subfolder}/{base}.mp4"
+
+        print(f" Generando ({modo}) → {salida}")
 
         if modo == "salmo":
             crear_video_salmo(entrada, salida)
         else:
             crear_video_oracion(entrada, salida)
 
-        # limpiar basura al terminar
         limpiar_temporales()
+
+    guardar_historial(hist)
 
 
 def crear_video_unico(path_in, modo):
@@ -617,7 +709,8 @@ def crear_video_unico(path_in, modo):
     El video final queda idéntico al de producción.
     """
     base = os.path.splitext(os.path.basename(path_in))[0]
-    nombre_salida = f"videos/{base}.mp4"
+    subfolder = "oraciones" if modo == "oracion" else "salmos"
+    nombre_salida = f"videos/{subfolder}/{base}.mp4"
 
     print(f"\n[UNICO] Generando video único → {nombre_salida}\n")
 
