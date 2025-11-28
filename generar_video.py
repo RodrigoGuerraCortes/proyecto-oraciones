@@ -13,6 +13,9 @@ from moviepy.video.fx.fadeout import fadeout
 import json
 
 
+MODO_TEST = False
+
+
 # --------------------------------------------
 #                 CONSTANTES
 # --------------------------------------------
@@ -26,7 +29,7 @@ SEGUNDOS_BLOQUE_ORACION = 25
 
 # Salmos
 MAX_ESTROFAS = 7
-SEGUNDOS_ESTROFA = 12
+SEGUNDOS_ESTROFA = 16
 
 # Marca de agua (pon aquí tu PNG)
 WATERMARK_PATH = "marca_agua.png"  # asegúrate de tener este archivo
@@ -513,33 +516,44 @@ def crear_video_oracion(path_in, path_out):
     base = os.path.splitext(os.path.basename(path_in))[0]
     titulo = base.replace("_", " ").title()
 
-    # líneas reales (sin líneas vacías)
+    # líneas reales sin vacías
     lineas_real = [l for l in texto.splitlines() if l.strip()]
 
-    if len(lineas_real) > ORACION_LINEAS_MAX:
-        bloques = dividir_en_bloques(texto, max_lineas=ORACION_LINEAS_MAX)
+    # -----------------------------
+    # DURACIÓN (normal o modo test)
+    # -----------------------------
+    if MODO_TEST:
+        # modo test: video siempre dura 10 segundos
+        bloques = [texto]
+        dur_total = 2
+        print(f"[ORACION][TEST] '{titulo}' generado en 10s (modo test)")
+    else:
+        # modo normal
+        if len(lineas_real) > ORACION_LINEAS_MAX:
+            bloques = dividir_en_bloques(texto, max_lineas=ORACION_LINEAS_MAX)
 
-        # Duración automática sumando duración real de cada bloque
-        dur_total = 0
-        duraciones = []
-
-        for b in bloques:
-            dur = calcular_duracion_bloque(b)
-            duraciones.append(dur)
-            dur_total += dur
+            dur_total = 0
+            for b in bloques:
+                dur_total += calcular_duracion_bloque(b)
 
             print(f"[ORACION] '{titulo}' dividida en {len(bloques)} bloques (duración total: {dur_total}s)")
-    else:
-        bloques = [texto]
-        dur_total = calcular_duracion_bloque(texto)
-        print(f"[ORACION] '{titulo}' cabe en un solo bloque ({dur_total}s)")
+        else:
+            bloques = [texto]
+            dur_total = calcular_duracion_bloque(texto)
+            print(f"[ORACION] '{titulo}' cabe en un solo bloque ({dur_total}s)")
 
+    # -----------------------------
+    # Crear fondo y título
+    # -----------------------------
     fondo, grad = crear_fondo(dur_total)
 
     img_t = "titulo.png"
     crear_imagen_titulo(titulo, img_t)
     titulo_clip = ImageClip(img_t).set_duration(dur_total).set_position(("center", 120))
 
+    # -----------------------------
+    # Crear bloques de texto
+    # -----------------------------
     clips = []
     t = 0
     for b in bloques:
@@ -549,36 +563,33 @@ def crear_video_oracion(path_in, path_out):
         tmp = "bloque.png"
         crear_imagen_texto(b, tmp)
 
-        # duración automática según tamaño del bloque
-        dur_bloque = calcular_duracion_bloque(b)
+        # duración del bloque
+        dur_bloque = 2 if MODO_TEST else calcular_duracion_bloque(b)
 
-        if len(bloques) == 1:
-            c = (
-                ImageClip(tmp)
-                .set_duration(dur_bloque)
-                .set_position("center")
-            )
-        else:
-            c = (
-                ImageClip(tmp)
-                .set_duration(dur_bloque)
-                .set_position("center")
-                .fx(fadein, 1)
-                .set_start(t)
-            )
+        c = (
+            ImageClip(tmp)
+            .set_duration(dur_bloque)
+            .set_position("center")
+        )
+
+        # si hay varios bloques, animamos el fade-in solo en modo normal
+        if not MODO_TEST and len(bloques) > 1:
+            c = c.fx(fadein, 1).set_start(t)
 
         clips.append(c)
-        t += SEGUNDOS_BLOQUE_ORACION
+        t += (2 if MODO_TEST else SEGUNDOS_BLOQUE_ORACION)
 
+    # -----------------------------
+    # Audio (corto si es test)
+    # -----------------------------
     audio = crear_audio(dur_total)
-    crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
 
+    crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
 
 
 # --------------------------------------------
 #                VIDEO SALMO
 # --------------------------------------------
-
 def crear_video_salmo(path_in, path_out):
 
     with open(path_in, "r", encoding="utf-8") as f:
@@ -588,44 +599,67 @@ def crear_video_salmo(path_in, path_out):
 
     partes = base.split("_", 1)
     numero = partes[0]
+
     if len(partes) > 1:
         nombre_raw = partes[1].replace("_", " ").strip()
-        # quitar la palabra "salmo" si viene incluida en el nombre
         nombre_raw = nombre_raw.lower().replace("salmo ", "").replace(" salmo", "")
         nombre = nombre_raw.title()
     else:
         nombre = ""
+
     titulo = f"{numero} — {nombre}"
 
     estrofas = [e.strip() for e in texto.split("\n\n") if e.strip()]
     estrofas = estrofas[:MAX_ESTROFAS]
 
-    dur_total = len(estrofas) * SEGUNDOS_ESTROFA
+    # -----------------------------
+    # DURACIÓN (normal o test)
+    # -----------------------------
+    if MODO_TEST:
+        dur_total = 2
+        print(f"[SALMO][TEST] '{titulo}' generado en 10s")
+    else:
+        dur_total = len(estrofas) * SEGUNDOS_ESTROFA
 
+    # -----------------------------
+    # Fondo + título
+    # -----------------------------
     fondo, grad = crear_fondo(dur_total)
 
     img_t = "titulo.png"
     crear_imagen_titulo(titulo, img_t)
     titulo_clip = ImageClip(img_t).set_duration(dur_total).set_position(("center", 120))
 
+    # -----------------------------
+    # Estrofas
+    # -----------------------------
     clips = []
     t = 0
     for e in estrofas:
         tmp = "estrofa.png"
         crear_imagen_texto(e, tmp)
+
+        dur_estrofa = 2 if MODO_TEST else SEGUNDOS_ESTROFA
+
         c = (
             ImageClip(tmp)
-            .set_duration(SEGUNDOS_ESTROFA)
+            .set_duration(dur_estrofa)
             .set_position("center")
-            .fx(fadein, 0.8)
-            .set_start(t)
         )
-        clips.append(c)
-        t += SEGUNDOS_ESTROFA
 
+        if not MODO_TEST:
+            c = c.fx(fadein, 0.8).set_start(t)
+
+        clips.append(c)
+        t += dur_estrofa
+
+    # -----------------------------
+    # Audio
+    # -----------------------------
     audio = crear_audio(dur_total)
 
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
+
 
 
 # --------------------------------------------
@@ -728,6 +762,11 @@ def crear_video_unico(path_in, modo):
 
 if __name__ == "__main__":
     limpiar_imagenes_corruptas()
+
+    if "test" in sys.argv:
+        MODO_TEST = True
+        print("⚠ GENERANDO VIDEO EN MODO TEST (10s)")
+
 
     if len(sys.argv) < 2:
         print("Uso:")
