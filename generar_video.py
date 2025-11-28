@@ -6,11 +6,10 @@ import os
 import random
 import sys
 from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, UnidentifiedImageError
 from moviepy.editor import ImageClip, AudioFileClip, CompositeVideoClip
 from moviepy.video.fx.fadein import fadein
 from moviepy.video.fx.fadeout import fadeout
-
 
 # --------------------------------------------
 #                 CONSTANTES
@@ -20,17 +19,15 @@ ANCHO = 1080
 ALTO = 1920
 
 # Oraciones
-ORACION_LINEAS_MAX = 12
-SEGUNDOS_BLOQUE_ORACION = 10
+ORACION_LINEAS_MAX = 10
+SEGUNDOS_BLOQUE_ORACION = 15
 
 # Salmos
 MAX_ESTROFAS = 7
-SEGUNDOS_ESTROFA = 8
+SEGUNDOS_ESTROFA = 12
 
-
-
-
-from PIL import UnidentifiedImageError
+# Marca de agua (pon aquí tu PNG)
+WATERMARK_PATH = "marca_agua.png"  # asegúrate de tener este archivo
 
 
 # --------------------------------------------
@@ -81,10 +78,10 @@ def limpiar_imagenes_corruptas():
     if malas > 0:
         print("[INFO] Se recomienda agregar nuevas imágenes si la cantidad bajó demasiado.")
 
+
 # --------------------------------------------
 # MANEJO DE ARCHIVO TEMPORALES
 # --------------------------------------------
-
 
 def limpiar_temporales():
     """Elimina imágenes temporales y archivos TMP generados durante el render."""
@@ -123,6 +120,7 @@ def limpiar_temporales():
     except:
         pass
 
+
 # --------------------------------------------
 #                 UTILS TEXTO
 # --------------------------------------------
@@ -130,6 +128,7 @@ def limpiar_temporales():
 def medir_texto(draw, texto, font):
     bbox = draw.textbbox((0, 0), texto, font=font)
     return bbox[2] - bbox[0], bbox[3] - bbox[1]
+
 
 def crear_imagen_titulo(titulo, output):
     """
@@ -147,12 +146,10 @@ def crear_imagen_titulo(titulo, output):
     except:
         font = ImageFont.load_default()
 
-    # -----------------------------------------------------
     # Detectar si es salmo y dividir en:
     #  1) Salmo 27
     #  2) El Señor es mi luz
     #  3) y mi salvación
-    # -----------------------------------------------------
     if "—" in titulo:
         numero, nombre = titulo.split("—", 1)
 
@@ -170,9 +167,7 @@ def crear_imagen_titulo(titulo, output):
         # Caso de oraciones comunes
         lineas = titulo.split("\n")
 
-    # -----------------------------------------------------
     # Dibujar cada línea centrada con contorno
-    # -----------------------------------------------------
     y = 20
     for linea in lineas:
         w, h = draw.textbbox((0, 0), linea, font=font)[2:]
@@ -187,8 +182,6 @@ def crear_imagen_titulo(titulo, output):
         y += h + 12
 
     img.save(output)
-
-
 
 
 def crear_imagen_texto(texto, output):
@@ -221,7 +214,7 @@ def crear_imagen_texto(texto, output):
             final.append("")
             continue
 
-        w,_ = medir_texto(draw, l, font)
+        w, _ = medir_texto(draw, l, font)
         if w <= ancho_max:
             final.append(l)
         else:
@@ -244,13 +237,20 @@ def crear_imagen_texto(texto, output):
     y = (ALTO - total_h) // 2 + 80
 
     for l in final:
-        w,h = medir_texto(draw, l, font)
+        w, h = medir_texto(draw, l, font)
         x = (ANCHO - w) // 2
 
-        for dx,dy in [(-4,-4),(4,-4),(-4,4),(4,4)]:
-            draw.text((x+dx,y+dy), l, font=font, fill=(0,0,0,255))
+        for dx, dy in [(-4,-4),(4,-4),(-4,4),(4,4)]:
+            draw.text((x+dx, y+dy), l, font=font, fill=(0, 0, 0, 255))
 
-        draw.text((x, y), l, font=font, fill=(255,255,255,255), stroke_width=4, stroke_fill="black")
+        draw.text(
+            (x, y),
+            l,
+            font=font,
+            fill=(255, 255, 255, 255),
+            stroke_width=4,
+            stroke_fill="black",
+        )
         y += h + esp
 
     img.save(output)
@@ -259,6 +259,7 @@ def crear_imagen_texto(texto, output):
 # --------------------------------------------
 #             FONDO + AUDIO
 # --------------------------------------------
+
 def crear_fondo(duracion):
     print("\n============================")
     print(" [FONDO] Generando fondo con retry…")
@@ -308,7 +309,7 @@ def crear_fondo(duracion):
 
             # Crear clip MoviePy
             fondo = ImageClip("fondo_tmp.jpg").set_duration(duracion)
-            fondo = fondo.resize(lambda t: 1.04 - 0.03*(t/duracion))
+            fondo = fondo.resize(lambda t: 1.04 - 0.03 * (t / duracion))
             print("[FONDO] Clip MoviePy creado OK")
 
             # Crear gradiente
@@ -360,7 +361,7 @@ def crear_audio(duracion):
             archivo = random.choice(audios_disponibles)
             ruta = os.path.join("musica", archivo)
 
-            print(f"[AUDIO] Intento {intentos+1}: usando {ruta}")
+            print(f"[AUDIO] Intento {intentos + 1}: usando {ruta}")
 
             audio = AudioFileClip(ruta)
 
@@ -389,13 +390,56 @@ def crear_audio(duracion):
     print("[AUDIO ERROR] Todos los intentos fallaron, usando audio silencioso.")
     return AudioFileClip(os.path.join("musica", audios_disponibles[0])).subclip(0, 1)
 
+
 # --------------------------------------------
-#                 VIDEO BASE
+#                 VIDEO BASE (con marca de agua)
 # --------------------------------------------
 
 def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
-    video = CompositeVideoClip([fondo, grad, titulo_clip] + clips)
+    """
+    Crea el video final:
+      - fondo + gradiente
+      - título
+      - texto (bloques/estrofas)
+      - marca de agua en esquina inferior derecha
+    """
+
+    capas = [fondo, grad, titulo_clip] + clips
+
+    # ------------------------------
+    # Marca de agua (watermark)
+    # ------------------------------
+    if os.path.exists(WATERMARK_PATH):
+        try:
+            print(f"[WATERMARK] Aplicando marca de agua: {WATERMARK_PATH}")
+        
+            # misma duración que el fondo
+            dur_wm = getattr(fondo, "duration", titulo_clip.duration)
+
+            wm = ImageClip(WATERMARK_PATH)
+            wm = wm.resize(width=int(ANCHO * 0.22))
+            wm = wm.set_duration(dur_wm)
+            wm = wm.set_opacity(0.85).fx(fadein, 0.7)
+
+            pos_x = ANCHO - wm.w - 2                # más cerca del borde derecho
+            pos_y = ALTO - wm.h - 2                # mucho más abajo
+
+            wm = wm.set_position((pos_x, pos_y))
+
+
+
+            capas.append(wm)
+            print("[WATERMARK] Marca de agua aplicada correctamente ✓")
+        except Exception as e:
+            print(f"[WATERMARK] No se pudo aplicar la marca de agua: {e}")
+    else:
+        print(f"[WATERMARK] Archivo '{WATERMARK_PATH}' no encontrado, se omite marca de agua.")
+
+    # Componer video
+    video = CompositeVideoClip(capas)
     video = video.set_audio(audio)
+
+    # Renderizar
     video.write_videofile(
         salida,
         fps=30,
@@ -414,10 +458,11 @@ def dividir_en_bloques(texto, max_lineas=8):
     bloques = []
 
     for i in range(0, len(lineas), max_lineas):
-        bloque = "\n".join(lineas[i:i + max_lineas])
+        bloque = "\n".join(lineas[i : i + max_lineas])
         bloques.append(bloque)
 
     return bloques
+
 
 
 # --------------------------------------------
@@ -432,16 +477,20 @@ def crear_video_oracion(path_in, path_out):
     base = os.path.splitext(os.path.basename(path_in))[0]
     titulo = base.replace("_", " ").title()
 
+    # líneas reales (sin líneas vacías)
     lineas_real = [l for l in texto.splitlines() if l.strip()]
 
-    # oración larga → se divide como salmo
+    # si la oración es larga, dividir en bloques de hasta ORACION_LINEAS_MAX líneas
     if len(lineas_real) > ORACION_LINEAS_MAX:
-        bloques = dividir_en_bloques(texto, max_lineas=8)
+        bloques = dividir_en_bloques(texto, max_lineas=ORACION_LINEAS_MAX)
         dur_total = len(bloques) * SEGUNDOS_BLOQUE_ORACION
+        print(f"[ORACION] '{titulo}' dividida en {len(bloques)} bloques")
     else:
         bloques = [texto]
         dur_total = 30
+        print(f"[ORACION] '{titulo}' cabe en un solo bloque")
 
+    # fondo y gradiente
     fondo, grad = crear_fondo(dur_total)
 
     # título
@@ -455,13 +504,32 @@ def crear_video_oracion(path_in, path_out):
     for b in bloques:
         tmp = "bloque.png"
         crear_imagen_texto(b, tmp)
-        c = ImageClip(tmp).set_duration(SEGUNDOS_BLOQUE_ORACION).set_position("center").fx(fadein, 1).set_start(t)
+
+        # cada bloque dura SEGUNDOS_BLOQUE_ORACION y entra con fade-in
+        if len(bloques) == 1:
+            c = (
+                ImageClip(tmp)
+                .set_duration(SEGUNDOS_BLOQUE_ORACION)
+                .set_position("center")
+            )
+        else:
+            c = (
+                ImageClip(tmp)
+                .set_duration(SEGUNDOS_BLOQUE_ORACION)
+                .set_position("center")
+                .fx(fadein, 1)
+                .set_start(t)
+            )
+
         clips.append(c)
         t += SEGUNDOS_BLOQUE_ORACION
 
+    # audio
     audio = crear_audio(dur_total)
 
+    # video final (con watermark dentro de crear_video_base)
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
+
 
 
 # --------------------------------------------
@@ -502,7 +570,13 @@ def crear_video_salmo(path_in, path_out):
     for e in estrofas:
         tmp = "estrofa.png"
         crear_imagen_texto(e, tmp)
-        c = ImageClip(tmp).set_duration(SEGUNDOS_ESTROFA).set_position("center").fx(fadein, 0.8).set_start(t)
+        c = (
+            ImageClip(tmp)
+            .set_duration(SEGUNDOS_ESTROFA)
+            .set_position("center")
+            .fx(fadein, 0.8)
+            .set_start(t)
+        )
         clips.append(c)
         t += SEGUNDOS_ESTROFA
 
@@ -537,6 +611,24 @@ def crear_videos_del_dia(cantidad, modo):
         limpiar_temporales()
 
 
+def crear_video_unico(path_in, modo):
+    """
+    Genera un solo video de oración o salmo.
+    El video final queda idéntico al de producción.
+    """
+    base = os.path.splitext(os.path.basename(path_in))[0]
+    nombre_salida = f"videos/{base}.mp4"
+
+    print(f"\n[UNICO] Generando video único → {nombre_salida}\n")
+
+    if modo == "oracion":
+        crear_video_oracion(path_in, nombre_salida)
+    else:
+        crear_video_salmo(path_in, nombre_salida)
+
+    limpiar_temporales()
+    print("\n[UNICO] Video generado correctamente ✓\n")
+
 # --------------------------------------------
 #                ENTRY POINT
 # --------------------------------------------
@@ -544,11 +636,44 @@ def crear_videos_del_dia(cantidad, modo):
 if __name__ == "__main__":
     limpiar_imagenes_corruptas()
 
-    cantidad = int(sys.argv[1]) if len(sys.argv) > 1 else 3
-    modo = sys.argv[2].lower() if len(sys.argv) > 2 else "oracion"
-
-    if modo not in ["salmo", "oracion"]:
-        print("ERROR: modo inválido. Usa: salmo | oracion")
+    if len(sys.argv) < 2:
+        print("Uso:")
+        print("  python3 generar_video.py 10 oracion")
+        print("  python3 generar_video.py solo textos/oraciones/salve.txt")
         sys.exit(1)
 
-    crear_videos_del_dia(cantidad, modo)
+    modo = sys.argv[1].lower()
+
+    # ---------------------------------------------------
+    #   MODO UNICO (generar un video específico)
+    # ---------------------------------------------------
+    if modo == "solo":
+        if len(sys.argv) < 3:
+            print("ERROR: Debes indicar el archivo. Ej:")
+            print("python3 generar_video.py solo textos/oraciones/salve.txt")
+            sys.exit(1)
+
+        archivo = sys.argv[2]
+
+        # Detectar si es oración o salmo según carpeta
+        if "/salmos/" in archivo.lower():
+            tipo = "salmo"
+        else:
+            tipo = "oracion"
+
+        crear_video_unico(archivo, tipo)
+        sys.exit(0)
+
+    # ---------------------------------------------------
+    #   MODO NORMAL (generar varios aleatorios)
+    # ---------------------------------------------------
+    cantidad = int(sys.argv[1])
+    tipo = sys.argv[2].lower()
+
+    if tipo not in ["salmo", "oracion"]:
+        print("ERROR: modo inválido. Usa: salmo | oracion | solo")
+        sys.exit(1)
+
+    crear_videos_del_dia(cantidad, tipo)
+
+
