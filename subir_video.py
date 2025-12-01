@@ -6,13 +6,19 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.http import MediaFileUpload
 import shutil
+from openai import OpenAI
+import random
+
+from generar_descripcion import generar_descripcion, generar_tags_from_descripcion  # Importas tu función real
+
+
 
 # -------- CONFIG --------
 CLIENT_SECRETS_FILE = "client_secret.json"
 TOKEN_FILE = "token.pickle"
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 HISTORIAL = "historial.json"
-
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def mover_a_publicados(ruta):
     base = os.path.basename(ruta)
@@ -135,60 +141,6 @@ def obtener_siguiente_video():
 
 
 # =====================================================
-# 4.1 Generar descripción y tags automáticos
-# =====================================================
-def generar_descripcion(tipo, hora_texto):
-    if tipo == "oracion":
-        return (
-            "Una oración para acompañarte hoy 🙏\n"
-            "Que Dios bendiga tu vida y tu hogar.\n\n"
-            "Síguenos para recibir una oración cada día ✨\n"
-            "#oracion #fe #jesus #catolico #oraciondelDia #espiritualidad #biblia"
-        )
-    else:  # salmo
-        return (
-            "Un salmo para fortalecer tu espíritu 🙏\n"
-            "Dios te acompañe hoy y siempre.\n\n"
-            "Síguenos para más salmos y oraciones ✨\n"
-            "#salmo #fe #jesus #catolico #biblia #espiritualidad #salmodeldia"
-        )
-
-
-def generar_tags(tipo, base):
-    tags_base = [
-        # universales
-        "oracion", "oracion diaria", "oracion catolica",
-        "reflexion", "reflexion cristiana",
-        "catolico", "cristiano", "jesus", "jesucristo",
-        "dios", "espiritualidad", "biblia", "biblia catolica",
-        "fe en dios", "minuto de oración",
-
-        # internacionales
-        #"oração", "orações curtas", "oração de 1 minuto",
-    ]
-
-    if tipo == "oracion":
-        tags_base += [
-            "oracion de la mañana", "oracion de la noche",
-            "oraciones poderosas", "oraciones cortas",
-            "oracion milagrosa", "oracion para hoy"
-        ]
-    else:
-        tags_base += [
-            "salmo", "salmo del dia", "salmo catolico"
-        ]
-
-        # detectar numero del salmo
-        partes = base.split("_")
-        if partes[0].isdigit():
-            num = partes[0]
-            tags_base += [f"salmo {num}", f"salmo {num} catolico"]
-
-    # eliminar duplicados
-    return list(set(tags_base))
-
-
-# =====================================================
 # 5. LÓGICA PRINCIPAL
 # =====================================================
 def subir_siguiente_video():
@@ -204,8 +156,8 @@ def subir_siguiente_video():
     # Título profesional
     titulo = f"{base.replace('_', ' ').title()} — 1 minuto 🙏✨"
 
-    descripcion = generar_descripcion(tipo, siguiente["publicar_en"])
-    tags = generar_tags(tipo, base)
+    descripcion = generar_descripcion(tipo, siguiente["publicar_en"], archivo)
+    tags = generar_tags_from_descripcion(descripcion)
 
     video_id = subir_video_youtube(
         archivo,

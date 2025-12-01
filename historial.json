@@ -1,0 +1,44 @@
+{
+    "pendientes": [
+        {
+            "archivo": "videos/oraciones/oracion_para_los_enfermos.mp4",
+            "tipo": "oracion",
+            "publicar_en": "05:00",
+            "fecha_generado": "2025-12-01T00:17:46.529503"
+        },
+        {
+            "archivo": "videos/salmos/salmo_91_bajo_la_proteccion_del_altisimo.mp4",
+            "tipo": "salmo",
+            "publicar_en": "12:00",
+            "fecha_generado": "2025-12-01T00:35:29.341649"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_de_proteccion.mp4",
+            "tipo": "oracion",
+            "publicar_en": "19:00",
+            "fecha_generado": "2025-12-01T00:37:50.367134"
+        }
+    ],
+    "publicados": [
+        {
+            "archivo": "videos/oraciones/acto_de_caridad.mp4",
+            "video_id": "KU_kAU8c-IQ",
+            "fecha_publicado": "2025-11-30T12:56:43.634897",
+            "tipo": "oracion"
+        },
+        {
+            "archivo": "videos/salmos/salmo_103_bendice_al_senor_alma_mia.mp4",
+            "video_id": "Qscbluwz9f4",
+            "fecha_publicado": "2025-11-30T19:06:24.135368",
+            "tipo": "salmo"
+        },
+        {
+            "archivo": "videos/oraciones/bendita_sea_tu_pureza.mp4",
+            "video_id": "TetTOVfKMWc",
+            "fecha_publicado": "2025-11-30T23:30:04.266541",
+            "tipo": "oracion"
+        }
+    ],
+    "oraciones": [],
+    "salmos": []
+}

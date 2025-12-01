@@ -1,4 +1,4 @@
 .env
 client_secret.json
 *.mp4
-historial.json
+*.log
