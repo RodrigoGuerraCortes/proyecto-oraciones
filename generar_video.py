@@ -10,10 +10,28 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter, UnidentifiedImageError
 from moviepy.editor import ImageClip, AudioFileClip, CompositeVideoClip
 from moviepy.video.fx.fadein import fadein
 from moviepy.video.fx.fadeout import fadeout
+from historial import cargar_historial, guardar_historial, registrar_uso
+
 import json
 
 
 MODO_TEST = False
+
+
+# --------------------------------------------
+# 📌 PARÁMETROS OPCIONALES --imagen= --musica=
+# --------------------------------------------
+def obtener_parametros_opcionales():
+    imagen = None
+    musica = None
+
+    for arg in sys.argv:
+        if arg.startswith("--imagen="):
+            imagen = arg.split("=", 1)[1].strip()
+        if arg.startswith("--musica="):
+            musica = arg.split("=", 1)[1].strip()
+
+    return imagen, musica
 
 
 # --------------------------------------------
@@ -35,14 +53,12 @@ SEGUNDOS_ESTROFA = 16
 WATERMARK_PATH = "marca_agua.png"  # asegúrate de tener este archivo
 
 
+
+
 # --------------------------------------------
 # REVISION DE ARCHIVOS CORRUPTOS
 # --------------------------------------------
 def limpiar_imagenes_corruptas():
-    """
-    Revisa la carpeta 'imagenes' y elimina cualquier archivo que PIL no pueda abrir.
-    Esto evita que MoviePy falle por fondos defectuosos.
-    """
     carpeta = "imagenes"
     imagenes = os.listdir(carpeta)
 
@@ -62,8 +78,7 @@ def limpiar_imagenes_corruptas():
 
         try:
             with Image.open(path) as im:
-                im.verify()  # detección rápida de corrupción
-            # hacer un segundo test real de carga
+                im.verify()
             with Image.open(path) as im2:
                 im2.convert("RGB")
             buenas += 1
@@ -76,20 +91,16 @@ def limpiar_imagenes_corruptas():
             except:
                 print(f"[ERROR] No se pudo eliminar {img}")
 
-    print(f"\n[CHECK] Proceso completado:")
-    print(f"  ✔ Imágenes válidas: {buenas}")
-    print(f"  ✘ Imágenes corruptas eliminadas: {malas}\n")
+    print(f"\n[CHECK] Imágenes válidas: {buenas}")
+    print(f"       Imágenes corruptas eliminadas: {malas}\n")
 
-    if malas > 0:
-        print("[INFO] Se recomienda agregar nuevas imágenes si la cantidad bajó demasiado.")
 
 
 # --------------------------------------------
-# MANEJO DE ARCHIVO TEMPORALES
+# MANEJO DE TEMPORALES
 # --------------------------------------------
 
 def limpiar_temporales():
-    """Elimina imágenes temporales y archivos TMP generados durante el render."""
     archivos_temp = [
         "fondo_tmp.jpg",
         "grad_tmp.png",
@@ -98,7 +109,6 @@ def limpiar_temporales():
         "estrofa.png",
     ]
 
-    # borrar archivos temporales estándar
     for f in archivos_temp:
         if os.path.exists(f):
             try:
@@ -107,23 +117,19 @@ def limpiar_temporales():
             except:
                 pass
 
-    # borrar TMP creados por moviepy dentro de /videos/
     try:
         for f in os.listdir("videos"):
-            if "TEMP_MPY" in f or "temp" in f.lower() or f.endswith(".png") or f.endswith(".jpg"):
+            if "TEMP_MPY" in f or f.endswith(".png") or f.endswith(".jpg"):
                 path = os.path.join("videos", f)
-
-                # no borrar el MP4 final
-                if path.endswith(".mp4"):
-                    continue
-
-                try:
-                    os.remove(path)
-                    print(f"[CLEAN] Eliminado {path}")
-                except:
-                    pass
+                if not path.endswith(".mp4"):
+                    try:
+                        os.remove(path)
+                        print(f"[CLEAN] Eliminado {path}")
+                    except:
+                        pass
     except:
         pass
+
 
 
 # --------------------------------------------
@@ -136,13 +142,6 @@ def medir_texto(draw, texto, font):
 
 
 def crear_imagen_titulo(titulo, output):
-    """
-    Crea una imagen de título dividida en múltiples líneas.
-    Especial para salmos tipo:
-    'Salmo 27 — El Señor Es Mi Luz Y Mi Salvación'
-    """
-
-    # Crear lienzo del título
     img = Image.new("RGBA", (ANCHO, 360), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
@@ -151,39 +150,27 @@ def crear_imagen_titulo(titulo, output):
     except:
         font = ImageFont.load_default()
 
-    # Detectar si es salmo y dividir en:
-    #  1) Salmo 27
-    #  2) El Señor es mi luz
-    #  3) y mi salvación
     if "—" in titulo:
         numero, nombre = titulo.split("—", 1)
-
         numero = numero.strip()
         palabras = nombre.strip().split()
-
-        # Dividir el nombre en 2 líneas equilibradas
         mid = len(palabras) // 2
         linea1 = " ".join(palabras[:mid])
         linea2 = " ".join(palabras[mid:])
-
         lineas = [numero, linea1, linea2]
 
     else:
-        # Caso de oraciones comunes
         lineas = titulo.split("\n")
 
-    # Dibujar cada línea centrada con contorno
     y = 20
     for linea in lineas:
         w, h = draw.textbbox((0, 0), linea, font=font)[2:]
         x = (ANCHO - w) // 2
 
-        # Contorno negro suave
         for dx, dy in [(-3,0),(3,0),(0,-3),(0,3),(-3,-3),(3,-3),(-3,3),(3,3)]:
             draw.text((x+dx, y+dy), linea, font=font, fill="black")
 
         draw.text((x, y), linea, font=font, fill="#e4d08a")
-
         y += h + 12
 
     img.save(output)
@@ -264,10 +251,6 @@ def crear_imagen_texto(texto, output):
 # --------------------------------------------
 
 def calcular_duracion_bloque(lineas):
-    """
-    Determina automáticamente la duración de un bloque según
-    su cantidad de líneas reales (no vacías).
-    """
     n = len([l for l in lineas.splitlines() if l.strip()])
 
     if n <= 7:
@@ -278,187 +261,135 @@ def calcular_duracion_bloque(lineas):
         return 35
 
 
+
 # --------------------------------------------
 #             FONDO + AUDIO
 # --------------------------------------------
 
-def crear_fondo(duracion):
+def crear_fondo(duracion, imagen_fija=None):
     print("\n============================")
-    print(" [FONDO] Generando fondo con retry…")
+    print(" [FONDO] Generando fondo…")
     print("============================")
 
     imagenes = os.listdir("imagenes")
     imagenes = [i for i in imagenes if i.lower() != "vignette.png"]
 
-    intentos = 0
-    max_intentos = 3
-
-    while intentos < max_intentos:
-        intentos += 1
-        print(f"\n[FONDO] Intento {intentos}/{max_intentos}")
-
+    if imagen_fija:
+        print(f"[FONDO] Usando imagen fija: {imagen_fija}")
+        registrar_uso("imagenes", imagen_fija)
+        ruta = os.path.join("imagenes", imagen_fija)
+    else:
         elegida = random.choice(imagenes)
+        registrar_uso("imagenes", elegida)
         ruta = os.path.join("imagenes", elegida)
         print(f"[FONDO] Imagen seleccionada: {ruta}")
 
-        # Intentar abrir la imagen
-        try:
-            pil = Image.open(ruta)
-            print(f"[FONDO] Imagen cargada correctamente ({pil.mode}, {pil.size})")
-        except Exception as e:
-            print(f"[ERROR FONDO] No se pudo abrir {ruta}: {e}")
-            print("[FONDO] Reintentando con otra imagen…")
-            continue  # saltar a otro retry
+    try:
+        pil = Image.open(ruta)
+    except Exception as e:
+        print(f"[ERROR FONDO] No se pudo abrir {ruta}: {e}")
+        pil = Image.new("RGB", (ANCHO, ALTO), "black")
 
-        # Intentar procesar imagen
-        try:
-            pil = pil.convert("RGB").resize((ANCHO, ALTO))
-            pil = pil.filter(ImageFilter.GaussianBlur(6))
-            pil = Image.blend(pil, Image.new("RGB", (ANCHO, ALTO), "black"), 0.24)
-            print("[FONDO] Resize y blur OK")
+    pil = pil.convert("RGB").resize((ANCHO, ALTO))
+    pil = pil.filter(ImageFilter.GaussianBlur(6))
+    pil = Image.blend(pil, Image.new("RGB", (ANCHO, ALTO), "black"), 0.24)
 
-            # vignette
-            try:
-                vig = Image.open("imagenes/vignette.png").convert("RGB").resize((ANCHO, ALTO))
-                pil = Image.blend(pil, vig, 0.22)
-                print("[FONDO] Vignette aplicada OK")
-            except Exception as e:
-                print(f"[WARNING] No se aplicó vignette: {e}")
+    try:
+        vig = Image.open("imagenes/vignette.png").convert("RGB").resize((ANCHO, ALTO))
+        pil = Image.blend(pil, vig, 0.22)
+    except:
+        pass
 
-            # guardar temporal
-            pil.save("fondo_tmp.jpg")
-            print("[FONDO] fondo_tmp.jpg guardado correctamente")
-
-            # Crear clip MoviePy
-            fondo = ImageClip("fondo_tmp.jpg").set_duration(duracion)
-            fondo = fondo.resize(lambda t: 1.04 - 0.03 * (t / duracion))
-            print("[FONDO] Clip MoviePy creado OK")
-
-            # Crear gradiente
-            grad = Image.new("RGBA", (ANCHO, ALTO))
-            d = ImageDraw.Draw(grad)
-            for y in range(ALTO):
-                a = int(180 * (y / ALTO))
-                d.line((0, y, ANCHO, y), fill=(0, 0, 0, a))
-            grad.save("grad_tmp.png")
-            print("[FONDO] grad_tmp.png creado OK")
-
-            grad_clip = ImageClip("grad_tmp.png").set_duration(duracion)
-
-            print("[FONDO] Fondo y gradiente listos ✓\n")
-            return fondo, grad_clip
-
-        except Exception as e:
-            print(f"[ERROR FONDO] Falló procesar {ruta}: {e}")
-            print("[FONDO] Reintentando con otra imagen…")
-
-    # Si agotó todos los intentos
-    print("\n[FONDO ERROR GRAVE] Ninguna imagen funcionó")
-    print("[FONDO] Creando fondo negro de emergencia")
-
-    fallback = Image.new("RGB", (ANCHO, ALTO), "black")
-    fallback.save("fondo_tmp.jpg")
+    pil.save("fondo_tmp.jpg")
 
     fondo = ImageClip("fondo_tmp.jpg").set_duration(duracion)
+    fondo = fondo.resize(lambda t: 1.04 - 0.03 * (t / duracion))
+
     grad = Image.new("RGBA", (ANCHO, ALTO))
+    d = ImageDraw.Draw(grad)
+    for y in range(ALTO):
+        a = int(180 * (y / ALTO))
+        d.line((0, y, ANCHO, y), fill=(0, 0, 0, a))
     grad.save("grad_tmp.png")
+
     grad_clip = ImageClip("grad_tmp.png").set_duration(duracion)
 
     return fondo, grad_clip
 
 
-def crear_audio(duracion):
-    """
-    Carga un audio aleatorio, lo recorta Y SI ES MUY CORTO LO REPITE (LOOP)
-    para que coincida con la duración total del video.
-    """
+
+def crear_audio(duracion, musica_fija=None):
 
     audios_disponibles = os.listdir("musica")
 
+    if musica_fija:
+        ruta = os.path.join("musica", musica_fija)
+        print(f"[AUDIO] Usando música fija: {musica_fija}")
+        registrar_uso("musicas", musica_fija)
+        audio = AudioFileClip(ruta)
+
+        if audio.duration < duracion:
+            print("[AUDIO] Música corta → loop")
+            return audio_loop(audio, duration=duracion)
+
+        return audio.subclip(0, duracion)
+
+    # random
     intentos = 0
     while intentos < 3:
         try:
             archivo = random.choice(audios_disponibles)
+            registrar_uso("musicas", archivo)
             ruta = os.path.join("musica", archivo)
 
-            print(f"[AUDIO] Intento {intentos + 1}: usando {ruta}")
+            print(f"[AUDIO] Intento {intentos+1}: {ruta}")
 
             audio = AudioFileClip(ruta)
             dur_audio = audio.duration
 
-            # === SI EL AUDIO ES CORTO LO REPITE HASTA COMPLETAR ===
             if dur_audio < duracion:
-                print(f"[AUDIO] El audio es corto ({dur_audio}s). Aplicando loop…")
+                print("[AUDIO] Música corta → loop")
                 audio = audio_loop(audio, duration=duracion)
             else:
                 inicio = random.uniform(0, max(0, dur_audio - duracion))
-                fin = inicio + duracion
-                audio = audio.subclip(inicio, fin)
+                audio = audio.subclip(inicio, inicio + duracion)
 
-            # fade suave
-            audio = audio.audio_fadein(1).audio_fadeout(2)
             return audio
 
         except Exception as e:
             print(f"[AUDIO ERROR] {e}")
-            print("Reintentando con otro archivo...\n")
             intentos += 1
-            continue
 
-    # fallback
-    print("[AUDIO ERROR] Todos los intentos fallaron, usando audio silencioso.")
+    print("[AUDIO] Fallback silencioso")
     return AudioFileClip(os.path.join("musica", audios_disponibles[0])).subclip(0, 1)
 
 
+
 # --------------------------------------------
-#                 VIDEO BASE (con marca de agua)
+#                 VIDEO BASE
 # --------------------------------------------
 
 def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
-    """
-    Crea el video final:
-      - fondo + gradiente
-      - título
-      - texto (bloques/estrofas)
-      - marca de agua en esquina inferior derecha
-    """
 
     capas = [fondo, grad, titulo_clip] + clips
 
-    # ------------------------------
-    # Marca de agua (watermark)
-    # ------------------------------
+    # marca de agua
     if os.path.exists(WATERMARK_PATH):
         try:
-            print(f"[WATERMARK] Aplicando marca de agua: {WATERMARK_PATH}")
-        
-            # misma duración que el fondo
-            dur_wm = getattr(fondo, "duration", titulo_clip.duration)
-
-            wm = ImageClip(WATERMARK_PATH)
-            wm = wm.resize(width=int(ANCHO * 0.22))
-            wm = wm.set_duration(dur_wm)
+            wm = ImageClip(WATERMARK_PATH).resize(width=int(ANCHO * 0.22))
+            wm = wm.set_duration(fondo.duration)
             wm = wm.set_opacity(0.85).fx(fadein, 0.7)
 
-            pos_x = ANCHO - wm.w - 2                # más cerca del borde derecho
-            pos_y = ALTO - wm.h - 2                # mucho más abajo
-
+            pos_x = ANCHO - wm.w - 2
+            pos_y = ALTO - wm.h - 2
             wm = wm.set_position((pos_x, pos_y))
 
-
-
             capas.append(wm)
-            print("[WATERMARK] Marca de agua aplicada correctamente ✓")
-        except Exception as e:
-            print(f"[WATERMARK] No se pudo aplicar la marca de agua: {e}")
-    else:
-        print(f"[WATERMARK] Archivo '{WATERMARK_PATH}' no encontrado, se omite marca de agua.")
+        except:
+            pass
 
-    # Componer video
-    video = CompositeVideoClip(capas)
-    video = video.set_audio(audio)
+    video = CompositeVideoClip(capas).set_audio(audio)
 
-    # Renderizar
     video.write_videofile(
         salida,
         fps=30,
@@ -468,8 +399,9 @@ def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
     )
 
 
+
 # --------------------------------------------
-#         DIVIDIR ORACIÓN LARGA EN BLOQUES
+#        DIVIDIR ORACION LARGA
 # --------------------------------------------
 
 def dividir_en_bloques(texto, max_lineas=8):
@@ -477,35 +409,26 @@ def dividir_en_bloques(texto, max_lineas=8):
 
     bloques = []
     for i in range(0, len(lineas), max_lineas):
-        bloque_lineas = lineas[i : i + max_lineas]
+        bloque_lineas = lineas[i:i+max_lineas]
         bloques.append("\n".join(bloque_lineas))
 
-    # -----------------------------------------------------------------
-    # REGRA ESPECIAL: si el ÚLTIMO bloque tiene SOLO "Amén", únelo al
-    # bloque anterior (para que no haya una pantalla solo con Amén).
-    # Esto cubre exactamente el caso de 11ª línea = Amén.
-    # -----------------------------------------------------------------
+    # unir Amén si queda solo
     if len(bloques) >= 2:
-        ult = bloques[-1]
-        ult_lineas = [l for l in ult.splitlines() if l.strip()]
-
-        if (
-            len(ult_lineas) == 1
-            and ult_lineas[0].strip().lower().rstrip(".") in ["amén", "amen", "Amén", "Amen"]
-        ):
-            # pegar el Amén al bloque anterior
-            bloques[-2] = bloques[-2] + "\n" + ult_lineas[0]
-            bloques.pop()  # eliminar bloque solo-Amén
+        ult = bloques[-1].strip().lower().rstrip(".")
+        if ult in ["amen", "amén"]:
+            bloques[-2] += "\nAmén"
+            bloques.pop()
 
     return bloques
 
 
 
 # --------------------------------------------
-#                VIDEO ORACION
+#                VIDEO ORACIÓN
 # --------------------------------------------
 
 def crear_video_oracion(path_in, path_out):
+    img_fija, mus_fija = obtener_parametros_opcionales()
 
     with open(path_in, "r", encoding="utf-8") as f:
         texto = f.read()
@@ -513,87 +436,52 @@ def crear_video_oracion(path_in, path_out):
     base = os.path.splitext(os.path.basename(path_in))[0]
     titulo = base.replace("_", " ").title()
 
-    # líneas reales sin vacías
-    lineas_real = [l for l in texto.splitlines() if l.strip()]
+    lineas = [l for l in texto.splitlines() if l.strip()]
 
-    # -----------------------------
-    # DURACIÓN (normal o modo test)
-    # -----------------------------
     if MODO_TEST:
-        # modo test: video siempre dura 10 segundos
         bloques = [texto]
         dur_total = 2
-        print(f"[ORACION][TEST] '{titulo}' generado en 10s (modo test)")
     else:
-        # modo normal
-        if len(lineas_real) > ORACION_LINEAS_MAX:
-            bloques = dividir_en_bloques(texto, max_lineas=ORACION_LINEAS_MAX)
-
-            dur_total = 0
-            for b in bloques:
-                dur_total += calcular_duracion_bloque(b)
-
-            print(f"[ORACION] '{titulo}' dividida en {len(bloques)} bloques (duración total: {dur_total}s)")
+        if len(lineas) > ORACION_LINEAS_MAX:
+            bloques = dividir_en_bloques(texto, ORACION_LINEAS_MAX)
+            dur_total = sum(calcular_duracion_bloque(b) for b in bloques)
         else:
             bloques = [texto]
             dur_total = calcular_duracion_bloque(texto)
-            print(f"[ORACION] '{titulo}' cabe en un solo bloque ({dur_total}s)")
 
-    # -----------------------------
-    # Crear fondo y título
-    # -----------------------------
-    fondo, grad = crear_fondo(dur_total)
+    fondo, grad = crear_fondo(dur_total, img_fija)
 
-    img_t = "titulo.png"
-    crear_imagen_titulo(titulo, img_t)
-    titulo_clip = ImageClip(img_t).set_duration(dur_total).set_position(("center", 120))
+    crear_imagen_titulo(titulo, "titulo.png")
+    titulo_clip = ImageClip("titulo.png").set_duration(dur_total).set_position(("center", 120))
 
-    # -----------------------------
-    # Crear bloques de texto
-    # -----------------------------
     clips = []
     t = 0
     for b in bloques:
-        if not b.strip():
-            continue
-
-        tmp = "bloque.png"
-        crear_imagen_texto(b, tmp)
-
-        # duración del bloque
-        dur_bloque = 2 if MODO_TEST else calcular_duracion_bloque(b)
-
-        c = (
-            ImageClip(tmp)
-            .set_duration(dur_bloque)
-            .set_position("center")
-        )
-
-        # si hay varios bloques, animamos el fade-in solo en modo normal
+        crear_imagen_texto(b, "bloque.png")
+        dur_b = 2 if MODO_TEST else calcular_duracion_bloque(b)
+        c = ImageClip("bloque.png").set_duration(dur_b).set_position("center")
         if not MODO_TEST and len(bloques) > 1:
             c = c.fx(fadein, 1).set_start(t)
-
         clips.append(c)
-        t += (2 if MODO_TEST else SEGUNDOS_BLOQUE_ORACION)
+        t += dur_b
 
-    # -----------------------------
-    # Audio (corto si es test)
-    # -----------------------------
-    audio = crear_audio(dur_total)
+    audio = crear_audio(dur_total, mus_fija)
 
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
+
 
 
 # --------------------------------------------
 #                VIDEO SALMO
 # --------------------------------------------
+
 def crear_video_salmo(path_in, path_out):
+    img_fija, mus_fija = obtener_parametros_opcionales()
 
     with open(path_in, "r", encoding="utf-8") as f:
         texto = f.read()
 
     base = os.path.splitext(os.path.basename(path_in))[0]
-
     partes = base.split("_", 1)
     numero = partes[0]
 
@@ -609,82 +497,36 @@ def crear_video_salmo(path_in, path_out):
     estrofas = [e.strip() for e in texto.split("\n\n") if e.strip()]
     estrofas = estrofas[:MAX_ESTROFAS]
 
-    # -----------------------------
-    # DURACIÓN (normal o test)
-    # -----------------------------
     if MODO_TEST:
         dur_total = 2
-        print(f"[SALMO][TEST] '{titulo}' generado en 10s")
     else:
         dur_total = len(estrofas) * SEGUNDOS_ESTROFA
 
-    # -----------------------------
-    # Fondo + título
-    # -----------------------------
-    fondo, grad = crear_fondo(dur_total)
+    fondo, grad = crear_fondo(dur_total, img_fija)
 
-    img_t = "titulo.png"
-    crear_imagen_titulo(titulo, img_t)
-    titulo_clip = ImageClip(img_t).set_duration(dur_total).set_position(("center", 120))
+    crear_imagen_titulo(titulo, "titulo.png")
+    titulo_clip = ImageClip("titulo.png").set_duration(dur_total).set_position(("center", 120))
 
-    # -----------------------------
-    # Estrofas
-    # -----------------------------
     clips = []
     t = 0
     for e in estrofas:
-        tmp = "estrofa.png"
-        crear_imagen_texto(e, tmp)
-
-        dur_estrofa = 2 if MODO_TEST else SEGUNDOS_ESTROFA
-
-        c = (
-            ImageClip(tmp)
-            .set_duration(dur_estrofa)
-            .set_position("center")
-        )
-
+        crear_imagen_texto(e, "estrofa.png")
+        dur_e = 2 if MODO_TEST else SEGUNDOS_ESTROFA
+        c = ImageClip("estrofa.png").set_duration(dur_e).set_position("center")
         if not MODO_TEST:
             c = c.fx(fadein, 0.8).set_start(t)
-
         clips.append(c)
-        t += dur_estrofa
+        t += dur_e
 
-    # -----------------------------
-    # Audio
-    # -----------------------------
-    audio = crear_audio(dur_total)
+    audio = crear_audio(dur_total, mus_fija)
 
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
 
 
 
 # --------------------------------------------
-#           CREAR VARIOS VIDEOS
+#          CREAR VARIOS ALEATORIOS
 # --------------------------------------------
-
-HISTORIAL = "historial.json"
-
-def cargar_historial():
-    if not os.path.exists(HISTORIAL):
-        return {"oraciones": [], "salmos": []}
-
-    try:
-        with open(HISTORIAL, "r") as f:
-            contenido = f.read().strip()
-            if not contenido:
-                # archivo vacío → crear estructura nueva
-                return {"oraciones": [], "salmos": []}
-
-            return json.loads(contenido)
-
-    except Exception as e:
-        print(f"[HISTORIAL] Archivo corrupto, se regenerará. Error: {e}")
-        return {"oraciones": [], "salmos": []}
-
-def guardar_historial(data):
-    with open(HISTORIAL, "w") as f:
-        json.dump(data, f, indent=4)
 
 def elegir_no_repetido(archivos, historial, dias_no_repetir=7):
     hoy = datetime.now()
@@ -695,13 +537,14 @@ def elegir_no_repetido(archivos, historial, dias_no_repetir=7):
     disponibles = [a for a in archivos if a.replace(".txt", "") not in usados]
 
     if not disponibles:
-        # si ya usamos todo → reiniciar
         historial.clear()
         disponibles = archivos
 
     elegido = random.choice(disponibles)
     historial.append({"nombre": elegido.replace(".txt", ""), "fecha": hoy.isoformat()})
     return elegido
+
+
 
 def crear_videos_del_dia(cantidad, modo):
     hist = cargar_historial()
@@ -713,11 +556,10 @@ def crear_videos_del_dia(cantidad, modo):
         elegido = elegir_no_repetido(
             archivos,
             hist["salmos"] if modo == "salmo" else hist["oraciones"],
-            dias_no_repetir=7
+            dias_no_repetir=7,
         )
 
         entrada = f"{carpeta}/{elegido}"
-
         base = elegido.replace(".txt", "")
         subfolder = "oraciones" if modo == "oracion" else "salmos"
         salida = f"videos/{subfolder}/{base}.mp4"
@@ -731,27 +573,9 @@ def crear_videos_del_dia(cantidad, modo):
 
         limpiar_temporales()
 
-    guardar_historial(hist)
+    print("[DEBUG] crear_videos_del_dia(): OK (no se guarda historial aquí)")
 
 
-def crear_video_unico(path_in, modo):
-    """
-    Genera un solo video de oración o salmo.
-    El video final queda idéntico al de producción.
-    """
-    base = os.path.splitext(os.path.basename(path_in))[0]
-    subfolder = "oraciones" if modo == "oracion" else "salmos"
-    nombre_salida = f"videos/{subfolder}/{base}.mp4"
-
-    print(f"\n[UNICO] Generando video único → {nombre_salida}\n")
-
-    if modo == "oracion":
-        crear_video_oracion(path_in, nombre_salida)
-    else:
-        crear_video_salmo(path_in, nombre_salida)
-
-    limpiar_temporales()
-    print("\n[UNICO] Video generado correctamente ✓\n")
 
 # --------------------------------------------
 #                ENTRY POINT
@@ -762,47 +586,56 @@ if __name__ == "__main__":
 
     if "test" in sys.argv:
         MODO_TEST = True
-        print("⚠ GENERANDO VIDEO EN MODO TEST (10s)")
-
+        print("⚠ MODO TEST ACTIVADO (10s)")
 
     if len(sys.argv) < 2:
         print("Uso:")
         print("  python3 generar_video.py 10 oracion")
         print("  python3 generar_video.py solo textos/oraciones/salve.txt")
+        print("  python3 generar_video.py solo textos/salmos/salmo_23.txt --imagen=22.png --musica=5.mp3")
         sys.exit(1)
 
     modo = sys.argv[1].lower()
 
-    # ---------------------------------------------------
-    #   MODO UNICO (generar un video específico)
-    # ---------------------------------------------------
+    # -------------------------------------------
+    #         GENERAR VIDEO ÚNICO
+    # -------------------------------------------
     if modo == "solo":
         if len(sys.argv) < 3:
-            print("ERROR: Debes indicar el archivo. Ej:")
-            print("python3 generar_video.py solo textos/oraciones/salve.txt")
+            print("ERROR: Debes indicar el archivo.")
             sys.exit(1)
 
         archivo = sys.argv[2]
 
-        # Detectar si es oración o salmo según carpeta
+        # Detectar tipo por carpeta
         if "/salmos/" in archivo.lower():
             tipo = "salmo"
         else:
             tipo = "oracion"
 
-        crear_video_unico(archivo, tipo)
+        base = os.path.splitext(os.path.basename(archivo))[0]
+        sub = "oraciones" if tipo == "oracion" else "salmos"
+        salida = f"videos/{sub}/{base}.mp4"
+
+        print(f"[UNICO] Generando {tipo} → {salida}")
+
+        if tipo == "salmo":
+            crear_video_salmo(archivo, salida)
+        else:
+            crear_video_oracion(archivo, salida)
+
+        limpiar_temporales()
+        print("[UNICO] Listo ✓")
         sys.exit(0)
 
-    # ---------------------------------------------------
-    #   MODO NORMAL (generar varios aleatorios)
-    # ---------------------------------------------------
+    # -------------------------------------------
+    #          GENERACIÓN NORMAL
+    # -------------------------------------------
     cantidad = int(sys.argv[1])
     tipo = sys.argv[2].lower()
 
     if tipo not in ["salmo", "oracion"]:
-        print("ERROR: modo inválido. Usa: salmo | oracion | solo")
+        print("ERROR: modo inválido.")
         sys.exit(1)
 
     crear_videos_del_dia(cantidad, tipo)
-
-

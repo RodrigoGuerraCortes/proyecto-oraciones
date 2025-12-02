@@ -1,0 +1,4 @@
+Plataforma	Video 1	Video 2	Video 3
+YouTube	7:00 AM	12:30 PM	8:30 PM
+Facebook	7:00 AM	12:30 PM	8:30 PM
+TikTok	7:00 AM	12:30 PM	8:30 PM

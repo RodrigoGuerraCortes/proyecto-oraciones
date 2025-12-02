@@ -3,11 +3,10 @@ import os
 from datetime import datetime
 import subprocess
 import sys
+from historial import cargar_historial, guardar_historial, registrar_uso
 
-HISTORIAL = "historial.json"
 
 PYTHON = sys.executable  # usa el python que ejecutó este script
-
 
 MODO_TEST = False
 if len(sys.argv) > 1 and sys.argv[1] == "test":
@@ -30,50 +29,6 @@ def ultimo_archivo_generado(carpeta):
     archivos.sort(key=lambda x: os.path.getmtime(x))
 
     return archivos[-1]
-
-# ------------------------------
-# Cargar historial extendido
-# ------------------------------
-def cargar_historial():
-    if not os.path.exists(HISTORIAL):
-        return {
-            "pendientes": [],
-            "publicados": [],
-            "oraciones": [],
-            "salmos": []
-        }
-    try:
-        with open(HISTORIAL, "r") as f:
-            contenido = f.read().strip()
-            if not contenido:
-                return {
-                    "pendientes": [],
-                    "publicados": [],
-                    "oraciones": [],
-                    "salmos": []
-                }
-            data = json.loads(contenido)
-
-            # asegurar claves nuevas
-            data.setdefault("pendientes", [])
-            data.setdefault("publicados", [])
-            data.setdefault("oraciones", [])
-            data.setdefault("salmos", [])
-            return data
-    except:
-        return {
-            "pendientes": [],
-            "publicados": [],
-            "oraciones": [],
-            "salmos": []
-        }
-
-# ------------------------------
-# Guardar historial extendido
-# ------------------------------
-def guardar_historial(data):
-    with open(HISTORIAL, "w") as f:
-        json.dump(data, f, indent=4)
 
 
 # ------------------------------
@@ -145,7 +100,17 @@ def generar_videos_diarios():
         "fecha_generado": datetime.now().isoformat()
     })
 
-    guardar_historial(historial)
+    # ======================================================
+    # 🔥 FIX: evitar que se borren imagenes/musicas
+    # ======================================================
+    # 1. Cargar el historial REAL (ya modificado por registrar_uso)
+    hist_real = cargar_historial()
+
+    # 2. Solo actualizar pendientes con lo que hicimos recién
+    hist_real["pendientes"] = historial["pendientes"]
+
+    # 3. Guardar sin tocar imagenes ni musicas
+    guardar_historial(hist_real)
 
  
 

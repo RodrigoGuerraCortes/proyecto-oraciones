@@ -1,12 +1,5 @@
 {
-    "pendientes": [
-        {
-            "archivo": "videos/salmos/salmo_40_yo_esperaba_el_senor.mp4",
-            "tipo": "salmo",
-            "publicar_en": "12:00",
-            "fecha_generado": "2025-12-02T00:06:05.333004"
-        }
-    ],
+    "pendientes": [],
     "publicados": [
         {
             "archivo": "videos/oraciones/acto_de_caridad.mp4",
@@ -49,10 +42,26 @@
             "video_id": "hrCuuXNyE_c",
             "fecha_publicado": "2025-12-02T06:44:42.702286",
             "tipo": "oracion"
+        },
+        {
+            "archivo": "videos/salmos/salmo_40_yo_esperaba_el_senor.mp4",
+            "video_id": "rGMWgHwXf1I",
+            "fecha_publicado": "2025-12-02T12:31:36.844839",
+            "tipo": "salmo"
         }
     ],
     "oraciones": [],
     "salmos": [],
-    "imagenes": [],
-    "musicas": []
+    "imagenes": [
+        {
+            "nombre": "28.png",
+            "fecha": "2025-12-02T12:27:28.604078"
+        }
+    ],
+    "musicas": [
+        {
+            "nombre": "6.mp3",
+            "fecha": "2025-12-02T12:27:30.274639"
+        }
+    ]
 }
