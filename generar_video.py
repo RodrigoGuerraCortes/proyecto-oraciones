@@ -369,10 +369,8 @@ def crear_fondo(duracion):
 
 def crear_audio(duracion):
     """
-    Carga un audio aleatorio y garantiza que:
-      - nunca se lea fuera del rango
-      - si un mp3 falla, prueba otro
-      - reintenta hasta 3 veces
+    Carga un audio aleatorio, lo recorta Y SI ES MUY CORTO LO REPITE (LOOP)
+    para que coincida con la duración total del video.
     """
 
     audios_disponibles = os.listdir("musica")
@@ -386,20 +384,19 @@ def crear_audio(duracion):
             print(f"[AUDIO] Intento {intentos + 1}: usando {ruta}")
 
             audio = AudioFileClip(ruta)
-
-            # Duración real del MP3
             dur_audio = audio.duration
 
-            # Asegurar que el subclip nunca exceda el archivo
-            if dur_audio <= duracion:
-                inicio = 0
-                fin = dur_audio
+            # === SI EL AUDIO ES CORTO LO REPITE HASTA COMPLETAR ===
+            if dur_audio < duracion:
+                print(f"[AUDIO] El audio es corto ({dur_audio}s). Aplicando loop…")
+                audio = audio_loop(audio, duration=duracion)
             else:
                 inicio = random.uniform(0, max(0, dur_audio - duracion))
                 fin = inicio + duracion
+                audio = audio.subclip(inicio, fin)
 
-            # Aplicar música con fade
-            audio = audio.subclip(inicio, fin).audio_fadein(1).audio_fadeout(2)
+            # fade suave
+            audio = audio.audio_fadein(1).audio_fadeout(2)
             return audio
 
         except Exception as e:
@@ -408,7 +405,7 @@ def crear_audio(duracion):
             intentos += 1
             continue
 
-    # Si todo falla → usar un audio vacío
+    # fallback
     print("[AUDIO ERROR] Todos los intentos fallaron, usando audio silencioso.")
     return AudioFileClip(os.path.join("musica", audios_disponibles[0])).subclip(0, 1)
 

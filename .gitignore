@@ -2,4 +2,4 @@
 client_secret.json
 *.mp4
 *.log
-*.picke
+token.pickle

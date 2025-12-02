@@ -1,16 +1,10 @@
 {
     "pendientes": [
         {
-            "archivo": "videos/salmos/salmo_91_bajo_la_proteccion_del_altisimo.mp4",
+            "archivo": "videos/salmos/salmo_40_yo_esperaba_el_senor.mp4",
             "tipo": "salmo",
             "publicar_en": "12:00",
-            "fecha_generado": "2025-12-01T00:35:29.341649"
-        },
-        {
-            "archivo": "videos/oraciones/oracion_de_proteccion.mp4",
-            "tipo": "oracion",
-            "publicar_en": "19:00",
-            "fecha_generado": "2025-12-01T00:37:50.367134"
+            "fecha_generado": "2025-12-02T00:06:05.333004"
         }
     ],
     "publicados": [
@@ -37,14 +31,28 @@
             "video_id": "cZBM1vZJJt0",
             "fecha_publicado": "2025-12-01T06:57:45.030495",
             "tipo": "oracion"
+        },
+        {
+            "archivo": "videos/salmos/salmo_130_desde_lo_hondo.mp4",
+            "video_id": "WQV1op3rcIs",
+            "fecha_publicado": "2025-12-01T14:34:54.471923",
+            "tipo": "salmo"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_de_proteccion.mp4",
+            "video_id": "ECR5effRVOo",
+            "fecha_publicado": "2025-12-01T21:13:40.934437",
+            "tipo": "oracion"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_a_la_virgen_maria.mp4",
+            "video_id": "hrCuuXNyE_c",
+            "fecha_publicado": "2025-12-02T06:44:42.702286",
+            "tipo": "oracion"
         }
     ],
     "oraciones": [],
     "salmos": [],
-    "imagenes": [
-       
-    ],
-    "musicas": [
-      
-    ]
+    "imagenes": [],
+    "musicas": []
 }
