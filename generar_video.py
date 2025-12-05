@@ -10,9 +10,10 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter, UnidentifiedImageError
 from moviepy.editor import ImageClip, AudioFileClip, CompositeVideoClip
 from moviepy.video.fx.fadein import fadein
 from moviepy.video.fx.fadeout import fadeout
-from historial import cargar_historial, guardar_historial, registrar_uso
+from historial import cargar_historial, guardar_historial, registrar_uso,registrar_video_generado
+import textwrap
 
-import json
+import json 
 
 
 MODO_TEST = False
@@ -141,6 +142,7 @@ def medir_texto(draw, texto, font):
     return bbox[2] - bbox[0], bbox[3] - bbox[1]
 
 
+
 def crear_imagen_titulo(titulo, output):
     img = Image.new("RGBA", (ANCHO, 360), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -150,6 +152,9 @@ def crear_imagen_titulo(titulo, output):
     except:
         font = ImageFont.load_default()
 
+    # ----------------------------
+    # 🔥 SI ES SALMO (contiene —)
+    # ----------------------------
     if "—" in titulo:
         numero, nombre = titulo.split("—", 1)
         numero = numero.strip()
@@ -160,17 +165,36 @@ def crear_imagen_titulo(titulo, output):
         lineas = [numero, linea1, linea2]
 
     else:
-        lineas = titulo.split("\n")
+        # ------------------------------------------
+        # 🟦 ORACIÓN: aplicar word wrap AUTOMÁTICO
+        # ------------------------------------------
+        max_width = 900  # ancho máximo antes de cortar la línea
+        wrapped = []
 
+        for parte in titulo.split():
+            pass
+        
+        # textwrap usa cantidad de caracteres, no pixeles.
+        # Ajustamos por experiencia: 16–18 chars por línea
+        wrapped = textwrap.wrap(titulo, width=18)
+
+        lineas = wrapped
+
+    # -----------------------------
+    # Renderizado de líneas centrado
+    # -----------------------------
     y = 20
     for linea in lineas:
         w, h = draw.textbbox((0, 0), linea, font=font)[2:]
         x = (ANCHO - w) // 2
 
+        # Sombra suave
         for dx, dy in [(-3,0),(3,0),(0,-3),(0,3),(-3,-3),(3,-3),(-3,3),(3,3)]:
             draw.text((x+dx, y+dy), linea, font=font, fill="black")
 
+        # Texto principal
         draw.text((x, y), linea, font=font, fill="#e4d08a")
+        
         y += h + 12
 
     img.save(output)
@@ -354,7 +378,7 @@ def crear_audio(duracion, musica_fija=None):
                 inicio = random.uniform(0, max(0, dur_audio - duracion))
                 audio = audio.subclip(inicio, inicio + duracion)
 
-            return audio
+            return audio, archivo
 
         except Exception as e:
             print(f"[AUDIO ERROR] {e}")
@@ -465,7 +489,17 @@ def crear_video_oracion(path_in, path_out):
         clips.append(c)
         t += dur_b
 
-    audio = crear_audio(dur_total, mus_fija)
+    
+    audio, musica_usada = crear_audio(dur_total, mus_fija)
+
+    licencia_path = f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+
+    registrar_video_generado(
+        archivo_video=path_out,
+        tipo="oracion",
+        musica=musica_usada,
+        licencia=licencia_path
+    )
 
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
 
@@ -478,48 +512,104 @@ def crear_video_oracion(path_in, path_out):
 def crear_video_salmo(path_in, path_out):
     img_fija, mus_fija = obtener_parametros_opcionales()
 
+    # Leer contenido
     with open(path_in, "r", encoding="utf-8") as f:
         texto = f.read()
 
+    # Obtener nombre base del archivo
     base = os.path.splitext(os.path.basename(path_in))[0]
-    partes = base.split("_", 1)
-    numero = partes[0]
+    partes = base.split("_")
 
-    if len(partes) > 1:
-        nombre_raw = partes[1].replace("_", " ").strip()
-        nombre_raw = nombre_raw.lower().replace("salmo ", "").replace(" salmo", "")
-        nombre = nombre_raw.title()
-    else:
-        nombre = ""
+    # EXTRAER NÚMERO DEL SALMO CORRECTAMENTE
+    numero = next((p for p in partes if p.isdigit()), None)
 
-    titulo = f"{numero} — {nombre}"
+    if numero is None:
+        print(f"[WARN] No se encontró número en el archivo {base}, usando '?'")
+        numero = "?"
 
+    # -------------------------------------------
+    # 🔥 Construir nombre descriptivo del salmo
+    #    Quitando "salmo" y el número del archivo
+    # -------------------------------------------
+    nombre_raw = (
+        base.replace("salmo", "")
+            .replace(numero, "")
+            .replace("_", " ")
+            .strip()
+    )
+
+    # Correcciones comunes (ñ, Dios, etc.)
+    nombre_raw = (
+        nombre_raw.lower()
+            .replace("senor", "señor")
+            .replace("dios", "Dios")
+    )
+
+    # Capitalización bonita
+    nombre = nombre_raw.title()
+
+    
+    # -------------------------------
+    # 🔥 Título final con “Salmo” bien escrito
+    # -------------------------------
+    titulo = f"Salmo {numero} — {nombre}"
+
+    # Dividir en estrofas
     estrofas = [e.strip() for e in texto.split("\n\n") if e.strip()]
     estrofas = estrofas[:MAX_ESTROFAS]
 
+    # Duración total
     if MODO_TEST:
         dur_total = 2
     else:
         dur_total = len(estrofas) * SEGUNDOS_ESTROFA
 
+    # Fondo + gradiente
     fondo, grad = crear_fondo(dur_total, img_fija)
 
+    # Título como imagen
     crear_imagen_titulo(titulo, "titulo.png")
-    titulo_clip = ImageClip("titulo.png").set_duration(dur_total).set_position(("center", 120))
+    titulo_clip = (
+        ImageClip("titulo.png")
+        .set_duration(dur_total)
+        .set_position(("center", 120))
+    )
 
+    # Clips de estrofas
     clips = []
     t = 0
     for e in estrofas:
         crear_imagen_texto(e, "estrofa.png")
+
+        # Reemplazar ñ dentro del contenido si hiciera falta
+        e = (
+            e.replace("senor", "señor")
+             .replace("Senor", "Señor")
+             .replace("dios", "Dios")
+        )
+
         dur_e = 2 if MODO_TEST else SEGUNDOS_ESTROFA
         c = ImageClip("estrofa.png").set_duration(dur_e).set_position("center")
+
         if not MODO_TEST:
             c = c.fx(fadein, 0.8).set_start(t)
+
         clips.append(c)
         t += dur_e
 
-    audio = crear_audio(dur_total, mus_fija)
+    # Audio
+    audio, musica_usada = crear_audio(dur_total, mus_fija)
 
+    licencia_path = f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+
+    registrar_video_generado(
+        archivo_video=path_out,
+        tipo="salmo",
+        musica=musica_usada,
+        licencia=licencia_path
+    )
+
+    # Video final
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
 
 

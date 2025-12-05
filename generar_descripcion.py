@@ -13,11 +13,11 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # ==========================================================
 def generar_descripcion(tipo, hora_texto, archivo_texto):
     """
-    Genera una descripción ULTRA CORTA y PROFESIONAL para YouTube/Facebook.
-    Estilo viral, 2–3 líneas, sin Amén, con hashtags forzados por tipo/momento.
+    Genera descripciones profesionales, únicas, optimizadas para YouTube
+    sin repetir frases y adaptadas al tema del salmo/oración.
     """
 
-    # 1) Leer texto original SOLO para inspiración
+    # 1) Leer contenido base
     try:
         with open(archivo_texto, "r", encoding="utf-8") as f:
             contenido = f.read().strip()
@@ -33,52 +33,67 @@ def generar_descripcion(tipo, hora_texto, archivo_texto):
         contexto = "dia"
 
     # ======================================================
-    # 3) Hashtags VIRALIZADOS FORZADOS por tipo + momento
+    # 3) Hashtags MEJORADOS profesionalmente (SEO real)
     # ======================================================
-
     if tipo == "oracion" and contexto == "mañana":
-        hashtags_finales = "#oracionDelDia #fe #jesus #catolico #bendicion #espiritualidad #dios"
+        hashtags_finales = (
+            "#oracionDelDia #oraciondeLaManana #jesus #fe #catolico "
+            "#bendicion #espiritualidad #dios"
+        )
+
     elif tipo == "oracion" and contexto == "noche":
-        hashtags_finales = "#oracionDeNoche #fe #jesus #catolico #pazInterior #descanso #dios"
+        hashtags_finales = (
+            "#oracionDeNoche #descansoconDios #fe #jesus #catolico "
+            "#pazInterior #espiritualidad #dios"
+        )
+
     elif tipo == "oracion":
-        hashtags_finales = "#oracion #fe #jesus #catolico #espiritualidad #bendicion #dios"
+        hashtags_finales = (
+            "#oracion #jesus #catolico #fe #bendicion "
+            "#espiritualidad #poderDeLaOracion #dios"
+        )
+
     else:  # SALMOS
-        hashtags_finales = "#salmo #biblia #fe #jesus #catolico #espiritualidad #dios"
+        hashtags_finales = (
+            "#salmo #biblia #palabraDeDios #jesus #catolico "
+            "#espiritualidad #fe #salmododia #dios"
+        )
 
     # ======================================================
-    # 4) Prompt optimizado estilo viral
+    # 4) Nuevo prompt mejorado (mucho más profesional)
     # ======================================================
     prompt = f"""
-Genera una descripción ULTRA CORTA y profesional para un video católico de 1 minuto.
+Eres un experto en comunicación católica viral para YouTube.
 
-Reglas obligatorias:
-- Solo 2 o 3 líneas.
-- NO escribas párrafos largos.
-- NO incluyas "Amén".
-- Usa tono cálido y viral (como páginas grandes de oración).
-- NO expliques ni reescribas la oración completa.
+Necesito que generes **una descripción ULTRA CORTA y ÚNICA**, máximo 2–3 líneas,
+para un video de 1 minuto.
+
+REGLAS OBLIGATORIAS:
+- NO reescribas ni resumas el texto original.
+- NO uses frases genéricas como “Un salmo para llenar tu día de esperanza”.
+- NO repitas frases usadas anteriormente.
+- Detecta el **tema central** del texto (ej: confianza, esperanza, protección, gratitud, sabiduría, fortaleza).
+- Genera una descripción completamente **nueva y fresca** basada en ese tema.
+- Tono cálido, espiritual, emotivo y viral (estilo contenido católico grande).
 - Máximo 1 o 2 emojis.
-- NO incluyas hashtags (yo los agregaré después).
-- Solo escribe la parte del texto, NO incluyas hashtags.
+- NO incluyas hashtags.
+- NO incluyas “Amén”.
 
-Tipo: {tipo}
-Momento del día: {contexto}
+DATOS:
+- Tipo: {tipo}
+- Momento del día: {contexto}
 
-Texto base (solo inspiración, NO lo reescribas):
+TEXTO BASE (solo inspiración):
 \"\"\"{contenido}\"\"\"
 
-Ejemplos del estilo exacto que quiero:
+Ejemplos del estilo deseado:
+- "Un mensaje para renovar tu confianza en Dios 🙏✨  
+Que Su presencia te fortalezca hoy."
 
-- "Una oración para comenzar tu día con paz 🙏✨
-Que la bendición de Dios ilumine tu hogar."
+- "Una invitación a descansar en la paz del Señor 🌙✨  
+Que Él calme tu corazón en este momento."
 
-- "Una oración para descansar en Su paz 🌙🙏
-Que Dios cuide tu descanso esta noche."
-
-- "Un salmo para fortalecer tu espíritu 🙏
-Que la Palabra de Dios ilumine tu vida hoy."
-
-Genera AHORA una descripción en este estilo.
+Ahora genera **una nueva descripción única y profesional**.
 """
 
     # ======================================================
@@ -94,22 +109,17 @@ Genera AHORA una descripción en este estilo.
     except Exception as e:
         print("[IA Error - usando fallback]", e)
 
-        # Fallback según tipo + contexto
-        if tipo == "oracion" and contexto == "mañana":
-            texto_corto = "Una oración para comenzar tu día con paz 🙏✨\nQue Dios bendiga tu caminar hoy."
-        elif tipo == "oracion" and contexto == "noche":
-            texto_corto = "Una oración para descansar en la paz de Dios 🌙🙏\nQue Él cuide tu descanso esta noche."
-        elif tipo == "oracion":
-            texto_corto = "Una oración para acompañarte hoy 🙏\nQue Dios ilumine tu vida."
+        # fallback según tipo
+        if tipo == "salmo":
+            texto_corto = "Un salmo para fortalecer tu espíritu 🙏✨\nQue la Palabra de Dios ilumine tu vida."
         else:
-            texto_corto = "Un salmo para fortalecer tu espíritu 🙏✨\nQue la Palabra de Dios te guíe hoy."
+            texto_corto = "Una oración para acompañarte hoy 🙏✨\nQue Dios bendiga tu camino."
 
     # ======================================================
-    # 6) ENSAMBLAR descripción final + hashtags forzados
+    # 6) Unir descripción + hashtags
     # ======================================================
-    descripcion_final = f"{texto_corto}\n\n{hashtags_finales}"
+    return f"{texto_corto}\n\n{hashtags_finales}"
 
-    return descripcion_final
 
 
 # ==========================================================

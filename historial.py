@@ -121,3 +121,32 @@ def registrar_uso(tipo, nombre_archivo):
 
     print(f"[DEBUG] registrar_uso() completado para {tipo} → {nombre_archivo}")
     print("===================================================================\n")
+
+
+# --------------------------------------------------------
+# Registrar un video generado (pendiente de publicación)
+# --------------------------------------------------------
+def registrar_video_generado(archivo_video, tipo, musica, licencia):
+    print("===================================================================")
+    print(f"[DEBUG] registrar_video_generado() llamado desde → {quien_llamo()}")
+
+    data = cargar_historial()
+
+    entrada = {
+        "archivo": archivo_video,
+        "tipo": tipo,
+        "musica": musica,
+        "licencia": licencia,
+        "fecha_generado": datetime.now().isoformat()
+    }
+
+    data.setdefault("pendientes", [])
+    data["pendientes"].append(entrada)
+
+    print("[DEBUG] Añadiendo a 'pendientes':")
+    print(json.dumps(entrada, indent=4))
+
+    guardar_historial(data)
+
+    print("[DEBUG] registrar_video_generado() completado")
+    print("===================================================================\n")

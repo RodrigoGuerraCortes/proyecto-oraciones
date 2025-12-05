@@ -8,6 +8,7 @@ from googleapiclient.http import MediaFileUpload
 import shutil
 from openai import OpenAI
 import random
+import sys
 
 from generar_descripcion import generar_descripcion, generar_tags_from_descripcion  # Importas tu función real
 
@@ -143,7 +144,7 @@ def obtener_siguiente_video():
 # =====================================================
 # 5. LÓGICA PRINCIPAL
 # =====================================================
-def subir_siguiente_video():
+def subir_siguiente_video(privacidad="public"):
     hist = cargar_historial()
     siguiente = obtener_siguiente_video()
     if siguiente is None:
@@ -159,11 +160,28 @@ def subir_siguiente_video():
     descripcion = generar_descripcion(tipo, siguiente["publicar_en"], archivo)
     tags = generar_tags_from_descripcion(descripcion)
 
+    # ======================================================
+    # 📌 LEER LICENCIA DE LA MÚSICA Y AGREGARLA A LA DESCRIPCIÓN
+    # ======================================================
+    licencia_path = siguiente.get("licencia")
+
+    licencia_txt = ""
+    if licencia_path and os.path.exists(licencia_path):
+        with open(licencia_path, "r", encoding="utf-8") as f:
+            licencia_txt = f"\n\n{f.read().strip()}"
+    else:
+        print("[WARN] No se encontró licencia para esta música.")
+
+    # Añadir la licencia al final de la descripción
+    descripcion = descripcion + licencia_txt
+
+
     video_id = subir_video_youtube(
         archivo,
         titulo,
         descripcion,
-        tags=tags
+        tags=tags,
+        privacidad=privacidad
     )
 
     # MOVERLO A PUBLICADOS
@@ -188,4 +206,13 @@ def subir_siguiente_video():
 # EJECUCIÓN MANUAL O POR CRON
 # =====================================================
 if __name__ == "__main__":
-    subir_siguiente_video()
+
+    if "--privado" in sys.argv:
+        privacidad_forzada = "private"
+    elif "--oculto" in sys.argv:
+        privacidad_forzada = "unlisted"
+    else:
+        privacidad_forzada = "public"
+    
+    
+    subir_siguiente_video(privacidad_forzada)
