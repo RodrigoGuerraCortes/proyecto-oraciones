@@ -102,6 +102,18 @@
             "video_id": "Ygz-aXowWmo",
             "fecha_publicado": "2025-12-04T21:26:39.720924",
             "tipo": "oracion"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_ave_maria.mp4",
+            "video_id": "p_lB2v5VlAA",
+            "fecha_publicado": "2025-12-05T23:34:15.711591",
+            "tipo": "oracion"
+        },
+        {
+            "archivo": "videos/salmos/salmo_32_dichoso_aquel_que_ha_sido_perdonado.mp4",
+            "video_id": "86eacnjndgE",
+            "fecha_publicado": "2025-12-05T23:34:24.206476",
+            "tipo": "salmo"
         }
     ],
     "oraciones": [],
@@ -174,6 +186,18 @@
         {
             "nombre": "8.png",
             "fecha": "2025-12-04T21:11:26.187920"
+        },
+        {
+            "nombre": "10.png",
+            "fecha": "2025-12-05T23:07:31.758285"
+        },
+        {
+            "nombre": "17.png",
+            "fecha": "2025-12-05T23:10:50.274503"
+        },
+        {
+            "nombre": "5.png",
+            "fecha": "2025-12-05T23:22:36.923821"
         }
     ],
     "musicas": [
@@ -224,6 +248,18 @@
         {
             "nombre": "6.mp3",
             "fecha": "2025-12-04T21:11:27.099212"
+        },
+        {
+            "nombre": "1.mp3",
+            "fecha": "2025-12-05T23:07:32.601541"
+        },
+        {
+            "nombre": "3.mp3",
+            "fecha": "2025-12-05T23:10:51.518723"
+        },
+        {
+            "nombre": "2.mp3",
+            "fecha": "2025-12-05T23:10:51.535207"
         }
     ]
 }
