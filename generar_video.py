@@ -12,6 +12,7 @@ from moviepy.video.fx.fadein import fadein
 from moviepy.video.fx.fadeout import fadeout
 from historial import cargar_historial, guardar_historial, registrar_uso,registrar_video_generado
 import textwrap
+from moviepy.editor import concatenate_videoclips
 
 import json 
 
@@ -52,6 +53,9 @@ SEGUNDOS_ESTROFA = 16
 
 # Marca de agua (pon aquí tu PNG)
 WATERMARK_PATH = "marca_agua.png"  # asegúrate de tener este archivo
+
+#CTA_PATH = "cta/cta1.png"
+#CRUZ_PATH = "cta/cta_cruz.png"
 
 
 
@@ -388,16 +392,20 @@ def crear_audio(duracion, musica_fija=None):
     return AudioFileClip(os.path.join("musica", audios_disponibles[0])).subclip(0, 1)
 
 
+# --------------------------------------------
+#                 VIDEO BASE (NUEVO CTA)
+# --------------------------------------------
 
-# --------------------------------------------
-#                 VIDEO BASE
-# --------------------------------------------
+CTA_PATH = "cta/cta_unificado.png"  # ← tu nuevo CTA premium
 
 def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
 
-    capas = [fondo, grad, titulo_clip] + clips
+    # --------------------
+    # CAPAS PRINCIPALES
+    # --------------------
+    capas_principales = [fondo, grad, titulo_clip] + clips
 
-    # marca de agua
+    # Marca de agua
     if os.path.exists(WATERMARK_PATH):
         try:
             wm = ImageClip(WATERMARK_PATH).resize(width=int(ANCHO * 0.22))
@@ -408,19 +416,59 @@ def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
             pos_y = ALTO - wm.h - 2
             wm = wm.set_position((pos_x, pos_y))
 
-            capas.append(wm)
+            capas_principales.append(wm)
         except:
             pass
 
-    video = CompositeVideoClip(capas).set_audio(audio)
+    # Video principal
+    video_base = CompositeVideoClip(capas_principales).set_audio(audio)
 
-    video.write_videofile(
+    # ===========================================
+    # ⭐   BLOQUE FINAL DE CTA (5 segundos)
+    # ===========================================
+
+    DUR_FINAL = 5
+
+    fondo_final = ImageClip("fondo_tmp.jpg").set_duration(DUR_FINAL)
+    fondo_final = fondo_final.resize(lambda t: 1.04)
+
+    grad_final = ImageClip("grad_tmp.png").set_duration(DUR_FINAL)
+
+    capas_final = [fondo_final, grad_final]
+
+    # CTA UNIFICADO
+    if os.path.exists(CTA_PATH):
+        try:
+            cta = ImageClip(CTA_PATH).resize(width=int(ANCHO * 0.55))
+            cta = cta.set_duration(DUR_FINAL)
+            cta = cta.set_opacity(0.97).fx(fadein, 0.8)
+
+            # 📌 Posición perfecta: centrado 50% vertical
+            cta_x = (ANCHO - cta.w) // 2
+            cta_y = int(ALTO * 0.38)  # un poco más arriba del centro
+
+            cta = cta.set_position((cta_x, cta_y))
+
+            capas_final.append(cta)
+
+        except Exception as e:
+            print(f"[CTA ERROR] {e}")
+
+    video_cta = CompositeVideoClip(capas_final)
+
+    # ===========================================
+    # UNIR VIDEO + BLOQUE FINAL
+    # ===========================================
+    final = concatenate_videoclips([video_base, video_cta])
+
+    final.write_videofile(
         salida,
         fps=30,
         codec="libx264",
         audio_codec="aac",
         preset="medium",
     )
+
 
 
 
