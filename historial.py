@@ -126,7 +126,7 @@ def registrar_uso(tipo, nombre_archivo):
 # --------------------------------------------------------
 # Registrar un video generado (pendiente de publicación)
 # --------------------------------------------------------
-def registrar_video_generado(archivo_video, tipo, musica, licencia):
+def registrar_video_generado(archivo_video, tipo, musica, licencia, imagen, publicar_en):
     print("===================================================================")
     print(f"[DEBUG] registrar_video_generado() llamado desde → {quien_llamo()}")
 
@@ -136,7 +136,9 @@ def registrar_video_generado(archivo_video, tipo, musica, licencia):
         "archivo": archivo_video,
         "tipo": tipo,
         "musica": musica,
-        "licencia": licencia,
+        "licencia": licencia,     # 🔥 SE MANTIENE SIEMPRE
+        "imagen": imagen,         # 🔥 AÑADIDO
+        "publicar_en": publicar_en,  # 🔥 AÑADIDO
         "fecha_generado": datetime.now().isoformat()
     }
 

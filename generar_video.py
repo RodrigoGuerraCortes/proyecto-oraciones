@@ -347,22 +347,30 @@ def crear_fondo(duracion, imagen_fija=None):
 
 
 def crear_audio(duracion, musica_fija=None):
-
     audios_disponibles = os.listdir("musica")
 
+    # -----------------------------------
+    # 🎵 SI HAY MÚSICA FIJA (elegida con --musica=)
+    # -----------------------------------
     if musica_fija:
         ruta = os.path.join("musica", musica_fija)
         print(f"[AUDIO] Usando música fija: {musica_fija}")
         registrar_uso("musicas", musica_fija)
+
         audio = AudioFileClip(ruta)
 
+        # Loop si es más corta que el video
         if audio.duration < duracion:
-            print("[AUDIO] Música corta → loop")
-            return audio_loop(audio, duration=duracion)
+            print("[AUDIO] Música corta → loop automático")
+            audio = audio_loop(audio, duration=duracion)
+        else:
+            audio = audio.subclip(0, duracion)
 
-        return audio.subclip(0, duracion)
+        return audio, musica_fija   # ⭐ SIEMPRE DEVOLVER 2 VALORES
 
-    # random
+    # -----------------------------------
+    # 🎵 MÚSICA ALEATORIA
+    # -----------------------------------
     intentos = 0
     while intentos < 3:
         try:
@@ -382,14 +390,20 @@ def crear_audio(duracion, musica_fija=None):
                 inicio = random.uniform(0, max(0, dur_audio - duracion))
                 audio = audio.subclip(inicio, inicio + duracion)
 
-            return audio, archivo
+            return audio, archivo  # ⭐ DEVOLVER 2 VALORES
 
         except Exception as e:
             print(f"[AUDIO ERROR] {e}")
             intentos += 1
 
+    # -----------------------------------
+    # 🎵 FALLBACK (nunca debe suceder)
+    # -----------------------------------
+    archivo = audios_disponibles[0]
     print("[AUDIO] Fallback silencioso")
-    return AudioFileClip(os.path.join("musica", audios_disponibles[0])).subclip(0, 1)
+    audio = AudioFileClip(os.path.join("musica", archivo)).subclip(0, duracion)
+
+    return audio, archivo
 
 
 # --------------------------------------------
@@ -546,8 +560,11 @@ def crear_video_oracion(path_in, path_out):
         archivo_video=path_out,
         tipo="oracion",
         musica=musica_usada,
-        licencia=licencia_path
+        licencia=licencia_path,
+        imagen=img_fija or "aleatoria",
+        publicar_en=programar_publicacion()
     )
+
 
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
 
@@ -654,11 +671,31 @@ def crear_video_salmo(path_in, path_out):
         archivo_video=path_out,
         tipo="salmo",
         musica=musica_usada,
-        licencia=licencia_path
+        licencia=licencia_path,
+        imagen=img_fija or "aleatoria",
+        publicar_en=programar_publicacion()
     )
+
 
     # Video final
     crear_video_base(fondo, grad, titulo_clip, audio, clips, path_out)
+
+
+def programar_publicacion():
+    ahora = datetime.now()
+
+    horarios = ["10:00", "15:30", "23:10"]
+
+    for h in horarios:
+        # Convertimos solo la hora, sin fecha
+        pub_h = datetime.strptime(h, "%H:%M").time()
+
+        # Si la hora es posterior a la actual → usarla
+        if pub_h > ahora.time():
+            return h  # solo "HH:MM"
+
+    # Si ya pasaron todas las horas → devolver la primera para mañana, pero igual solo hora
+    return horarios[0]
 
 
 
@@ -704,7 +741,7 @@ def crear_videos_del_dia(cantidad, modo):
 
         print(f" Generando ({modo}) → {salida}")
 
-        if modo == "salmo":
+        if tipo == "salmo":
             crear_video_salmo(entrada, salida)
         else:
             crear_video_oracion(entrada, salida)
@@ -733,7 +770,7 @@ if __name__ == "__main__":
         print("  python3 generar_video.py solo textos/salmos/salmo_23.txt --imagen=22.png --musica=5.mp3")
         sys.exit(1)
 
-    modo = sys.argv[1].lower()
+    modo = sys.argv[1].lower() if len(sys.argv) > 2 else None
 
     # -------------------------------------------
     #         GENERAR VIDEO ÚNICO

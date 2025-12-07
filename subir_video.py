@@ -1,17 +1,15 @@
 import os
 import json
 import pickle
-from datetime import datetime
+import shutil
+import sys
+from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.http import MediaFileUpload
-import shutil
 from openai import OpenAI
-import random
-import sys
 
-from generar_descripcion import generar_descripcion, generar_tags_from_descripcion  # Importas tu función real
-
+from generar_descripcion import generar_descripcion, generar_tags_from_descripcion
 
 
 # -------- CONFIG --------
@@ -19,23 +17,43 @@ CLIENT_SECRETS_FILE = "client_secret.json"
 TOKEN_FILE = "token.pickle"
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 HISTORIAL = "historial.json"
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def mover_a_publicados(ruta):
+
+# =====================================================
+# 1. GENERAR FECHA PROGRAMADA RFC3339
+# =====================================================
+def programar_publicacion(hora_str):
+    ahora = datetime.now()
+
+    pub = datetime.strptime(f"{ahora.date()} {hora_str}", "%Y-%m-%d %H:%M")
+
+    if pub <= ahora:
+        pub = pub + timedelta(days=1)
+
+    return pub.strftime("%Y-%m-%dT%H:%M:%S-03:00")
+
+
+# =====================================================
+# 2. MOVER A CARPETA PUBLICADOS
+# =====================================================
+def mover_a_publicados(ruta, tipo):
     base = os.path.basename(ruta)
-    destino = os.path.join("videos/publicados", base)
+    destino_carpeta = os.path.join("videos", "publicados", tipo + "s")
+    os.makedirs(destino_carpeta, exist_ok=True)
+
+    destino = os.path.join(destino_carpeta, base)
 
     try:
         shutil.move(ruta, destino)
         print(f"📦 Video movido a: {destino}")
     except Exception as e:
-        print(f"[ERROR] No se pudo mover el archivo a publicados: {e}")
-
-
+        print(f"[ERROR] No se pudo mover a publicados: {e}")
 
 
 # =====================================================
-# 1. AUTENTICAR CON YOUTUBE
+# 3. AUTENTICAR CON YOUTUBE
 # =====================================================
 def obtener_servicio_youtube():
     creds = None
@@ -57,18 +75,18 @@ def obtener_servicio_youtube():
 
 
 # =====================================================
-# 2. CARGAR Y GUARDAR HISTORIAL
+# 4. CARGAR / GUARDAR HISTORIAL
 # =====================================================
 def cargar_historial():
     if not os.path.exists(HISTORIAL):
         return {"pendientes": [], "publicados": []}
 
     with open(HISTORIAL, "r") as f:
-        content = f.read().strip()
-        if not content:
+        contenido = f.read().strip()
+        if not contenido:
             return {"pendientes": [], "publicados": []}
 
-        data = json.loads(content)
+        data = json.loads(contenido)
         data.setdefault("pendientes", [])
         data.setdefault("publicados", [])
         return data
@@ -80,28 +98,36 @@ def guardar_historial(data):
 
 
 # =====================================================
-# 3. SUBIR VIDEO A YOUTUBE
+# 5. SUBIR VIDEO (CON SOPORTE PROGRAMADO / PRIVADO / OCULTO)
 # =====================================================
-def subir_video_youtube(ruta_video, titulo, descripcion, tags=None, privacidad="public"):
+def subir_video_youtube(ruta_video, titulo, descripcion, tags, privacidad, publish_at):
     youtube = obtener_servicio_youtube()
+
+    # ⭐ Lógica correcta según documentación oficial de YouTube API
+    if publish_at:
+        status_body = {
+            "privacyStatus": "private",   # obligatorio para programar
+            "publishAt": publish_at
+        }
+        print(f"⏰ Programando para: {publish_at}")
+    else:
+        status_body = {
+            "privacyStatus": privacidad
+        }
 
     request_body = {
         "snippet": {
             "title": titulo,
             "description": descripcion,
-            "tags": tags or [
-                "oracion diaria", "reflexion", "catolico",
-                "biblia", "espiritualidad", "jesus",
-                "dios", "evangelio", "minuto de oración"
-            ],
-            "categoryId": "22"  # People & Blogs
+            "tags": tags,
+            "categoryId": "22"
         },
-        "status": {
-            "privacyStatus": privacidad
-        }
+        "status": status_body
     }
 
     media = MediaFileUpload(ruta_video, chunksize=1024*1024, resumable=True)
+
+    print(f"\n📤 Subiendo video...")
 
     request = youtube.videos().insert(
         part="snippet,status",
@@ -109,101 +135,100 @@ def subir_video_youtube(ruta_video, titulo, descripcion, tags=None, privacidad="
         media_body=media
     )
 
-    print(f"\n📤 Subiendo video: {ruta_video}\n")
-
     response = None
     while response is None:
         status, response = request.next_chunk()
         if status:
             print(f"Progreso: {int(status.progress() * 100)}%")
 
-    print("\n🎉 VIDEO SUBIDO CON ÉXITO")
-    print("➡ ID:", response.get("id"))
-
+    print("\n🎉 Video subido correctamente")
     return response.get("id")
 
 
 # =====================================================
-# 4. SELECCIONAR EL SIGUIENTE VIDEO A SUBIR
+# 6. OBTENER SIGUIENTE VIDEO A PUBLICAR
 # =====================================================
 def obtener_siguiente_video():
     hist = cargar_historial()
 
     if not hist["pendientes"]:
-        print("\n✔ No hay videos pendientes para subir.")
+        print("\n✔ No hay videos pendientes.")
         return None
 
-    # ORDENAR POR HORA (05:00 → 12:00 → 19:00)
-    ordenar_por_hora = lambda x: int(x["publicar_en"].replace(":", ""))
-    hist["pendientes"].sort(key=ordenar_por_hora)
+    def ordenar(x):
+        hora = x["publicar_en"]
 
-    siguiente = hist["pendientes"][0]
-    return siguiente
+        # Caso 1: formato simple "HH:MM"
+        if len(hora) == 5 and hora[2] == ":":
+            # Orden por hora del día
+            return int(hora.replace(":", ""))
+
+        # Caso 2: formato RFC3339 → convertir a datetime
+        try:
+            dt = datetime.strptime(hora, "%Y-%m-%dT%H:%M:%S-03:00")
+            return dt.timestamp()
+        except Exception:
+            # fallback muy robusto
+            return float("inf")
+
+    hist["pendientes"].sort(key=ordenar)
+
+    return hist["pendientes"][0]
 
 
 # =====================================================
-# 5. LÓGICA PRINCIPAL
+# 7. LÓGICA PRINCIPAL
 # =====================================================
 def subir_siguiente_video(privacidad="public"):
     hist = cargar_historial()
     siguiente = obtener_siguiente_video()
+
     if siguiente is None:
         return
 
     archivo = siguiente["archivo"]
     tipo = siguiente["tipo"]
-    base = os.path.splitext(os.path.basename(archivo))[0]
 
-    # Título profesional
-    titulo = f"{base.replace('_', ' ').title()} — 1 minuto 🙏✨"
+    titulo_base = os.path.splitext(os.path.basename(archivo))[0]
+    titulo = f"{titulo_base.replace('_', ' ').title()} — 1 minuto 🙏✨"
 
     descripcion = generar_descripcion(tipo, siguiente["publicar_en"], archivo)
     tags = generar_tags_from_descripcion(descripcion)
 
-    # ======================================================
-    # 📌 LEER LICENCIA DE LA MÚSICA Y AGREGARLA A LA DESCRIPCIÓN
-    # ======================================================
-    licencia_path = siguiente.get("licencia")
+    publish_at = siguiente["publicar_en"]
 
-    licencia_txt = ""
-    if licencia_path and os.path.exists(licencia_path):
-        with open(licencia_path, "r", encoding="utf-8") as f:
-            licencia_txt = f"\n\n{f.read().strip()}"
-    else:
-        print("[WARN] No se encontró licencia para esta música.")
-
-    # Añadir la licencia al final de la descripción
-    descripcion = descripcion + licencia_txt
-
-
+    # Si hay publish_at → forzar modo scheduled
+    modo_privacidad = privacidad
+    
     video_id = subir_video_youtube(
         archivo,
         titulo,
         descripcion,
-        tags=tags,
-        privacidad=privacidad
+        tags,
+        privacidad=modo_privacidad,
+        publish_at=publish_at
     )
 
-    # MOVERLO A PUBLICADOS
-    hist["publicados"].append({
-        "archivo": archivo,
+    hist_real = cargar_historial()
+
+    hist_real["publicados"].append({
+        **siguiente,
         "video_id": video_id,
-        "fecha_publicado": datetime.now().isoformat(),
-        "tipo": tipo
+        "fecha_publicado": datetime.now().isoformat()
     })
 
-    # ELIMINAR DE PENDIENTES
-    hist["pendientes"] = hist["pendientes"][1:]
+    hist_real["pendientes"] = [
+        p for p in hist_real["pendientes"] if p["archivo"] != archivo
+    ]
 
-    guardar_historial(hist)
+    guardar_historial(hist_real)
+    mover_a_publicados(archivo, tipo)
 
-    mover_a_publicados(archivo)
-
-    print("\n✔ Historial actualizado correctamente.\n")
+    print("\n✔ Video procesado con éxito.\n")
 
 
 # =====================================================
-# EJECUCIÓN MANUAL O POR CRON
+# 8. EJECUCIÓN MANUAL
 # =====================================================
 if __name__ == "__main__":
 
@@ -211,8 +236,9 @@ if __name__ == "__main__":
         privacidad_forzada = "private"
     elif "--oculto" in sys.argv:
         privacidad_forzada = "unlisted"
+    elif "--publico" in sys.argv:
+        privacidad_forzada = "public"
     else:
         privacidad_forzada = "public"
-    
-    
+
     subir_siguiente_video(privacidad_forzada)

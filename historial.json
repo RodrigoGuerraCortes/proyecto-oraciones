@@ -1,11 +1,9 @@
 {
-    "pendientes": [
-    ],
+    "pendientes": [],
     "publicados": [
         {
             "archivo": "videos/oraciones/acto_de_caridad.mp4",
             "video_id": "KU_kAU8c-IQ",
-            
             "fecha_publicado": "2025-11-30T12:56:43.634897",
             "tipo": "oracion"
         },
@@ -116,6 +114,45 @@
             "video_id": "86eacnjndgE",
             "fecha_publicado": "2025-12-05T23:34:24.206476",
             "tipo": "salmo"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_de_san_francisco_javier.mp4",
+            "video_id": "MYAZUJ6CReE",
+            "fecha_publicado": "2025-12-06T23:08:37.514085",
+            "tipo": "oracion"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_del_enfermo.mp4",
+            "tipo": "oracion",
+            "musica": "9.mp3",
+            "licencia": "musica/licence/licence_9.txt",
+            "imagen": "aleatoria",
+            "publicar_en": "2025-12-07T11:00:00-03:00",
+            "fecha_generado": "2025-12-07T00:02:28.984657",
+            "video_id": "v_g0DKulQTE",
+            "fecha_publicado": "2025-12-07T00:48:21.804317"
+        },
+        {
+            "archivo": "videos/salmos/salmo_130_desde_lo_hondo_a_ti_grito_senor.mp4",
+            "tipo": "salmo",
+            "musica": "2.mp3",
+            "licencia": "musica/licence/licence_2.txt",
+            "imagen": "aleatoria",
+            "publicar_en": "2025-12-07T15:30:00-03:00",
+            "fecha_generado": "2025-12-07T00:06:03.569385",
+            "video_id": "dfa2mikB3Lg",
+            "fecha_publicado": "2025-12-07T00:51:15.868107"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_de_la_noche.mp4",
+            "tipo": "oracion",
+            "musica": "silent-prayer-instrumental-212811.mp3",
+            "licencia": "musica/licence/licence_silent-prayer-instrumental-212811.txt",
+            "imagen": "17.png",
+            "publicar_en": "2025-12-07T23:10:00-03:00",
+            "fecha_generado": "2025-12-07T00:14:07.118909",
+            "video_id": "QJejT839j-E",
+            "fecha_publicado": "2025-12-07T00:51:52.925612"
         }
     ],
     "oraciones": [],
@@ -200,6 +237,22 @@
         {
             "nombre": "5.png",
             "fecha": "2025-12-05T23:22:36.923821"
+        },
+        {
+            "nombre": "18.png",
+            "fecha": "2025-12-06T22:55:35.143979"
+        },
+        {
+            "nombre": "19.png",
+            "fecha": "2025-12-07T00:02:28.266735"
+        },
+        {
+            "nombre": "25.png",
+            "fecha": "2025-12-07T00:06:02.171264"
+        },
+        {
+            "nombre": "17.png",
+            "fecha": "2025-12-07T00:14:06.441208"
         }
     ],
     "musicas": [
@@ -262,6 +315,26 @@
         {
             "nombre": "2.mp3",
             "fecha": "2025-12-05T23:10:51.535207"
+        },
+        {
+            "nombre": "2.mp3",
+            "fecha": "2025-12-06T22:55:35.677144"
+        },
+        {
+            "nombre": "8.mp3",
+            "fecha": "2025-12-06T22:55:58.403982"
+        },
+        {
+            "nombre": "9.mp3",
+            "fecha": "2025-12-07T00:02:28.957752"
+        },
+        {
+            "nombre": "2.mp3",
+            "fecha": "2025-12-07T00:06:03.544525"
+        },
+        {
+            "nombre": "silent-prayer-instrumental-212811.mp3",
+            "fecha": "2025-12-07T00:14:07.089767"
         }
     ]
 }

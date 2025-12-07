@@ -25,9 +25,9 @@ def generar_descripcion(tipo, hora_texto, archivo_texto):
         contenido = ""
 
     # 2) Detectar momento del día
-    if hora_texto == "05:00":
+    if hora_texto == "10:00":
         contexto = "mañana"
-    elif hora_texto == "19:00":
+    elif hora_texto == "23:10":
         contexto = "noche"
     else:
         contexto = "dia"
