@@ -153,6 +153,17 @@
             "fecha_generado": "2025-12-07T00:14:07.118909",
             "video_id": "QJejT839j-E",
             "fecha_publicado": "2025-12-07T00:51:52.925612"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_la_familia.mp4",
+            "tipo": "oracion",
+            "musica": "8.mp3",
+            "licencia": "musica/licence/licence_8.txt",
+            "imagen": "aleatoria",
+            "publicar_en": "2025-12-08T11:00:00-03:00",
+            "fecha_generado": "2025-12-08T01:57:12.776896",
+            "video_id": "VoZ9uumBn3g",
+            "fecha_publicado": "2025-12-08T02:18:59.972540"
         }
     ],
     "oraciones": [],
@@ -253,6 +264,18 @@
         {
             "nombre": "17.png",
             "fecha": "2025-12-07T00:14:06.441208"
+        },
+        {
+            "nombre": "31.png",
+            "fecha": "2025-12-08T01:57:12.129954"
+        },
+        {
+            "nombre": "angel",
+            "fecha": "2025-12-08T02:00:05.763493"
+        },
+        {
+            "nombre": "23.png",
+            "fecha": "2025-12-08T02:11:24.355158"
         }
     ],
     "musicas": [
@@ -335,6 +358,18 @@
         {
             "nombre": "silent-prayer-instrumental-212811.mp3",
             "fecha": "2025-12-07T00:14:07.089767"
+        },
+        {
+            "nombre": "8.mp3",
+            "fecha": "2025-12-08T01:57:12.719507"
+        },
+        {
+            "nombre": "1.mp3",
+            "fecha": "2025-12-08T02:00:07.953001"
+        },
+        {
+            "nombre": "amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.mp3",
+            "fecha": "2025-12-08T02:11:25.316184"
         }
     ]
 }
