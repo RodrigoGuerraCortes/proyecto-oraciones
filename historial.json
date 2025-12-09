@@ -164,6 +164,50 @@
             "fecha_generado": "2025-12-08T01:57:12.776896",
             "video_id": "VoZ9uumBn3g",
             "fecha_publicado": "2025-12-08T02:18:59.972540"
+        },
+        {
+            "archivo": "videos/salmos/salmo_18_el_senor_mi_fortaleza.mp4",
+            "tipo": "salmo",
+            "musica": "cinematic-chillhop-main-6676.mp3",
+            "licencia": "musica/licence/licence_cinematic-chillhop-main-6676.txt",
+            "imagen": "aleatoria",
+            "publicar_en": "2025-12-08T15:30:00-03:00",
+            "fecha_generado": "2025-12-08T15:15:04.778729",
+            "video_id": "EtZ-vM5mp3s",
+            "fecha_publicado": "2025-12-08T15:30:48.984779"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_dulce_madre.mp4",
+            "tipo": "oracion",
+            "musica": "ave-maria-417992.mp3",
+            "licencia": "musica/licence/licence_ave-maria-417992.txt",
+            "imagen": "1.png",
+            "publicar_en": "2025-12-08T23:10:00-03:00",
+            "fecha_generado": "2025-12-08T22:37:46.373975",
+            "video_id": "3PRePBwBXJ4",
+            "fecha_publicado": "2025-12-08T22:43:20.163899"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_la_familia_breve.mp4",
+            "tipo": "oracion",
+            "musica": "8.mp3",
+            "licencia": "musica/licence/licence_8.txt",
+            "imagen": "aleatoria",
+            "publicar_en": "2025-12-09T11:00:00-03:00",
+            "fecha_generado": "2025-12-08T23:03:55.973332",
+            "video_id": "jVJnb_ywRwY",
+            "fecha_publicado": "2025-12-08T23:24:21.005369"
+        },
+        {
+            "archivo": "videos/salmos/salmo_139_tu_me_conoces_senor.mp4",
+            "tipo": "salmo",
+            "imagen": "aleatoria",
+            "musica": "10.mp3",
+            "licencia": "musica/licence/licence_10.txt",
+            "publicar_en": "2025-12-09T15:30:00-03:00",
+            "fecha_generado": "2025-12-08T23:13:49.006149",
+            "video_id": "n7OaODX1I0w",
+            "fecha_publicado": "2025-12-08T23:24:33.137356"
         }
     ],
     "oraciones": [],
@@ -276,6 +320,38 @@
         {
             "nombre": "23.png",
             "fecha": "2025-12-08T02:11:24.355158"
+        },
+        {
+            "nombre": "6.png",
+            "fecha": "2025-12-08T14:59:29.791260"
+        },
+        {
+            "nombre": "7.png",
+            "fecha": "2025-12-08T15:01:25.386502"
+        },
+        {
+            "nombre": "10.png",
+            "fecha": "2025-12-08T15:15:03.423054"
+        },
+        {
+            "nombre": "1.png",
+            "fecha": "2025-12-08T22:19:18.418607"
+        },
+        {
+            "nombre": "1.png",
+            "fecha": "2025-12-08T22:37:45.594422"
+        },
+        {
+            "nombre": "12.png",
+            "fecha": "2025-12-08T23:03:55.292979"
+        },
+        {
+            "nombre": "26.png",
+            "fecha": "2025-12-08T23:07:05.397187"
+        },
+        {
+            "nombre": "1.png",
+            "fecha": "2025-12-08T23:13:50.327403"
         }
     ],
     "musicas": [
@@ -370,6 +446,34 @@
         {
             "nombre": "amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.mp3",
             "fecha": "2025-12-08T02:11:25.316184"
+        },
+        {
+            "nombre": "4-copyrighted-music-126058.mp3",
+            "fecha": "2025-12-08T15:01:26.722674"
+        },
+        {
+            "nombre": "cinematic-chillhop-main-6676.mp3",
+            "fecha": "2025-12-08T15:15:04.751425"
+        },
+        {
+            "nombre": "ave-maria-417992.mp3",
+            "fecha": "2025-12-08T22:19:19.091007"
+        },
+        {
+            "nombre": "ave-maria-417992.mp3",
+            "fecha": "2025-12-08T22:37:46.324246"
+        },
+        {
+            "nombre": "8.mp3",
+            "fecha": "2025-12-08T23:03:55.935629"
+        },
+        {
+            "nombre": "10.mp3",
+            "fecha": "2025-12-08T23:07:06.359491"
+        },
+        {
+            "nombre": "6.mp3",
+            "fecha": "2025-12-08T23:13:51.003001"
         }
     ]
 }

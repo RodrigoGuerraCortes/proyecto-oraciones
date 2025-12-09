@@ -16,9 +16,15 @@ from moviepy.editor import concatenate_videoclips
 
 import json 
 
+# FIX para compatibilidad con Pillow 10+
+from PIL import Image
+
+if not hasattr(Image, "ANTIALIAS"):
+    Image.ANTIALIAS = Image.Resampling.LANCZOS
+
 
 MODO_TEST = False
-
+CTA_DUR = 5
 
 # --------------------------------------------
 # 📌 PARÁMETROS OPCIONALES --imagen= --musica=
@@ -331,7 +337,17 @@ def crear_fondo(duracion, imagen_fija=None):
     pil.save("fondo_tmp.jpg")
 
     fondo = ImageClip("fondo_tmp.jpg").set_duration(duracion)
-    fondo = fondo.resize(lambda t: 1.04 - 0.03 * (t / duracion))
+
+    def zoom_safe(t):
+        factor = 1.04 - 0.03 * (t / duracion)
+        if factor < 1.0:
+            factor = 1.0
+        if factor > 1.04:
+            factor = 1.04
+        return factor
+
+    fondo = fondo.resize(zoom_safe) 
+    #fondo = fondo.resize(lambda t: 1.04 - 0.03 * (t / duracion))
 
     grad = Image.new("RGBA", (ANCHO, ALTO))
     d = ImageDraw.Draw(grad)
@@ -410,7 +426,8 @@ def crear_audio(duracion, musica_fija=None):
 #                 VIDEO BASE (NUEVO CTA)
 # --------------------------------------------
 
-CTA_PATH = "cta/cta_unificado.png"  # ← tu nuevo CTA premium
+#CTA_PATH = "cta/cta_unificado.png" 
+CTA_PATH = "cta/cta_final.png"
 
 def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
 
@@ -450,7 +467,7 @@ def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
 
     capas_final = [fondo_final, grad_final]
 
-    # CTA UNIFICADO
+    # CTA FINAL
     if os.path.exists(CTA_PATH):
         try:
             cta = ImageClip(CTA_PATH).resize(width=int(ANCHO * 0.55))
@@ -459,7 +476,7 @@ def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
 
             # 📌 Posición perfecta: centrado 50% vertical
             cta_x = (ANCHO - cta.w) // 2
-            cta_y = int(ALTO * 0.38)  # un poco más arriba del centro
+            cta_y = int(ALTO * 0.35)  # un poco más arriba del centro
 
             cta = cta.set_position((cta_x, cta_y))
 
@@ -538,7 +555,7 @@ def crear_video_oracion(path_in, path_out):
     fondo, grad = crear_fondo(dur_total, img_fija)
 
     crear_imagen_titulo(titulo, "titulo.png")
-    titulo_clip = ImageClip("titulo.png").set_duration(dur_total).set_position(("center", 120))
+    titulo_clip = ImageClip("titulo.png").set_duration(dur_total).set_position(("center", 120)).set_opacity(1)
 
     clips = []
     t = 0
@@ -551,8 +568,8 @@ def crear_video_oracion(path_in, path_out):
         clips.append(c)
         t += dur_b
 
-    
-    audio, musica_usada = crear_audio(dur_total, mus_fija)
+    audio_duracion = dur_total + CTA_DUR
+    audio, musica_usada = crear_audio(audio_duracion, mus_fija)
 
     licencia_path = f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
 
@@ -638,6 +655,7 @@ def crear_video_salmo(path_in, path_out):
         ImageClip("titulo.png")
         .set_duration(dur_total)
         .set_position(("center", 120))
+        .set_opacity(1)
     )
 
     # Clips de estrofas
@@ -654,7 +672,7 @@ def crear_video_salmo(path_in, path_out):
         )
 
         dur_e = 2 if MODO_TEST else SEGUNDOS_ESTROFA
-        c = ImageClip("estrofa.png").set_duration(dur_e).set_position("center")
+        c = ImageClip("estrofa.png").set_duration(dur_e).set_position("center").set_opacity(1)
 
         if not MODO_TEST:
             c = c.fx(fadein, 0.8).set_start(t)
@@ -663,7 +681,8 @@ def crear_video_salmo(path_in, path_out):
         t += dur_e
 
     # Audio
-    audio, musica_usada = crear_audio(dur_total, mus_fija)
+    audio_duracion = dur_total + CTA_DUR
+    audio, musica_usada = crear_audio(audio_duracion, mus_fija)
 
     licencia_path = f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
 
