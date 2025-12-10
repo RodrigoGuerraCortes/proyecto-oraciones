@@ -13,6 +13,7 @@ from moviepy.video.fx.fadeout import fadeout
 from historial import cargar_historial, guardar_historial, registrar_uso,registrar_video_generado
 import textwrap
 from moviepy.editor import concatenate_videoclips
+import hashlib
 
 import json 
 
@@ -23,8 +24,6 @@ if not hasattr(Image, "ANTIALIAS"):
     Image.ANTIALIAS = Image.Resampling.LANCZOS
 
 
-MODO_TEST = False
-CTA_DUR = 5
 
 # --------------------------------------------
 # 📌 PARÁMETROS OPCIONALES --imagen= --musica=
@@ -60,10 +59,21 @@ SEGUNDOS_ESTROFA = 16
 # Marca de agua (pon aquí tu PNG)
 WATERMARK_PATH = "marca_agua.png"  # asegúrate de tener este archivo
 
-#CTA_PATH = "cta/cta1.png"
-#CRUZ_PATH = "cta/cta_cruz.png"
+MODO_TEST = False
+CTA_DUR = 5
 
+# Guardará la imagen REAL usada por crear_fondo()
+ultima_imagen_usada = None
 
+CTA_PATH = "cta/cta_final.png"
+
+def generar_tag_unico(archivo_video, texto_base, imagen, musica, fecha_gen, tipo):
+    """
+    Genera un hash único basado en toda la metadata importante del video.
+    """
+    data = f"{archivo_video}|{texto_base}|{imagen}|{musica}|{fecha_gen}|{tipo}"
+    h = hashlib.sha256(data.encode()).hexdigest()
+    return h[:12]
 
 
 # --------------------------------------------
@@ -300,6 +310,7 @@ def calcular_duracion_bloque(lineas):
 #             FONDO + AUDIO
 # --------------------------------------------
 
+
 def crear_fondo(duracion, imagen_fija=None):
     print("\n============================")
     print(" [FONDO] Generando fondo…")
@@ -307,16 +318,21 @@ def crear_fondo(duracion, imagen_fija=None):
 
     imagenes = os.listdir("imagenes")
     imagenes = [i for i in imagenes if i.lower() != "vignette.png"]
+    
+    global ultima_imagen_usada
+
 
     if imagen_fija:
-        print(f"[FONDO] Usando imagen fija: {imagen_fija}")
+        ultima_imagen_usada = imagen_fija
         registrar_uso("imagenes", imagen_fija)
         ruta = os.path.join("imagenes", imagen_fija)
+        print(f"[FONDO] Usando imagen fija: {imagen_fija}")
     else:
         elegida = random.choice(imagenes)
+        ultima_imagen_usada = elegida
         registrar_uso("imagenes", elegida)
         ruta = os.path.join("imagenes", elegida)
-        print(f"[FONDO] Imagen seleccionada: {ruta}")
+        print(f"[FONDO] Imagen seleccionada: {elegida}")
 
     try:
         pil = Image.open(ruta)
@@ -425,9 +441,6 @@ def crear_audio(duracion, musica_fija=None):
 # --------------------------------------------
 #                 VIDEO BASE (NUEVO CTA)
 # --------------------------------------------
-
-#CTA_PATH = "cta/cta_unificado.png" 
-CTA_PATH = "cta/cta_final.png"
 
 def crear_video_base(fondo, grad, titulo_clip, audio, clips, salida):
 
@@ -578,7 +591,7 @@ def crear_video_oracion(path_in, path_out):
         tipo="oracion",
         musica=musica_usada,
         licencia=licencia_path,
-        imagen=img_fija or "aleatoria",
+        imagen=ultima_imagen_usada,
         publicar_en=programar_publicacion()
     )
 
@@ -691,7 +704,7 @@ def crear_video_salmo(path_in, path_out):
         tipo="salmo",
         musica=musica_usada,
         licencia=licencia_path,
-        imagen=img_fija or "aleatoria",
+        imagen=ultima_imagen_usada,
         publicar_en=programar_publicacion()
     )
 

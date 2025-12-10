@@ -40,22 +40,33 @@ def ultimo_archivo_generado(carpeta):
 # --------------------------------------------------------------------
 def extraer_metadata_video(ruta):
     """
-    Busca en historial la entrada que coincide con el archivo generado.
-    Así obtenemos imagen, música y licencia REAL.
+    Obtiene la metadata REAL del video generado:
+    - imagen usada
+    - musica usada
+    - licencia
     """
+
     historial = cargar_historial()
 
+    # 1️⃣ PRIORIDAD: Buscar en "pendientes" (guardado por generar_video.py)
     for p in historial.get("pendientes", []):
-        if p["archivo"] == ruta:
+        if p.get("archivo") == ruta:
             return {
-                "imagen": p.get("imagen", "aleatoria"),
-                "musica": p.get("musica", None),
-                "licencia": p.get("licencia", None)
+                "imagen": p.get("imagen"),
+                "musica": p.get("musica"),
+                "licencia": p.get("licencia")
             }
 
+    # 2️⃣ SI NO ESTÁ: Intentar recuperar por historial de recursos usados
+    # Última imagen usada
+    img = historial["imagenes"][-1]["nombre"] if historial.get("imagenes") else None
+    # Última música usada
+    mus = historial["musicas"][-1]["nombre"] if historial.get("musicas") else None
+
+    # 3️⃣ SI TODO FALLA: Registrar como desconocido (pero ya no usaremos "aleatoria")
     return {
-        "imagen": "aleatoria",
-        "musica": None,
+        "imagen": img,
+        "musica": mus,
         "licencia": None
     }
 
