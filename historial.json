@@ -9,7 +9,29 @@
             "publicar_en": "2025-12-11T23:10:00-03:00",
             "fecha_generado": "2025-12-11T09:05:52.136566",
             "tag": "df5c2776af40c392",
-            "tag_legacy": "e0ecd074a5cb"
+            "tag_legacy": "e0ecd074a5cb",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "ME__SaIrwb4",
+                    "fecha_publicado": "2025-12-11T13:54:58.848069"
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
         },
         {
             "archivo": "videos/oraciones/oracion_por_los_ninos.mp4",
