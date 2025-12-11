@@ -2,6 +2,7 @@ import json
 import os
 import traceback
 from datetime import datetime
+import hashlib
 
 HISTORIAL = "historial.json"
 
@@ -9,13 +10,27 @@ HISTORIAL = "historial.json"
 ESTRUCTURA_HISTORIAL = {
     "pendientes": [],
     "publicados": [],
-    "oraciones": [],
-    "salmos": [],
-    "imagenes": [],
-    "musicas": []
+    "textos_usados": {
+        "textos/oraciones": [],
+        "textos/salmos": []
+    }
 }
 
 print("\n[DEBUG] historial.py cargado correctamente\n")
+
+
+def tag_ya_existe(tag):
+    hist = cargar_historial()
+    usados = set()
+
+    for pub in hist.get("publicados", []):
+        usados.add(pub.get("tag"))
+
+    for pen in hist.get("pendientes", []):
+        usados.add(pen.get("tag"))
+
+    return tag in usados
+
 
 # --------------------------------------------------------
 # Utilidad para detectar QUIÉN llamó a la función
@@ -36,7 +51,6 @@ def cargar_historial():
 
     if not os.path.exists(HISTORIAL):
         print("[DEBUG] historial.json NO existe, devolviendo estructura base")
-        print(f"[DEBUG] BASE: {json.dumps(ESTRUCTURA_HISTORIAL, indent=4)}")
         print("===================================================================\n")
         return ESTRUCTURA_HISTORIAL.copy()
 
@@ -52,10 +66,33 @@ def cargar_historial():
         data = json.loads(contenido)
 
         # asegurar todas las claves
+        # asegurar todas las claves
         for clave, valor in ESTRUCTURA_HISTORIAL.items():
-            data.setdefault(clave, valor.copy())
+            data.setdefault(clave, valor.copy() if isinstance(valor, list) else valor.copy())
 
-        print("[DEBUG] cargar_historial() → contenido actual:")
+        # ------------------------------------------------------
+        # 🔥 Parche: asegurar que textos_usados existe siempre
+        # ------------------------------------------------------
+        if "textos_usados" not in data:
+            data["textos_usados"] = {
+                "textos/oraciones": [],
+                "textos/salmos": []
+            }
+
+        if "textos/oraciones" not in data["textos_usados"]:
+            data["textos_usados"]["textos/oraciones"] = []
+
+        if "textos/salmos" not in data["textos_usados"]:
+            data["textos_usados"]["textos/salmos"] = []
+
+            
+        # 🔁 Compatibilidad hacia atrás:
+        # si un publicado tiene "tag" pero no "tag_legacy", lo copiamos
+        for pub in data.get("publicados", []):
+            if "tag" in pub and "tag_legacy" not in pub:
+                pub["tag_legacy"] = pub["tag"]
+
+        print("[DEBUG] cargar_historial() → contenido actual (normalizado):")
         print(json.dumps(data, indent=4))
         print("===================================================================\n")
         return data
@@ -75,12 +112,6 @@ def guardar_historial(data):
     print(f"[DEBUG] guardar_historial() llamado desde → {quien_llamo()}")
     print("[DEBUG] Datos a guardar:")
 
-    # Detectar si está borrando listas importantes
-    if len(data.get("imagenes", [])) == 0:
-        print("⚠⚠⚠ [WARNING] Se está guardando IMAGENES = []")
-    if len(data.get("musicas", [])) == 0:
-        print("⚠⚠⚠ [WARNING] Se está guardando MUSICAS = []")
-
     print(json.dumps(data, indent=4))
 
     # asegurar consistencia
@@ -98,57 +129,63 @@ def guardar_historial(data):
     print("===================================================================\n")
 
 
-# --------------------------------------------------------
-# Registrar uso (imagen, música, etc.)
-# --------------------------------------------------------
-def registrar_uso(tipo, nombre_archivo):
-    print("===================================================================")
-    print(f"[DEBUG] registrar_uso('{tipo}', '{nombre_archivo}') llamado desde → {quien_llamo()}")
-
-    data = cargar_historial()
-    hoy = datetime.now().isoformat()
-
-    data.setdefault(tipo, [])
-    data[tipo].append({
-        "nombre": nombre_archivo,
-        "fecha": hoy
-    })
-
-    print(f"[DEBUG] historial antes de guardar (tras registrar {tipo}):")
-    print(json.dumps(data, indent=4))
-
-    guardar_historial(data)
-
-    print(f"[DEBUG] registrar_uso() completado para {tipo} → {nombre_archivo}")
-    print("===================================================================\n")
 
 
 # --------------------------------------------------------
 # Registrar un video generado (pendiente de publicación)
 # --------------------------------------------------------
-def registrar_video_generado(archivo_video, tipo, musica, licencia, imagen, publicar_en):
+def registrar_video_generado(
+    archivo_video,
+    tipo,
+    musica,
+    licencia,
+    imagen,
+    publicar_en,
+    tag=None,
+    tag_legacy=None
+):
+    """
+    Registra un video en la cola de 'pendientes'.
+
+    - tag:        nuevo TAG "inteligente" (tipo + contenido + imagen + música)
+    - tag_legacy: TAG antiguo (nombre_archivo + imagen + música) para compatibilidad
+    """
+
     print("===================================================================")
-    print(f"[DEBUG] registrar_video_generado() llamado desde → {quien_llamo()}")
+    print(f"[DEBUG] registrar_video_generado() llamado")
 
     data = cargar_historial()
+
+    # Nombre base del archivo (sin extensión)
+    texto_base = os.path.splitext(os.path.basename(archivo_video))[0]
+
+    # TAG legacy (esquema antiguo) si no viene definido
+    if tag_legacy is None:
+        base_tag_legacy = f"{texto_base}|{imagen}|{musica}"
+        tag_legacy = hashlib.sha256(base_tag_legacy.encode()).hexdigest()[:12]
+
+    # Si no se pasó TAG nuevo, por compatibilidad usamos el legacy
+    if tag is None:
+        tag = tag_legacy
 
     entrada = {
         "archivo": archivo_video,
         "tipo": tipo,
         "musica": musica,
-        "licencia": licencia,     # 🔥 SE MANTIENE SIEMPRE
-        "imagen": imagen,         # 🔥 AÑADIDO
-        "publicar_en": publicar_en,  # 🔥 AÑADIDO
-        "fecha_generado": datetime.now().isoformat()
+        "licencia": licencia,
+        "imagen": imagen,
+        "publicar_en": publicar_en,
+        "fecha_generado": datetime.now().isoformat(),
+        "tag": tag,
+        "tag_legacy": tag_legacy
     }
 
     data.setdefault("pendientes", [])
     data["pendientes"].append(entrada)
 
-    print("[DEBUG] Añadiendo a 'pendientes':")
-    print(json.dumps(entrada, indent=4))
-
     guardar_historial(data)
 
-    print("[DEBUG] registrar_video_generado() completado")
+    print(f"[DEBUG] registrar_video_generado() completado")
+    print(f"[DEBUG] TAG nuevo:    {tag}")
+    print(f"[DEBUG] TAG legacy:  {tag_legacy}")
     print("===================================================================\n")

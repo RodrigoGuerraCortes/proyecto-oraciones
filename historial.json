@@ -1,5 +1,16 @@
 {
     "pendientes": [
+        {
+            "archivo": "videos/oraciones/oracion_por_los_matrimonios_en_dificultad.mp4",
+            "tipo": "oracion",
+            "musica": "cinematic-chillhop-main-6676.mp3",
+            "licencia": "musica/licence/licence_cinematic-chillhop-main-6676.txt",
+            "imagen": "16.png",
+            "publicar_en": "2025-12-11T23:10:00-03:00",
+            "fecha_generado": "2025-12-11T09:05:52.136566",
+            "tag": "df5c2776af40c392",
+            "tag_legacy": "e0ecd074a5cb"
+        }
     ],
     "publicados": [
         {
@@ -10,8 +21,8 @@
             "fecha_generado": "2025-11-30T12:56:43.634897",
             "imagen": "30.png",
             "musica": "1.mp3",
-            "tag": "bfb6425960c5",
-            "tag_legacy": "bfb6425960c5"
+            "tag": "26f78555763af957",
+            "tag_legacy": "26f78555763af957"
         },
         {
             "archivo": "videos/salmos/salmo_103_bendice_al_senor_alma_mia.mp4",
@@ -21,8 +32,8 @@
             "fecha_generado": "2025-11-30T19:06:24.135368",
             "imagen": "1.png",
             "musica": "desconocida",
-            "tag": "56f696b56993",
-            "tag_legacy": "56f696b56993"
+            "tag": "ac53cb682631dbed",
+            "tag_legacy": "ac53cb682631dbed"
         },
         {
             "archivo": "videos/oraciones/bendita_sea_tu_pureza.mp4",
@@ -32,8 +43,8 @@
             "fecha_generado": "2025-11-30T23:30:04.266541",
             "imagen": "3.png",
             "musica": "desconocida",
-            "tag": "18cbd571fcb8",
-            "tag_legacy": "18cbd571fcb8"
+            "tag": "a11e4b428a4ac87f",
+            "tag_legacy": "a11e4b428a4ac87f"
         },
         {
             "archivo": "videos/oraciones/oracion_para_los_enfermos.mp4",
@@ -43,8 +54,8 @@
             "fecha_generado": "2025-12-01T06:57:45.030495",
             "imagen": "16.png",
             "musica": "desconocida",
-            "tag": "0f32f908695b",
-            "tag_legacy": "0f32f908695b"
+            "tag": "61f4ddb6d764954c",
+            "tag_legacy": "61f4ddb6d764954c"
         },
         {
             "archivo": "videos/salmos/salmo_130_desde_lo_hondo.mp4",
@@ -54,8 +65,8 @@
             "fecha_generado": "2025-12-01T14:34:54.471923",
             "imagen": "16.png",
             "musica": "6.mp3",
-            "tag": "4c52c5f0f51b",
-            "tag_legacy": "4c52c5f0f51b"
+            "tag": "3e7e078e32f1d7c0",
+            "tag_legacy": "3e7e078e32f1d7c0"
         },
         {
             "archivo": "videos/oraciones/oracion_de_proteccion.mp4",
@@ -65,8 +76,8 @@
             "fecha_generado": "2025-12-01T21:13:40.934437",
             "imagen": "5.png",
             "musica": "1.mp3",
-            "tag": "0137089c3904",
-            "tag_legacy": "0137089c3904"
+            "tag": "cca68bcb60df8751",
+            "tag_legacy": "cca68bcb60df8751"
         },
         {
             "archivo": "videos/oraciones/oracion_a_la_virgen_maria.mp4",
@@ -76,8 +87,8 @@
             "fecha_generado": "2025-12-02T06:44:42.702286",
             "imagen": "6.png",
             "musica": "desconocida",
-            "tag": "7ae1d6b8caf0",
-            "tag_legacy": "7ae1d6b8caf0"
+            "tag": "805f3fb3d53237d2",
+            "tag_legacy": "805f3fb3d53237d2"
         },
         {
             "archivo": "videos/salmos/salmo_40_yo_esperaba_el_senor.mp4",
@@ -87,8 +98,8 @@
             "fecha_generado": "2025-12-02T12:31:36.844839",
             "imagen": "5.png",
             "musica": "2.mp3",
-            "tag": "59b34dfb1472",
-            "tag_legacy": "59b34dfb1472"
+            "tag": "9f1db738f4856c84",
+            "tag_legacy": "9f1db738f4856c84"
         },
         {
             "archivo": "videos/oraciones/oracion_al_espiritu_santo.mp4",
@@ -98,8 +109,8 @@
             "fecha_generado": "2025-12-02T20:26:58.311559",
             "imagen": "30.png",
             "musica": "8.mp3",
-            "tag": "23bbfc2c41d2",
-            "tag_legacy": "23bbfc2c41d2"
+            "tag": "6785e414a5d1e591",
+            "tag_legacy": "6785e414a5d1e591"
         },
         {
             "archivo": "videos/salmos/salmo_23_el_senor_es_mi_pastor.mp4",
@@ -120,8 +131,8 @@
             "fecha_generado": "2025-12-03T12:45:02.704951",
             "imagen": "10.png",
             "musica": "2.mp3",
-            "tag": "830515580958",
-            "tag_legacy": "830515580958"
+            "tag": "489843d296faaf17",
+            "tag_legacy": "489843d296faaf17"
         },
         {
             "archivo": "videos/salmos/salmo_63_mi_alma_esta_sedienta_de_ti.mp4",
@@ -131,8 +142,8 @@
             "fecha_generado": "2025-12-03T23:46:18.792228",
             "imagen": "31.png",
             "musica": "8.mp3",
-            "tag": "4300448f1815",
-            "tag_legacy": "4300448f1815"
+            "tag": "16d5bafeecb1a6f1",
+            "tag_legacy": "16d5bafeecb1a6f1"
         },
         {
             "archivo": "videos/oraciones/oracion_de_agradecimiento_breve.mp4",
@@ -142,8 +153,8 @@
             "fecha_generado": "2025-12-04T09:49:04.757854",
             "imagen": "20.png",
             "musica": "cathedral-164234.mp3",
-            "tag": "8f38f04db531",
-            "tag_legacy": "8f38f04db531"
+            "tag": "20d72ce59a8e97ce",
+            "tag_legacy": "20d72ce59a8e97ce"
         },
         {
             "archivo": "videos/salmos/salmo_25_senor_muestrame_tus_caminos.mp4",
@@ -153,8 +164,8 @@
             "fecha_generado": "2025-12-04T11:35:11.512429",
             "imagen": "12.png",
             "musica": "desconocida",
-            "tag": "9762b8d20e48",
-            "tag_legacy": "9762b8d20e48"
+            "tag": "1c992fdf97b7d6f4",
+            "tag_legacy": "1c992fdf97b7d6f4"
         },
         {
             "archivo": "videos/salmos/salmo_1_dichoso_el_hombre.mp4",
@@ -164,8 +175,8 @@
             "fecha_generado": "2025-12-04T21:24:58.859165",
             "imagen": "2.png",
             "musica": "desconocida",
-            "tag": "f774af25f5ba",
-            "tag_legacy": "f774af25f5ba"
+            "tag": "62ee493146af3bb8",
+            "tag_legacy": "62ee493146af3bb8"
         },
         {
             "archivo": "videos/oraciones/oracion_de_agradecimiento.mp4",
@@ -175,8 +186,8 @@
             "fecha_generado": "2025-12-04T21:26:33.370836",
             "imagen": "22.png",
             "musica": "8.mp3",
-            "tag": "2178ef95dcbc",
-            "tag_legacy": "2178ef95dcbc"
+            "tag": "7fbd791ad5d49f9d",
+            "tag_legacy": "7fbd791ad5d49f9d"
         },
         {
             "archivo": "videos/oraciones/oracion_de_confianza.mp4",
@@ -186,8 +197,8 @@
             "fecha_generado": "2025-12-04T21:26:39.720924",
             "imagen": "8.png",
             "musica": "6.mp3",
-            "tag": "753ce983803d",
-            "tag_legacy": "753ce983803d"
+            "tag": "019f4d81f994dded",
+            "tag_legacy": "019f4d81f994dded"
         },
         {
             "archivo": "videos/oraciones/oracion_ave_maria.mp4",
@@ -197,8 +208,8 @@
             "fecha_generado": "2025-12-05T23:34:15.711591",
             "imagen": "10.png",
             "musica": "1.mp3",
-            "tag": "bd973462a722",
-            "tag_legacy": "bd973462a722"
+            "tag": "046995b621c32522",
+            "tag_legacy": "046995b621c32522"
         },
         {
             "archivo": "videos/salmos/salmo_32_dichoso_aquel_que_ha_sido_perdonado.mp4",
@@ -208,8 +219,8 @@
             "fecha_generado": "2025-12-05T23:34:24.206476",
             "imagen": "17.png",
             "musica": "2.mp3",
-            "tag": "efa77be70113",
-            "tag_legacy": "efa77be70113"
+            "tag": "71890b2c68f935e2",
+            "tag_legacy": "71890b2c68f935e2"
         },
         {
             "archivo": "videos/oraciones/oracion_de_san_francisco_javier.mp4",
@@ -219,8 +230,8 @@
             "fecha_generado": "2025-12-06T23:08:37.514085",
             "imagen": "18.png",
             "musica": "8.mp3",
-            "tag": "8b3b6cd4a0f5",
-            "tag_legacy": "8b3b6cd4a0f5"
+            "tag": "4256d5b9d57077ff",
+            "tag_legacy": "4256d5b9d57077ff"
         },
         {
             "archivo": "videos/oraciones/oracion_del_enfermo.mp4",
@@ -232,8 +243,8 @@
             "fecha_generado": "2025-12-07T00:02:28.984657",
             "video_id": "v_g0DKulQTE",
             "fecha_publicado": "2025-12-07T00:48:21.804317",
-            "tag": "6eae64ba2321",
-            "tag_legacy": "6eae64ba2321"
+            "tag": "4643a839cc431068",
+            "tag_legacy": "4643a839cc431068"
         },
         {
             "archivo": "videos/salmos/salmo_130_desde_lo_hondo_a_ti_grito_senor.mp4",
@@ -245,8 +256,8 @@
             "fecha_generado": "2025-12-07T00:06:03.569385",
             "video_id": "dfa2mikB3Lg",
             "fecha_publicado": "2025-12-07T00:51:15.868107",
-            "tag": "08024766eadf",
-            "tag_legacy": "08024766eadf"
+            "tag": "49be37980e82e0db",
+            "tag_legacy": "49be37980e82e0db"
         },
         {
             "archivo": "videos/oraciones/oracion_de_la_noche.mp4",
@@ -258,8 +269,8 @@
             "fecha_generado": "2025-12-07T00:14:07.118909",
             "video_id": "QJejT839j-E",
             "fecha_publicado": "2025-12-07T00:51:52.925612",
-            "tag": "7d4d47402ecb",
-            "tag_legacy": "7d4d47402ecb"
+            "tag": "e8de90d5de430bac",
+            "tag_legacy": "e8de90d5de430bac"
         },
         {
             "archivo": "videos/oraciones/oracion_por_la_familia.mp4",
@@ -271,8 +282,8 @@
             "fecha_generado": "2025-12-08T01:57:12.776896",
             "video_id": "VoZ9uumBn3g",
             "fecha_publicado": "2025-12-08T02:18:59.972540",
-            "tag": "186da46a3c17",
-            "tag_legacy": "186da46a3c17"
+            "tag": "94c71db42fa78519",
+            "tag_legacy": "94c71db42fa78519"
         },
         {
             "archivo": "videos/salmos/salmo_18_el_senor_mi_fortaleza.mp4",
@@ -284,8 +295,8 @@
             "fecha_generado": "2025-12-08T15:15:04.778729",
             "video_id": "EtZ-vM5mp3s",
             "fecha_publicado": "2025-12-08T15:30:48.984779",
-            "tag": "9220957cc8dc",
-            "tag_legacy": "9220957cc8dc"
+            "tag": "102e81d6964645c1",
+            "tag_legacy": "102e81d6964645c1"
         },
         {
             "archivo": "videos/oraciones/oracion_dulce_madre.mp4",
@@ -297,8 +308,8 @@
             "fecha_generado": "2025-12-08T22:37:46.373975",
             "video_id": "3PRePBwBXJ4",
             "fecha_publicado": "2025-12-08T22:43:20.163899",
-            "tag": "7eff40611385",
-            "tag_legacy": "7eff40611385"
+            "tag": "b09260647ec26437",
+            "tag_legacy": "b09260647ec26437"
         },
         {
             "archivo": "videos/oraciones/oracion_por_la_familia_breve.mp4",
@@ -310,8 +321,8 @@
             "fecha_generado": "2025-12-08T23:03:55.973332",
             "video_id": "jVJnb_ywRwY",
             "fecha_publicado": "2025-12-08T23:24:21.005369",
-            "tag": "4c0e4a4d52d6",
-            "tag_legacy": "4c0e4a4d52d6"
+            "tag": "17c6630d3ed61171",
+            "tag_legacy": "17c6630d3ed61171"
         },
         {
             "archivo": "videos/salmos/salmo_139_tu_me_conoces_senor.mp4",
@@ -323,8 +334,8 @@
             "fecha_generado": "2025-12-08T23:13:49.006149",
             "video_id": "n7OaODX1I0w",
             "fecha_publicado": "2025-12-08T23:24:33.137356",
-            "tag": "2cdacc0c4551",
-            "tag_legacy": "2cdacc0c4551"
+            "tag": "3419321f705e0df6",
+            "tag_legacy": "3419321f705e0df6"
         },
         {
             "archivo": "videos/oraciones/oracion_por_los_hijos.mp4",
@@ -336,8 +347,8 @@
             "fecha_generado": "2025-12-09T19:37:15.814649",
             "video_id": "0KqaBYTI0QI",
             "fecha_publicado": "2025-12-09T19:43:02.546505",
-            "tag": "f3bbf98bc8a7",
-            "tag_legacy": "f3bbf98bc8a7"
+            "tag": "83c46da2c8ea3f7e",
+            "tag_legacy": "83c46da2c8ea3f7e"
         },
         {
             "archivo": "videos/oraciones/oracion_gloria.mp4",
@@ -349,8 +360,8 @@
             "fecha_generado": "2025-12-10T00:55:12.262459",
             "video_id": "ZXSO4aqu4kc",
             "fecha_publicado": "2025-12-10T00:58:47.966277",
-            "tag": "b7a194bb8421",
-            "tag_legacy": "b7a194bb8421"
+            "tag": "10d3442d761f13f3",
+            "tag_legacy": "10d3442d761f13f3"
         },
         {
             "archivo": "videos/salmos/salmo_46_dios_es_nuestro_refugio.mp4",
@@ -362,8 +373,8 @@
             "fecha_generado": "2025-12-10T14:54:39.645527",
             "video_id": "RegFv9bFSxo",
             "fecha_publicado": "2025-12-10T15:05:19.604936",
-            "tag": "a39d3a544a09",
-            "tag_legacy": "a39d3a544a09"
+            "tag": "a7ac68dc3754915b",
+            "tag_legacy": "a7ac68dc3754915b"
         },
         {
             "archivo": "videos/oraciones/oracion_salve.mp4",
@@ -375,8 +386,8 @@
             "fecha_generado": "2025-12-10T18:17:11.536796",
             "video_id": "RhoFXbKiaZU",
             "fecha_publicado": "2025-12-10T18:35:10.795048",
-            "tag": "421151749575",
-            "tag_legacy": "421151749575"
+            "tag": "fd54c6f7425661e9",
+            "tag_legacy": "fd54c6f7425661e9"
         },
         {
             "archivo": "videos/oraciones/oracion_para_el_trabajo.mp4",
@@ -388,8 +399,8 @@
             "fecha_generado": "2025-12-10T18:28:50.596314",
             "video_id": "QUTVR80F3FE",
             "fecha_publicado": "2025-12-10T18:35:17.802325",
-            "tag": "dfd49022968a",
-            "tag_legacy": "dfd49022968a"
+            "tag": "1c80763ee609654f",
+            "tag_legacy": "1c80763ee609654f"
         },
         {
             "archivo": "videos/salmos/salmo_95_venid_alabemos_al_senor.mp4",
@@ -401,8 +412,17 @@
             "fecha_generado": "2025-12-10T18:09:20.819517",
             "video_id": "e9rTNpaQ9dU",
             "fecha_publicado": "2025-12-10T18:35:25.379466",
-            "tag": "cce59583da94",
-            "tag_legacy": "cce59583da94"
+            "tag": "8c59cd9f1061acba",
+            "tag_legacy": "8c59cd9f1061acba"
         }
-    ]
+    ],
+    "textos_usados": {
+        "textos/oraciones": [
+            {
+                "nombre": "oracion_por_los_matrimonios_en_dificultad",
+                "fecha": "2025-12-11T09:03:13.049110"
+            }
+        ],
+        "textos/salmos": []
+    }
 }

@@ -80,11 +80,6 @@ def generar_videos_diarios():
     print(" GENERANDO VIDEOS DEL DÍA")
     print("==============================\n")
 
-    historial = cargar_historial()
-
-    # 🔥 Lista donde agregaremos los videos generados en esta ejecución
-    nuevos_pendientes = []
-
     # ======================================================
     # 1) ORACIÓN DE LA MAÑANA
     # ======================================================
@@ -92,19 +87,6 @@ def generar_videos_diarios():
     cmd = [PYTHON, "generar_video.py", "1", "oracion"]
     if MODO_TEST: cmd.append("test")
     subprocess.run(cmd)
-
-    ult = ultimo_archivo_generado("videos/oraciones")
-    meta = extraer_metadata_video(ult)
-
-    nuevos_pendientes.append({
-        "archivo": ult,
-        "tipo": "oracion",
-        "imagen": meta["imagen"],
-        "musica": meta["musica"],
-        "licencia": meta["licencia"],
-        "publicar_en": "10:00",
-        "fecha_generado": datetime.now().isoformat()
-    })
 
     # ======================================================
     # 2) SALMO DEL DÍA
@@ -114,18 +96,6 @@ def generar_videos_diarios():
     if MODO_TEST: cmd.append("test")
     subprocess.run(cmd)
 
-    ult = ultimo_archivo_generado("videos/salmos")
-    meta = extraer_metadata_video(ult)
-
-    nuevos_pendientes.append({
-        "archivo": ult,
-        "tipo": "salmo",
-        "imagen": meta["imagen"],
-        "musica": meta["musica"],
-        "licencia": meta["licencia"],
-        "publicar_en": "15:30",
-        "fecha_generado": datetime.now().isoformat()
-    })
 
     # ======================================================
     # 3) ORACIÓN DE LA NOCHE
@@ -135,25 +105,6 @@ def generar_videos_diarios():
     if MODO_TEST: cmd.append("test")
     subprocess.run(cmd)
 
-    ult = ultimo_archivo_generado("videos/oraciones")
-    meta = extraer_metadata_video(ult)
-
-    nuevos_pendientes.append({
-        "archivo": ult,
-        "tipo": "oracion",
-        "imagen": meta["imagen"],
-        "musica": meta["musica"],
-        "licencia": meta["licencia"],
-        "publicar_en": "23:10",
-        "fecha_generado": datetime.now().isoformat()
-    })
-
-    # ======================================================
-    # 🔥 Guardar historial sin tocar imágenes/músicas globales
-    # ======================================================
-    hist_real = cargar_historial()
-    hist_real["pendientes"].extend(nuevos_pendientes)
-    guardar_historial(hist_real)
 
     print("\n==============================")
     print(" ✔ VIDEOS GENERADOS Y REGISTRADOS")
