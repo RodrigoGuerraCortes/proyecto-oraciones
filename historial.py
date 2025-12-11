@@ -85,15 +85,15 @@ def cargar_historial():
         if "textos/salmos" not in data["textos_usados"]:
             data["textos_usados"]["textos/salmos"] = []
 
-            
+
         # 🔁 Compatibilidad hacia atrás:
         # si un publicado tiene "tag" pero no "tag_legacy", lo copiamos
         for pub in data.get("publicados", []):
             if "tag" in pub and "tag_legacy" not in pub:
                 pub["tag_legacy"] = pub["tag"]
 
-        print("[DEBUG] cargar_historial() → contenido actual (normalizado):")
-        print(json.dumps(data, indent=4))
+        #print("[DEBUG] cargar_historial() → contenido actual (normalizado):")
+        #print(json.dumps(data, indent=4))
         print("===================================================================\n")
         return data
 

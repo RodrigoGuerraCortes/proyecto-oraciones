@@ -14,6 +14,8 @@ from historial import registrar_video_generado, tag_ya_existe, cargar_historial,
 import textwrap
 from moviepy.editor import concatenate_videoclips
 import hashlib
+from logic.text_seleccion import elegir_no_repetido
+
 
 import json 
 
@@ -27,44 +29,86 @@ if not hasattr(Image, "ANTIALIAS"):
 
 HORARIOS = ["11:00", "15:30", "23:10"]
 
-def programar_publicacion_exacta():
+HORARIOS_TIPO = [
+    ("11:00", "oracion"),
+    ("15:30", "salmo"),
+    ("23:10", "oracion"),
+]
+
+
+def programar_publicacion_exacta(tipo):
+    """
+    Asigna el próximo slot disponible para el TIPO indicado
+    respetando SIEMPRE la regla por día:
+
+      11:00  -> oracion
+      15:30  -> salmo
+      23:10  -> oracion
+
+    Busca en historial (pendientes + publicados) y no pisa horas ya usadas.
+    """
+
+    assert tipo in ["oracion", "salmo"], f"Tipo inválido: {tipo}"
+
     hist = cargar_historial()
 
-    publicados = hist.get("publicados", [])
-    if not publicados:
-        # Caso canal nuevo → primer horario siguiente a ahora
-        return programar_publicacion_por_hora_actual()
+    # -------------------------------
+    # 1) Construir set de slots ocupados
+    # -------------------------------
+    ocupados = set()  # (fecha(date), "HH:MM")
 
-    # Último video publicado
-    ultimo = publicados[-1]
-    ts = ultimo.get("publicar_en")
+    for lista in ("publicados", "pendientes"):
+        for item in hist.get(lista, []):
+            ts = item.get("publicar_en")
+            if not ts:
+                continue
+            try:
+                dt = datetime.fromisoformat(ts)
+            except Exception:
+                # Si el formato es viejo (sin publicar_en), lo ignoramos
+                continue
 
-    try:
-        dt = datetime.fromisoformat(ts)
-    except:
-        # fallback si hay un formato antiguo
-        return programar_publicacion_por_hora_actual()
+            fecha = dt.date()
+            hora = dt.strftime("%H:%M")
+            ocupados.add((fecha, hora))
 
-    # Extraer solo hora
-    hora_ultimo = dt.strftime("%H:%M")
+    # -------------------------------
+    # 2) Buscar el próximo slot libre para ese tipo
+    # -------------------------------
+    ahora = datetime.now()
+    dia = ahora.date()
 
-    # Buscar índice del horario usado
-    if hora_ultimo not in HORARIOS:
-        return programar_publicacion_por_hora_actual()
+    # Buscamos como máximo 365 días hacia adelante (más que suficiente)
+    for _ in range(365):
+        for hora_str, tipo_slot in HORARIOS_TIPO:
+            if tipo_slot != tipo:
+                continue
 
-    idx = HORARIOS.index(hora_ultimo)
+            # Fecha + hora del slot que estamos evaluando
+            hh, mm = map(int, hora_str.split(":"))
+            dt_slot = datetime(dia.year, dia.month, dia.day, hh, mm)
 
-    # Elegir el siguiente slot
-    if idx < len(HORARIOS) - 1:
-        nueva_hora = HORARIOS[idx + 1]
-        nueva_fecha = dt.strftime("%Y-%m-%d")
-    else:
+            # Solo slots estrictamente a futuro
+            if dt_slot <= ahora:
+                continue
+
+            # ¿Ya está ocupado por algún video?
+            if (dia, hora_str) in ocupados:
+                continue
+
+            # Encontrado: devolvemos en formato ISO con -03:00
+            return dt_slot.strftime("%Y-%m-%dT%H:%M:%S-03:00")
+
         # Pasamos al día siguiente
-        nueva_hora = HORARIOS[0]
-        nueva_fecha = (dt + timedelta(days=1)).strftime("%Y-%m-%d")
+        from datetime import timedelta
+        dia = dia + timedelta(days=1)
 
-    # Generar ISO final
-    return f"{nueva_fecha}T{nueva_hora}:00-03:00"
+    # -------------------------------
+    # 3) Fallback (no debería pasar)
+    # -------------------------------
+    dt_fallback = ahora + timedelta(hours=1)
+    return dt_fallback.strftime("%Y-%m-%dT%H:%M:%S-03:00")
+
 
 
 def programar_publicacion_por_hora_actual():
@@ -697,7 +741,7 @@ def crear_video_oracion(path_in, path_out):
             musica=musica_usada,
             licencia=licencia_path,
             imagen=ultima_imagen_usada,
-            publicar_en=programar_publicacion_exacta(),
+            publicar_en=programar_publicacion_exacta("oracion"),
             tag=tag_nuevo
         )
     else:
@@ -840,7 +884,7 @@ def crear_video_salmo(path_in, path_out):
             musica=musica_usada,
             licencia=licencia_path,
             imagen=ultima_imagen_usada,
-            publicar_en=programar_publicacion_exacta(),
+            publicar_en=programar_publicacion_exacta("salmo"),
             tag=tag_nuevo
         )
     else:
@@ -850,54 +894,7 @@ def crear_video_salmo(path_in, path_out):
 # --------------------------------------------
 #          CREAR VARIOS ALEATORIOS
 # --------------------------------------------
-def elegir_no_repetido(carpeta, historial, dias_no_repetir=7):
-    """
-    Evita repetir textos de una carpeta (oraciones o salmos)
-    dentro de un plazo de días.
-    historial['textos_usados'][carpeta] es la lista de uso real.
-    """
-    hoy = datetime.now()
-    limite = hoy - timedelta(days=dias_no_repetir)
 
-    # Crear estructura por carpeta si no existe
-    if carpeta not in historial["textos_usados"]:
-        historial["textos_usados"][carpeta] = []
-
-    usados_recientes = []
-    for item in historial["textos_usados"][carpeta]:
-        try:
-            fecha = datetime.fromisoformat(item["fecha"])
-            if fecha > limite:
-                usados_recientes.append(item)
-        except:
-            pass
-
-    historial["textos_usados"][carpeta] = usados_recientes
-
-    # Archivos de texto reales
-    archivos = [f for f in os.listdir(carpeta) if f.endswith(".txt")]
-
-    usados_nombres = {item["nombre"] for item in usados_recientes}
-
-    disponibles = [
-        a for a in archivos
-        if a.replace(".txt", "") not in usados_nombres
-    ]
-
-    # Si se agotaron → reset
-    if not disponibles:
-        disponibles = archivos
-        historial["textos_usados"][carpeta] = []
-
-    elegido = random.choice(disponibles)
-    base = elegido.replace(".txt", "")
-
-    historial["textos_usados"][carpeta].append({
-        "nombre": base,
-        "fecha": hoy.isoformat()
-    })
-
-    return elegido
 
 
 

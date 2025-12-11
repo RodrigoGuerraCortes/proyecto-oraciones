@@ -10,6 +10,72 @@
             "fecha_generado": "2025-12-11T09:05:52.136566",
             "tag": "df5c2776af40c392",
             "tag_legacy": "e0ecd074a5cb"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_los_ninos.mp4",
+            "tipo": "oracion",
+            "musica": "8.mp3",
+            "licencia": "musica/licence/licence_8.txt",
+            "imagen": "6.png",
+            "publicar_en": "2025-12-12T11:00:00-03:00",
+            "fecha_generado": "2025-12-11T09:38:16.127113",
+            "tag": "72a828dd8ce43075",
+            "tag_legacy": "b9509b3f82d9"
+        },
+        {
+            "archivo": "videos/salmos/salmo_84_dichosos_los_que_habitan_en_tu_casa.mp4",
+            "tipo": "salmo",
+            "musica": "amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.mp3",
+            "licencia": "musica/licence/licence_amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.txt",
+            "imagen": "4.jpg",
+            "publicar_en": "2025-12-12T15:30:00-03:00",
+            "fecha_generado": "2025-12-11T09:51:38.759061",
+            "tag": "cbcfe6eb0ddd7a85",
+            "tag_legacy": "ccab2baff092"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_agradecimiento_en_la_prueba.mp4",
+            "tipo": "oracion",
+            "musica": "7.mp3",
+            "licencia": "musica/licence/licence_7.txt",
+            "imagen": "32.png",
+            "publicar_en": "2025-12-11T23:10:00-03:00",
+            "fecha_generado": "2025-12-11T12:38:09.441283",
+            "tag": "3843ddb59db79c77",
+            "tag_legacy": "af1bfc552cb3"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_los_hijos_pequenos_breve.mp4",
+            "tipo": "oracion",
+            "musica": "christian-439968.mp3",
+            "licencia": "musica/licence/licence_christian-439968.txt",
+            "imagen": "32.png",
+            "publicar_en": "2025-12-11T23:10:00-03:00",
+            "fecha_generado": "2025-12-11T12:41:04.797519",
+            "tag": "56522cf77e3c4885",
+            "tag_legacy": "c43b93a7b220"
+        },
+        {
+            "archivo": "videos/salmos/salmo_40_yo_esperaba_el_senor.mp4",
+            "tipo": "salmo",
+            "musica": "7.mp3",
+            "licencia": "musica/licence/licence_7.txt",
+            "imagen": "8.png",
+            "publicar_en": "2025-12-11T23:10:00-03:00",
+            "fecha_generado": "2025-12-11T12:51:36.351951",
+            "tag": "e751f7327e74bd99",
+            "tag_legacy": "ec0e4eaf2242"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_los_padres_de_familia_breve.mp4",
+            "tipo": "oracion",
+            "musica": "6.mp3",
+            "licencia": "musica/licence/licence_6.txt",
+            "imagen": "35.png",
+            "publicar_en": "2025-12-11T23:10:00-03:00",
+            "fecha_generado": "2025-12-11T12:55:14.876957",
+            "tag": "f52112dbcf93330c",
+            "tag_legacy": "fad77018e6de"
         }
     ],
     "publicados": [
@@ -421,8 +487,33 @@
             {
                 "nombre": "oracion_por_los_matrimonios_en_dificultad",
                 "fecha": "2025-12-11T09:03:13.049110"
+            },
+            {
+                "nombre": "oracion_por_los_ninos",
+                "fecha": "2025-12-11T09:35:09.942001"
+            },
+            {
+                "nombre": "oracion_agradecimiento_en_la_prueba",
+                "fecha": "2025-12-11T12:34:46.812641"
+            },
+            {
+                "nombre": "oracion_por_los_hijos_pequenos_breve",
+                "fecha": "2025-12-11T12:38:11.452556"
+            },
+            {
+                "nombre": "oracion_por_los_padres_de_familia_breve",
+                "fecha": "2025-12-11T12:51:39.218431"
             }
         ],
-        "textos/salmos": []
+        "textos/salmos": [
+            {
+                "nombre": "salmo_84_dichosos_los_que_habitan_en_tu_casa",
+                "fecha": "2025-12-11T09:41:30.326479"
+            },
+            {
+                "nombre": "salmo_40_yo_esperaba_el_senor",
+                "fecha": "2025-12-11T12:41:06.854808"
+            }
+        ]
     }
 }
