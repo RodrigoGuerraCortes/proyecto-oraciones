@@ -86,7 +86,7 @@ def obtener_videos_del_dia(dia):
 
 
 # ---------------------------------------------------------
-# Estado completo (pero NO exige Instagram/TikTok)
+# Estado completo 
 # ---------------------------------------------------------
 def plataformas_completas(video):
     """
@@ -95,7 +95,7 @@ def plataformas_completas(video):
     """
     p = video.get("plataformas", {})
 
-    requerido = ["youtube", "facebook", "instagram"]
+    requerido = ["youtube", "facebook", "instagram", "tiktok"]
 
     for plataforma in requerido:
         estado = p.get(plataforma, {}).get("estado")
@@ -111,7 +111,7 @@ def plataformas_completas(video):
 def plataforma_fallida(video):
     p = video.get("plataformas", {})
 
-    for plataforma in ("youtube", "facebook", "instagram"):
+    for plataforma in ("youtube", "facebook", "instagram", "tiktok"):
         if p.get(plataforma, {}).get("estado") == "fallido":
             return True
 
@@ -139,6 +139,11 @@ def lanzar_subidas(video):
             ["python3", "subir_video_instagram.py"],
             stdout=open(os.path.join(LOG_DIR, "instagram.log"), "a"),
             stderr=subprocess.STDOUT
+        ),
+        "tiktok": subprocess.Popen(
+            ["python3", "subir_video_tiktok.py"],
+            stdout=open(os.path.join(LOG_DIR, "tiktok.log"), "a"),
+            stderr=subprocess.STDOUT
         )
     }
 
@@ -152,7 +157,7 @@ def lanzar_subidas(video):
 def reintentar_plataformas(video):
     hist = cargar_historial()
 
-    for plataforma in ("youtube", "facebook", "instagram"):
+    for plataforma in ("youtube", "facebook", "instagram", "tiktok"):
         datos = video["plataformas"][plataforma]
 
         if datos["estado"] == "fallido":
