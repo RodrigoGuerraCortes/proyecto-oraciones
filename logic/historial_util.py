@@ -6,6 +6,32 @@ from datetime import datetime
 HISTORIAL = "historial.json"
 PLATAFORMAS = ["youtube", "facebook", "instagram", "tiktok"]
 
+def marcar_como_procesando(plataforma, archivo):
+    hist = cargar_historial()
+
+    for item in hist["pendientes"]:
+        if item["archivo"] == archivo:
+            item["plataformas"][plataforma]["estado"] = "procesando"
+            item["plataformas"][plataforma]["fecha_publicado"] = None
+            guardar_historial(hist)
+            return
+
+    guardar_historial(hist)
+
+
+def marcar_como_pendiente(plataforma, archivo):
+    hist = cargar_historial()
+
+    for item in hist["pendientes"]:
+        if item["archivo"] == archivo:
+            item["plataformas"][plataforma]["estado"] = "pendiente"
+            item["plataformas"][plataforma]["video_id"] = None
+            item["plataformas"][plataforma]["fecha_publicado"] = None
+            guardar_historial(hist)
+            return
+
+    guardar_historial(hist)
+    
 
 # =====================================================
 # 1. CARGAR / GUARDAR HISTORIAL
@@ -162,5 +188,11 @@ def convertir_fecha_para(plataforma, publicar_en):
             return int(dt.timestamp())
         except:
             return int(datetime.now().timestamp()) + 20 * 60
+    if plataforma == "instagram":
+        try:
+            dt = datetime.fromisoformat(publicar_en)
+            return int(dt.timestamp())
+        except:
+            return int(datetime.now().timestamp() + 600)
 
     return publicar_en  # YouTube usa ISO

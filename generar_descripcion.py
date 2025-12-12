@@ -11,18 +11,21 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # =====================================================================
 #   FUNCIÓN PRINCIPAL — AHORA MULTIPLATAFORMA
 # =====================================================================
-def generar_descripcion(tipo, hora_texto, archivo_texto, plataforma="youtube"):
+def generar_descripcion(tipo, hora_texto, archivo_texto, plataforma="youtube", licence=None):
     """
     Genera una descripción optimizada según plataforma:
         - "youtube"
         - "facebook"
+        - "instagram"
     """
 
     if plataforma == "youtube":
-        return generar_descripcion_youtube(tipo, hora_texto, archivo_texto)
+        return generar_descripcion_youtube(tipo, hora_texto, archivo_texto, licence)
 
     elif plataforma == "facebook":
         return generar_descripcion_facebook(tipo, hora_texto, archivo_texto)
+    elif plataforma == "instagram":
+        return generar_descripcion_instagram(tipo, hora_texto, archivo_texto)
 
     else:
         raise ValueError(f"Plataforma no soportada: {plataforma}")
@@ -31,7 +34,7 @@ def generar_descripcion(tipo, hora_texto, archivo_texto, plataforma="youtube"):
 # =====================================================================
 #   YOUTUBE — TU VERSIÓN ORIGINAL (sin alterar)
 # =====================================================================
-def generar_descripcion_youtube(tipo, hora_texto, archivo_texto):
+def generar_descripcion_youtube(tipo, hora_texto, archivo_texto, licence):
     """
     Genera descripciones profesionales, únicas, optimizadas para YouTube.
     """
@@ -113,7 +116,18 @@ Genera una descripción única.
             else "Un salmo para fortalecer tu espíritu 🙏✨"
         )
 
-    return f"{texto_corto}\n\n{hashtags_finales}"
+
+    licencia_texto = leer_licencia_si_existe(licence)
+
+    
+    if licencia_texto:
+        bloque_licencia = (
+            "\n\n──────────────\n"
+            "🎵 Música:\n"
+            f"{licencia_texto}"
+        )
+
+    return f"{texto_corto}\n\n{hashtags_finales}{bloque_licencia}"
 
 
 # =====================================================================
@@ -178,6 +192,53 @@ Genera SOLO UNA línea emocional.
 
 
 # =====================================================================
+#   INSTAGRAM — DESCRIPCIÓN EMOCIONAL + HASHTAGS CORTOS
+# =====================================================================
+def generar_descripcion_instagram(tipo, hora_texto, archivo_texto):
+
+    # Leer el archivo como inspiración
+    try:
+        with open(archivo_texto, "r", encoding="utf-8") as f:
+            contenido = f.read().strip()
+    except:
+        contenido = ""
+
+    prompt = f"""
+Eres experto en contenido viral católico para **Instagram Reels**.
+
+Necesito que generes:
+- UNA sola frase (máximo 10–12 palabras)
+- Muy emocional y espiritual
+- 1 o 2 emojis permitidos
+- NO resumas el texto original
+- NO repitas frases comunes
+- NO escribas “Amén”
+- NO incluyas hashtags en la frase
+- Debe sonar íntima y profunda
+"""
+
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        frase = resp.choices[0].message.content.strip()
+
+    except Exception:
+        frase = (
+            "Que Dios ilumine tu corazón hoy 🙏✨"
+            if tipo == "oracion"
+            else "Que su Palabra renueve tu espíritu 🙏✨"
+        )
+
+    # Hashtags especiales para Instagram (mejor performance con 3–4)
+    hashtags = "#fe #dios #oracion #catolico"
+
+    return f"{frase}\n\n{hashtags}"
+
+
+
+# =====================================================================
 #   TAGS (solo usados en YouTube)
 # =====================================================================
 def generar_tags_from_descripcion(descripcion):
@@ -190,3 +251,19 @@ def generar_tags_from_descripcion(descripcion):
 
     # Sin duplicados
     return list(dict.fromkeys(tags))
+
+# =====================================================================
+#   Licence para youtube
+# =====================================================================
+def leer_licencia_si_existe(path):
+    if not path:
+        return ""
+
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except:
+            return ""
+
+    return ""

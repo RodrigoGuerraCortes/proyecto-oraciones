@@ -22,14 +22,14 @@
                     "fecha_publicado": "2025-12-12T01:49:54.929755"
                 },
                 "instagram": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-12T01:49:54.929755"
                 },
                 "tiktok": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado":"2025-12-12T01:49:54.929755"
                 }
             }
         },
@@ -55,14 +55,14 @@
                     "fecha_publicado": "2025-12-12T01:50:11.718238"
                 },
                 "instagram": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
                 },
                 "tiktok": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
                 }
             }
         },
@@ -116,9 +116,9 @@
                     "fecha_publicado": "2025-12-12T01:50:07.807862"
                 },
                 "facebook": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
+                    "estado": "publicado",
+                    "video_id": "1387660652950870",
+                    "fecha_publicado": "2025-12-12T02:52:48.301977"
                 },
                 "instagram": {
                     "estado": "pendiente",
@@ -149,9 +149,9 @@
                     "fecha_publicado": "2025-12-12T01:50:20.987390"
                 },
                 "facebook": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
+                    "estado": "publicado",
+                    "video_id": "1224800496368118",
+                    "fecha_publicado": "2025-12-12T03:07:45.939839"
                 },
                 "instagram": {
                     "estado": "pendiente",
@@ -177,14 +177,14 @@
             "tag_legacy": "fad77018e6de",
             "plataformas": {
                 "youtube": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
+                    "estado": "publicado",
+                    "video_id": "03Hz9VfTAFg",
+                    "fecha_publicado": "2025-12-12T02:52:39.043003"
                 },
                 "facebook": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
+                    "estado": "publicado",
+                    "video_id": "634909876312957",
+                    "fecha_publicado": "2025-12-12T03:11:59.369874"
                 },
                 "instagram": {
                     "estado": "pendiente",
@@ -726,6 +726,138 @@
                     "estado": "pendiente",
                     "video_id": null,
                     "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/publicados/oracions/oracion_por_los_ninos.mp4",
+            "tipo": "oracion",
+            "musica": "8.mp3",
+            "licencia": "musica/licence/licence_8.txt",
+            "imagen": "6.png",
+            "publicar_en": "2025-12-12T11:00:00-03:00",
+            "fecha_generado": "2025-12-11T09:38:16.127113",
+            "tag": "72a828dd8ce43075",
+            "tag_legacy": "b9509b3f82d9",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "jgOOFFCOCP8",
+                    "fecha_publicado": "2025-12-12T01:17:32.748063"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1325718859320152",
+                    "fecha_publicado": "2025-12-12T01:49:54.929755"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-12T01:49:54.929755"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-12T01:49:54.929755"
+                }
+            }
+        },
+        {
+            "archivo": "videos/publicados/salmos/salmo_84_dichosos_los_que_habitan_en_tu_casa.mp4",
+            "tipo": "salmo",
+            "musica": "amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.mp3",
+            "licencia": "musica/licence/licence_amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.txt",
+            "imagen": "4.jpg",
+            "publicar_en": "2025-12-12T15:30:00-03:00",
+            "fecha_generado": "2025-12-11T09:51:38.759061",
+            "tag": "cbcfe6eb0ddd7a85",
+            "tag_legacy": "ccab2baff092",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "B4LIkztQ8MY",
+                    "fecha_publicado": "2025-12-12T01:35:49.521617"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "886390367168462",
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
+                }
+            }
+        },
+        {
+            "archivo": "videos/publicados/salmos/salmo_84_dichosos_los_que_habitan_en_tu_casa.mp4",
+            "tipo": "salmo",
+            "musica": "amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.mp3",
+            "licencia": "musica/licence/licence_amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.txt",
+            "imagen": "4.jpg",
+            "publicar_en": "2025-12-12T15:30:00-03:00",
+            "fecha_generado": "2025-12-11T09:51:38.759061",
+            "tag": "cbcfe6eb0ddd7a85",
+            "tag_legacy": "ccab2baff092",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "B4LIkztQ8MY",
+                    "fecha_publicado": "2025-12-12T01:35:49.521617"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "886390367168462",
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
+                }
+            }
+        },
+        {
+            "archivo": "videos/publicados/oracions/oracion_agradecimiento_en_la_prueba.mp4",
+            "tipo": "oracion",
+            "musica": "7.mp3",
+            "licencia": "musica/licence/licence_7.txt",
+            "imagen": "32.png",
+            "publicar_en": "2025-12-12T23:10:00-03:00",
+            "fecha_generado": "2025-12-11T12:38:09.441283",
+            "tag": "3843ddb59db79c77",
+            "tag_legacy": "af1bfc552cb3",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "2jsa8j7x9Ew",
+                    "fecha_publicado": "2025-12-12T01:49:46.316633"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1303859664843106",
+                    "fecha_publicado": "2025-12-12T01:50:27.162166"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": "17843072682650760",
+                    "fecha_publicado": "2025-12-12T16:38:26.584208"
                 },
                 "tiktok": {
                     "estado": "pendiente",

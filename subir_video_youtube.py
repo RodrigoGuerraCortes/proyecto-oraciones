@@ -13,9 +13,6 @@ from logic.historial_util import (
     obtener_siguiente_video_para,
     marcar_como_publicado,
     convertir_fecha_para,
-    asegurar_plataformas,
-    guardar_historial,
-    cargar_historial
 )
 
 from generar_descripcion import generar_descripcion, generar_tags_from_descripcion
@@ -108,6 +105,7 @@ def subir_siguiente_youtube(privacidad="public"):
     
     archivo = video["archivo"]
     tipo = video["tipo"]
+    licencia = video["licencia"]
 
     # === generar título y descripción ===
     titulo_base = os.path.splitext(os.path.basename(archivo))[0]
@@ -117,7 +115,8 @@ def subir_siguiente_youtube(privacidad="public"):
                                         tipo, 
                                         video["publicar_en"], 
                                         archivo, 
-                                        plataforma="youtube"
+                                        plataforma="youtube",
+                                        licence=licencia
                                     )
     tags = generar_tags_from_descripcion(descripcion)
 

@@ -90,13 +90,12 @@ def obtener_videos_del_dia(dia):
 # ---------------------------------------------------------
 def plataformas_completas(video):
     """
-    COMPLETADO = YouTube + Facebook publicados.
-    Instagram y TikTok no se consideran, ya que se completarán de forma manual.
+    COMPLETADO = YouTube + Facebook + Instagram publicados.
+    TikTok aún no se considera obligatorio.
     """
-
     p = video.get("plataformas", {})
 
-    requerido = ["youtube", "facebook"]
+    requerido = ["youtube", "facebook", "instagram"]
 
     for plataforma in requerido:
         estado = p.get(plataforma, {}).get("estado")
@@ -112,7 +111,7 @@ def plataformas_completas(video):
 def plataforma_fallida(video):
     p = video.get("plataformas", {})
 
-    for plataforma in ("youtube", "facebook"):
+    for plataforma in ("youtube", "facebook", "instagram"):
         if p.get(plataforma, {}).get("estado") == "fallido":
             return True
 
@@ -125,7 +124,7 @@ def plataforma_fallida(video):
 def lanzar_subidas(video):
     log(f"🚀 Lanzando subida para: {video['archivo']}")
 
-    return {
+    procesos = {
         "youtube": subprocess.Popen(
             ["python3", "subir_video_youtube.py"],
             stdout=open(os.path.join(LOG_DIR, "youtube.log"), "a"),
@@ -135,22 +134,29 @@ def lanzar_subidas(video):
             ["python3", "subir_video_facebook.py"],
             stdout=open(os.path.join(LOG_DIR, "facebook.log"), "a"),
             stderr=subprocess.STDOUT
+        ),
+        "instagram": subprocess.Popen(
+            ["python3", "subir_video_instagram.py"],
+            stdout=open(os.path.join(LOG_DIR, "instagram.log"), "a"),
+            stderr=subprocess.STDOUT
         )
     }
 
+    return procesos
+
+
 
 # ---------------------------------------------------------
-# Reintentos automáticos si falla YT o FB
+# Reintentos automáticos si falla YT o FB o INSTAGRAM
 # ---------------------------------------------------------
 def reintentar_plataformas(video):
     hist = cargar_historial()
 
-    for plataforma in ("youtube", "facebook"):
+    for plataforma in ("youtube", "facebook", "instagram"):
         datos = video["plataformas"][plataforma]
 
         if datos["estado"] == "fallido":
 
-            # Inicializar contador
             datos["reintentos"] = datos.get("reintentos", 0)
 
             if datos["reintentos"] < MAX_REINTENTOS:
@@ -159,14 +165,13 @@ def reintentar_plataformas(video):
 
                 log(f"🔁 Reintentando {plataforma} ({datos['reintentos']}/{MAX_REINTENTOS})...")
 
-                if plataforma == "youtube":
-                    subprocess.Popen(["python3", "subir_video_youtube.py"])
-                elif plataforma == "facebook":
-                    subprocess.Popen(["python3", "subir_video_facebook.py"])
+                subprocess.Popen(["python3", f"subir_video_{plataforma}.py"])
+
             else:
                 log(f"❌ Plataforma {plataforma} agotó reintentos.")
 
     guardar_historial(hist)
+
 
 
 # ---------------------------------------------------------
@@ -187,7 +192,7 @@ def main():
 
         # lanzar subidas paralelas (YT + FB)
         lanzar_subidas(video)
-
+        time.sleep(3)
         # Espera activa hasta que se complete o falle
         while True:
 
