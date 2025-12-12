@@ -1,46 +1,34 @@
+#!/usr/bin/env python3
 import os
-import json
-import pickle
-import shutil
 import sys
-from datetime import datetime, timedelta
+import pickle
+from datetime import datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.http import MediaFileUpload
 from openai import OpenAI
 
+# Helpers centralizados
+from logic.historial_util import (
+    obtener_siguiente_video_para,
+    marcar_como_publicado,
+    convertir_fecha_para,
+    asegurar_plataformas,
+    guardar_historial,
+    cargar_historial
+)
+
 from generar_descripcion import generar_descripcion, generar_tags_from_descripcion
 
-# -------- CONFIG --------
+
+# =====================================================
+# CONFIG
+# =====================================================
 CLIENT_SECRETS_FILE = "client_secret.json"
 TOKEN_FILE = "token.pickle"
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
-HISTORIAL = "historial.json"
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-
-# =====================================================
-#   CARGAR / GUARDAR HISTORIAL (NO ALTERADO)
-# =====================================================
-def cargar_historial():
-    if not os.path.exists(HISTORIAL):
-        return {"pendientes": [], "publicados": []}
-
-    with open(HISTORIAL, "r") as f:
-        contenido = f.read().strip()
-        if not contenido:
-            return {"pendientes": [], "publicados": []}
-
-        data = json.loads(contenido)
-        data.setdefault("pendientes", [])
-        data.setdefault("publicados", [])
-        return data
-
-
-def guardar_historial(data):
-    with open(HISTORIAL, "w") as f:
-        json.dump(data, f, indent=4)
 
 
 # =====================================================
@@ -55,7 +43,8 @@ def obtener_servicio_youtube():
 
     if not creds:
         flow = InstalledAppFlow.from_client_secrets_file(
-            CLIENT_SECRETS_FILE, SCOPES
+            CLIENT_SECRETS_FILE,
+            SCOPES
         )
         creds = flow.run_local_server(port=0)
 
@@ -68,18 +57,14 @@ def obtener_servicio_youtube():
 # =====================================================
 # 2. SUBIR VIDEO A YOUTUBE
 # =====================================================
-def subir_video_youtube(ruta_video, titulo, descripcion, tags, privacidad, publish_at):
-
+def subir_video_youtube(ruta, titulo, descripcion, tags, privacidad, publish_at):
     youtube = obtener_servicio_youtube()
 
-    if publish_at:
-        status_body = {
-            "privacyStatus": "private",
-            "publishAt": publish_at
-        }
-        print(f"⏰ Programando para: {publish_at}")
-    else:
-        status_body = {"privacyStatus": privacidad}
+    status_body = (
+        {"privacyStatus": "private", "publishAt": publish_at}
+        if publish_at else
+        {"privacyStatus": privacidad}
+    )
 
     request_body = {
         "snippet": {
@@ -91,7 +76,7 @@ def subir_video_youtube(ruta_video, titulo, descripcion, tags, privacidad, publi
         "status": status_body
     }
 
-    media = MediaFileUpload(ruta_video, chunksize=1024*1024, resumable=True)
+    media = MediaFileUpload(ruta, chunksize=1024 * 1024, resumable=True)
 
     print(f"\n📤 Subiendo video a YouTube...")
 
@@ -112,122 +97,61 @@ def subir_video_youtube(ruta_video, titulo, descripcion, tags, privacidad, publi
 
 
 # =====================================================
-# 3. INICIALIZAR ESTRUCTURA DE PLATAFORMAS
-# =====================================================
-def asegurar_plataformas(video):
-    """
-    Garantiza que cada pendiente tenga la estructura:
-       "plataformas": {
-            "youtube": {...},
-            "facebook": {...},
-            "instagram": {...},
-            "tiktok": {...}
-       }
-    """
-
-    if "plataformas" not in video:
-        video["plataformas"] = {}
-
-    for p in ("youtube", "facebook", "instagram", "tiktok"):
-        if p not in video["plataformas"]:
-            video["plataformas"][p] = {
-                "estado": "pendiente",
-                "video_id": None,
-                "fecha_publicado": None
-            }
-
-    return video
-
-
-# =====================================================
-# 4. OBTENER SIGUIENTE VIDEO PARA YOUTUBE
-# =====================================================
-def obtener_siguiente_para_youtube():
-    hist = cargar_historial()
-
-    if not hist["pendientes"]:
-        print("\n✔ No hay videos pendientes.")
-        return None
-
-    candidatos = []
-    for v in hist["pendientes"]:
-        v = asegurar_plataformas(v)
-        if v["plataformas"]["youtube"]["estado"] == "pendiente":
-            candidatos.append(v)
-
-    if not candidatos:
-        print("\n✔ No hay videos pendientes para YouTube.")
-        return None
-
-    # Ordenar por publicar_en
-    def ordenar(x):
-        try:
-            dt = datetime.fromisoformat(x["publicar_en"])
-            return dt.timestamp()
-        except:
-            return float("inf")
-
-    candidatos.sort(key=ordenar)
-    return candidatos[0]
-
-
-# =====================================================
-# 5. PROCESO PRINCIPAL DE SUBIDA
+# 3. PROCESO PRINCIPAL
 # =====================================================
 def subir_siguiente_youtube(privacidad="public"):
-    hist = cargar_historial()
-    video = obtener_siguiente_para_youtube()
 
+    video = obtener_siguiente_video_para("youtube")
     if video is None:
+        print("✔ No hay videos pendientes para YouTube.")
         return
-
+    
     archivo = video["archivo"]
     tipo = video["tipo"]
 
+    # === generar título y descripción ===
     titulo_base = os.path.splitext(os.path.basename(archivo))[0]
     titulo = f"{titulo_base.replace('_', ' ').title()} — 1 minuto 🙏✨"
 
-    descripcion = generar_descripcion(tipo, video["publicar_en"], archivo)
+    descripcion = generar_descripcion(
+                                        tipo, 
+                                        video["publicar_en"], 
+                                        archivo, 
+                                        plataforma="youtube"
+                                    )
     tags = generar_tags_from_descripcion(descripcion)
 
-    publish_at = video["publicar_en"]
+    # === convertir fecha si es necesario ===
+    publish_at = convertir_fecha_para("youtube", video["publicar_en"])
 
+    # === subir ===
     youtube_id = subir_video_youtube(
-        archivo,
-        titulo,
-        descripcion,
-        tags,
+        ruta=archivo,
+        titulo=titulo,
+        descripcion=descripcion,
+        tags=tags,
         privacidad=privacidad,
         publish_at=publish_at
     )
 
-    # Actualizar historial
-    for p in hist["pendientes"]:
-        if p["archivo"] == archivo:
-            p = asegurar_plataformas(p)
-            p["plataformas"]["youtube"] = {
-                "estado": "publicado",
-                "video_id": youtube_id,
-                "fecha_publicado": datetime.now().isoformat()
-            }
-
-    guardar_historial(hist)
+    # === marcar como publicado ===
+    marcar_como_publicado("youtube", archivo, youtube_id)
 
     print("\n✔ YouTube: estado actualizado en historial.\n")
 
 
 # =====================================================
-# 6. EJECUCIÓN MANUAL
+# 4. ENTRYPOINT
 # =====================================================
 if __name__ == "__main__":
 
     if "--privado" in sys.argv:
-        privacidad_forzada = "private"
+        privacidad = "private"
     elif "--oculto" in sys.argv:
-        privacidad_forzada = "unlisted"
+        privacidad = "unlisted"
     elif "--publico" in sys.argv:
-        privacidad_forzada = "public"
+        privacidad = "public"
     else:
-        privacidad_forzada = "public"
+        privacidad = "public"
 
-    subir_siguiente_youtube(privacidad_forzada)
+    subir_siguiente_youtube(privacidad)

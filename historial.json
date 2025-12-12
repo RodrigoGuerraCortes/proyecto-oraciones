@@ -1,39 +1,6 @@
 {
     "pendientes": [
         {
-            "archivo": "videos/oraciones/oracion_por_los_matrimonios_en_dificultad.mp4",
-            "tipo": "oracion",
-            "musica": "cinematic-chillhop-main-6676.mp3",
-            "licencia": "musica/licence/licence_cinematic-chillhop-main-6676.txt",
-            "imagen": "16.png",
-            "publicar_en": "2025-12-11T23:10:00-03:00",
-            "fecha_generado": "2025-12-11T09:05:52.136566",
-            "tag": "df5c2776af40c392",
-            "tag_legacy": "e0ecd074a5cb",
-            "plataformas": {
-                "youtube": {
-                    "estado": "publicado",
-                    "video_id": "ME__SaIrwb4",
-                    "fecha_publicado": "2025-12-11T13:54:58.848069"
-                },
-                "facebook": {
-                    "estado": "publicado",
-                    "video_id": null,
-                    "fecha_publicado": "2025-12-11T13:54:58.848069"
-                },
-                "instagram": {
-                    "estado":"publicado", 
-                    "video_id": null,
-                    "fecha_publicado": "2025-12-11T13:54:58.848069"
-                },
-                "tiktok": {
-                    "estado":"pendiente",
-                    "video_id": null,
-                    "fecha_publicado":"2025-12-11T13:54:58.848069"
-                }
-            }
-        },
-        {
             "archivo": "videos/oraciones/oracion_por_los_ninos.mp4",
             "tipo": "oracion",
             "musica": "8.mp3",
@@ -42,7 +9,29 @@
             "publicar_en": "2025-12-12T11:00:00-03:00",
             "fecha_generado": "2025-12-11T09:38:16.127113",
             "tag": "72a828dd8ce43075",
-            "tag_legacy": "b9509b3f82d9"
+            "tag_legacy": "b9509b3f82d9",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "jgOOFFCOCP8",
+                    "fecha_publicado": "2025-12-12T01:17:32.748063"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1325718859320152",
+                    "fecha_publicado": "2025-12-12T01:49:54.929755"
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
         },
         {
             "archivo": "videos/salmos/salmo_84_dichosos_los_que_habitan_en_tu_casa.mp4",
@@ -53,7 +42,29 @@
             "publicar_en": "2025-12-12T15:30:00-03:00",
             "fecha_generado": "2025-12-11T09:51:38.759061",
             "tag": "cbcfe6eb0ddd7a85",
-            "tag_legacy": "ccab2baff092"
+            "tag_legacy": "ccab2baff092",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "B4LIkztQ8MY",
+                    "fecha_publicado": "2025-12-12T01:35:49.521617"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "886390367168462",
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
         },
         {
             "archivo": "videos/oraciones/oracion_agradecimiento_en_la_prueba.mp4",
@@ -64,7 +75,29 @@
             "publicar_en": "2025-12-12T23:10:00-03:00",
             "fecha_generado": "2025-12-11T12:38:09.441283",
             "tag": "3843ddb59db79c77",
-            "tag_legacy": "af1bfc552cb3"
+            "tag_legacy": "af1bfc552cb3",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "2jsa8j7x9Ew",
+                    "fecha_publicado": "2025-12-12T01:49:46.316633"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1303859664843106",
+                    "fecha_publicado": "2025-12-12T01:50:27.162166"
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
         },
         {
             "archivo": "videos/oraciones/oracion_por_los_hijos_pequenos_breve.mp4",
@@ -75,7 +108,29 @@
             "publicar_en": "2025-12-13T11:00:00-03:00",
             "fecha_generado": "2025-12-11T12:41:04.797519",
             "tag": "56522cf77e3c4885",
-            "tag_legacy": "c43b93a7b220"
+            "tag_legacy": "c43b93a7b220",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "B2DpaFIEY2c",
+                    "fecha_publicado": "2025-12-12T01:50:07.807862"
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
         },
         {
             "archivo": "videos/salmos/salmo_40_yo_esperaba_el_senor.mp4",
@@ -86,7 +141,29 @@
             "publicar_en": "2025-12-13T15:30:00-03:00",
             "fecha_generado": "2025-12-11T12:51:36.351951",
             "tag": "e751f7327e74bd99",
-            "tag_legacy": "ec0e4eaf2242"
+            "tag_legacy": "ec0e4eaf2242",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "WDWY095kO8A",
+                    "fecha_publicado": "2025-12-12T01:50:20.987390"
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
         },
         {
             "archivo": "videos/oraciones/oracion_por_los_padres_de_familia_breve.mp4",
@@ -97,7 +174,29 @@
             "publicar_en": "2025-12-13T23:10:00-03:00",
             "fecha_generado": "2025-12-11T12:55:14.876957",
             "tag": "f52112dbcf93330c",
-            "tag_legacy": "fad77018e6de"
+            "tag_legacy": "fad77018e6de",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
         }
     ],
     "publicados": [
@@ -502,6 +601,138 @@
             "fecha_publicado": "2025-12-10T18:35:25.379466",
             "tag": "8c59cd9f1061acba",
             "tag_legacy": "8c59cd9f1061acba"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_los_matrimonios_en_dificultad.mp4",
+            "tipo": "oracion",
+            "musica": "cinematic-chillhop-main-6676.mp3",
+            "licencia": "musica/licence/licence_cinematic-chillhop-main-6676.txt",
+            "imagen": "16.png",
+            "publicar_en": "2025-12-11T23:10:00-03:00",
+            "fecha_generado": "2025-12-11T09:05:52.136566",
+            "tag": "df5c2776af40c392",
+            "tag_legacy": "e0ecd074a5cb",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "ME__SaIrwb4",
+                    "fecha_publicado": "2025-12-11T13:54:58.848069"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-11T13:54:58.848069"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-11T13:54:58.848069"
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-11T13:54:58.848069"
+                }
+            }
+        },
+        {
+            "archivo": "videos/publicados/oracions/oracion_por_los_ninos.mp4",
+            "tipo": "oracion",
+            "musica": "8.mp3",
+            "licencia": "musica/licence/licence_8.txt",
+            "imagen": "6.png",
+            "publicar_en": "2025-12-12T11:00:00-03:00",
+            "fecha_generado": "2025-12-11T09:38:16.127113",
+            "tag": "72a828dd8ce43075",
+            "tag_legacy": "b9509b3f82d9",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "jgOOFFCOCP8",
+                    "fecha_publicado": "2025-12-12T01:17:32.748063"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1325718859320152",
+                    "fecha_publicado": "2025-12-12T01:49:54.929755"
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/publicados/salmos/salmo_84_dichosos_los_que_habitan_en_tu_casa.mp4",
+            "tipo": "salmo",
+            "musica": "amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.mp3",
+            "licencia": "musica/licence/licence_amen-i-cathedral-polish-aramaic-religious-music-chorus-433992.txt",
+            "imagen": "4.jpg",
+            "publicar_en": "2025-12-12T15:30:00-03:00",
+            "fecha_generado": "2025-12-11T09:51:38.759061",
+            "tag": "cbcfe6eb0ddd7a85",
+            "tag_legacy": "ccab2baff092",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "B4LIkztQ8MY",
+                    "fecha_publicado": "2025-12-12T01:35:49.521617"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "886390367168462",
+                    "fecha_publicado": "2025-12-12T01:50:11.718238"
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/publicados/oracions/oracion_agradecimiento_en_la_prueba.mp4",
+            "tipo": "oracion",
+            "musica": "7.mp3",
+            "licencia": "musica/licence/licence_7.txt",
+            "imagen": "32.png",
+            "publicar_en": "2025-12-12T23:10:00-03:00",
+            "fecha_generado": "2025-12-11T12:38:09.441283",
+            "tag": "3843ddb59db79c77",
+            "tag_legacy": "af1bfc552cb3",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "2jsa8j7x9Ew",
+                    "fecha_publicado": "2025-12-12T01:49:46.316633"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1303859664843106",
+                    "fecha_publicado": "2025-12-12T01:50:27.162166"
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
         }
     ],
     "textos_usados": {

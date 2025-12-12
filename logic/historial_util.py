@@ -1,11 +1,9 @@
-# logic/historial_utils.py
-
 import os
 import json
+import shutil
 from datetime import datetime
 
 HISTORIAL = "historial.json"
-
 PLATAFORMAS = ["youtube", "facebook", "instagram", "tiktok"]
 
 
@@ -13,19 +11,15 @@ PLATAFORMAS = ["youtube", "facebook", "instagram", "tiktok"]
 # 1. CARGAR / GUARDAR HISTORIAL
 # =====================================================
 def cargar_historial():
-    """
-    Carga el historial.json y garantiza que existan las claves
-    'pendientes' y 'publicados'.
-    """
     if not os.path.exists(HISTORIAL):
         return {"pendientes": [], "publicados": []}
 
-    with open(HISTORIAL, "r", encoding="utf-8") as f:
-        try:
+    try:
+        with open(HISTORIAL, "r", encoding="utf-8") as f:
             data = json.load(f)
-        except json.JSONDecodeError:
-            # archivo vacío o corrupto
-            return {"pendientes": [], "publicados": []}
+    except json.JSONDecodeError:
+        # archivo vacío o corrupto
+        return {"pendientes": [], "publicados": []}
 
     data.setdefault("pendientes", [])
     data.setdefault("publicados", [])
@@ -39,61 +33,56 @@ def guardar_historial(data):
 
 
 # =====================================================
-# 2. ASEGURAR ESTRUCTURA DE PLATAFORMAS
+# 2. ASEGURAR ESTRUCTURA Y PERSISTIR
 # =====================================================
 def asegurar_plataformas(video):
     """
-    Garantiza que cada video pendiente tenga:
-
-    "plataformas": {
-        "youtube": {...},
-        "facebook": {...},
-        "instagram": {...},
-        "tiktok": {...}
-    }
+    Garantiza que el video tenga la estructura correcta en 'plataformas'
+    y persiste el cambio automáticamente en historial.json.
     """
-    if "plataformas" not in video:
-        video["plataformas"] = {}
 
-    for p in PLATAFORMAS:
-        if p not in video["plataformas"]:
-            video["plataformas"][p] = {
-                "estado": "pendiente",
-                "video_id": None,
-                "fecha_publicado": None
-            }
+    hist = cargar_historial()
 
-    return video
+    for item in hist["pendientes"]:
+        if item["archivo"] == video["archivo"]:
+            # asegurar estructura en memoria
+            if "plataformas" not in item:
+                item["plataformas"] = {}
+
+            for p in PLATAFORMAS:
+                if p not in item["plataformas"]:
+                    item["plataformas"][p] = {
+                        "estado": "pendiente",
+                        "video_id": None,
+                        "fecha_publicado": None
+                    }
+
+            guardar_historial(hist)
+            return item  # devolvemos el video ya actualizado
+
+    return video  # fallback (no debería ocurrir)
 
 
 # =====================================================
 # 3. OBTENER SIGUIENTE VIDEO PARA UNA PLATAFORMA
 # =====================================================
 def obtener_siguiente_video_para(plataforma):
-    """
-    Devuelve el siguiente video pendiente para esa plataforma,
-    ordenado por fecha 'publicar_en'.
-    """
-
     hist = cargar_historial()
     candidatos = []
 
     for item in hist["pendientes"]:
         item = asegurar_plataformas(item)
 
-        estado = item["plataformas"][plataforma]["estado"]
-        if estado == "pendiente":
+        if item["plataformas"][plataforma]["estado"] == "pendiente":
             candidatos.append(item)
 
     if not candidatos:
         return None
 
-    # ordenar por publicar_en
-    def orden(x):
+    def orden(v):
         try:
-            dt = datetime.fromisoformat(x["publicar_en"])
-            return dt.timestamp()
-        except Exception:
+            return datetime.fromisoformat(v["publicar_en"]).timestamp()
+        except:
             return float("inf")
 
     candidatos.sort(key=orden)
@@ -104,12 +93,6 @@ def obtener_siguiente_video_para(plataforma):
 # 4. MARCAR COMO PUBLICADO
 # =====================================================
 def marcar_como_publicado(plataforma, archivo, video_id):
-    """
-    Actualiza historial.json:
-    - Cambia estado a 'publicado' para la plataforma
-    - Guarda fecha actual
-    - Guarda video_id retornado por la API
-    """
     hist = cargar_historial()
 
     for item in hist["pendientes"]:
@@ -125,23 +108,59 @@ def marcar_como_publicado(plataforma, archivo, video_id):
 
 
 # =====================================================
-# 5. CONVERTIR FECHA PARA PLATAFORMAS
+# 5. MOVER ARCHIVO FÍSICO
+# =====================================================
+def mover_archivo(video):
+    archivo = video["archivo"]
+    tipo = video.get("tipo", "otros")
+
+    base = os.path.basename(archivo)
+    destino_dir = os.path.join("videos", "publicados", tipo + "s")
+    os.makedirs(destino_dir, exist_ok=True)
+
+    destino = os.path.join(destino_dir, base)
+
+    try:
+        shutil.move(archivo, destino)
+        video["archivo"] = destino  # actualizar ruta real
+        return True
+    except Exception as e:
+        print(f"[ERROR] No se pudo mover archivo físico: {e}")
+        return False
+
+
+# =====================================================
+# 6. MOVER A PUBLICADOS EN HISTORIAL
+# =====================================================
+def mover_a_publicados(video):
+    ok = mover_archivo(video)
+    if not ok:
+        return
+
+    hist = cargar_historial()
+
+    # remover de pendientes
+    hist["pendientes"] = [
+        v for v in hist["pendientes"]
+        if v["archivo"] != video["archivo"]
+    ]
+
+    # agregar a publicados
+    hist["publicados"].append(video)
+
+    guardar_historial(hist)
+    print(f"✔ Video movido a publicados: {video['archivo']}")
+
+
+# =====================================================
+# 7. CONVERTIR FECHA PARA PLATAFORMAS
 # =====================================================
 def convertir_fecha_para(plataforma, publicar_en):
-    """
-    YouTube → requiere RFC3339 (ya viene así desde generador)
-    Facebook → requiere timestamp UNIX
-    Instagram/TikTok → se definirá al integrarlos
-    """
-
     if plataforma == "facebook":
-        # convertir ISO → UNIX
         try:
             dt = datetime.fromisoformat(publicar_en)
             return int(dt.timestamp())
         except:
-            # fallback: 20 minutos más
-            return int(datetime.now().timestamp()) + 20*60
+            return int(datetime.now().timestamp()) + 20 * 60
 
-    # YouTube u otras plataformas pueden recibir ISO directamente
-    return publicar_en
+    return publicar_en  # YouTube usa ISO
