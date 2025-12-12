@@ -17,19 +17,19 @@
                     "fecha_publicado": "2025-12-11T13:54:58.848069"
                 },
                 "facebook": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-11T13:54:58.848069"
                 },
                 "instagram": {
-                    "estado": "pendiente",
+                    "estado":"publicado", 
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-11T13:54:58.848069"
                 },
                 "tiktok": {
-                    "estado": "pendiente",
+                    "estado":"pendiente",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado":"2025-12-11T13:54:58.848069"
                 }
             }
         },

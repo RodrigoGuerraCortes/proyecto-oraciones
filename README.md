@@ -19,3 +19,10 @@ python3 generar_video.py 1 salmo test
 
 
 python3 subir_videos_diarios.py
+
+
+
+planificar.py -> crea los videos con el sistema OSO 
+subir_video_xxxxx -> sube el video a x plataforma y actualiza el historial 
+gestor_publicacion -> revisa si ya los videos fueron publicados y mueve de pendientes a publicados.
+
