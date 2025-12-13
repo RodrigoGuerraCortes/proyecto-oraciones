@@ -26,6 +26,8 @@ def generar_descripcion(tipo, hora_texto, archivo_texto, plataforma="youtube", l
         return generar_descripcion_facebook(tipo, hora_texto, archivo_texto)
     elif plataforma == "instagram":
         return generar_descripcion_instagram(tipo, hora_texto, archivo_texto)
+    elif plataforma == "tiktok":
+        return generar_descripcion_tiktok(tipo, hora_texto, archivo_texto)
 
     else:
         raise ValueError(f"Plataforma no soportada: {plataforma}")
@@ -235,6 +237,61 @@ Necesito que generes:
     hashtags = "#fe #dios #oracion #catolico"
 
     return f"{frase}\n\n{hashtags}"
+
+
+# =====================================================================
+#   TIKTOK — FRASE DIRECTA + HASHTAGS DE DESCUBRIMIENTO
+# =====================================================================
+def generar_descripcion_tiktok(tipo, hora_texto, archivo_texto):
+
+    # Leer contenido solo como inspiración
+    try:
+        with open(archivo_texto, "r", encoding="utf-8") as f:
+            contenido = f.read().strip()
+    except:
+        contenido = ""
+
+    prompt = f"""
+Eres experto en contenido católico viral para **TikTok**.
+
+Necesito que generes:
+- UNA frase corta (máx. 8–10 palabras)
+- Muy emocional y espiritual
+- Lenguaje sencillo y humano
+- 1 o 2 emojis permitidos
+- NO resumas ni reescribas el texto
+- NO frases genéricas
+- NO escribas “Amén”
+- NO incluyas hashtags en la frase
+- Debe funcionar para TikTok (hook rápido)
+"""
+
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        frase = resp.choices[0].message.content.strip()
+
+    except Exception:
+        frase = (
+            "Pon a Dios en el centro de tu día 🙏✨"
+            if tipo == "oracion"
+            else "La Palabra de Dios transforma el corazón 🙏✨"
+        )
+
+    # Hashtags más amplios para TikTok (descubrimiento)
+    if tipo == "oracion":
+        hashtags = (
+            "#oracion #oraciondiaria #dios #fe #jesus "
+        )
+    else:
+        hashtags = (
+            "#salmo #biblia #palabradedios #fe #jesus "
+        )
+
+    return f"{frase}\n\n{hashtags}"
+
 
 
 

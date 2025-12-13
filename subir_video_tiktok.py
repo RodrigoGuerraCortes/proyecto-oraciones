@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 import os
-import sys
-import json
-import time
 import requests
-from datetime import datetime
+import pprint
 from dotenv import load_dotenv
 
 from generar_descripcion import generar_descripcion
@@ -13,133 +10,120 @@ from logic.historial_util import (
     marcar_como_publicado,
     marcar_como_pendiente,
     marcar_como_procesando,
-    convertir_fecha_para,
 )
+from generar_token_tiktok import get_access_token, is_tiktok_sandbox
 
 # =====================================================
 # CONFIG
 # =====================================================
 load_dotenv()
 
-TIKTOK_ACCESS_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN")  # OAuth access token
-if not TIKTOK_ACCESS_TOKEN:
-    print("❌ Falta TIKTOK_ACCESS_TOKEN en .env")
-    sys.exit(1)
-
-BASE_URL = "https://open.tiktokapis.com/v2/post/publish/video"
+BASE_URL = "https://open.tiktokapis.com/v2/post/publish/inbox/video"
 
 # =====================================================
-# 1. CREAR CONTENEDOR TIKTOK (INIT)
+# 1. CREAR CONTENEDOR (INBOX / SANDBOX)
 # =====================================================
-def crear_contenedor_tiktok(descripcion: str, publish_time: int | None):
+def crear_contenedor_tiktok(ruta_video: str):
     url = f"{BASE_URL}/init/"
+    sandbox = is_tiktok_sandbox()
+
+    if not sandbox:
+        raise RuntimeError("Este script está preparado SOLO para SANDBOX / INBOX")
+
+    video_size = os.path.getsize(ruta_video)
 
     payload = {
-        "post_info": {
-            "title": descripcion[:150],
-            "privacy_level": "PUBLIC",
-            "disable_comment": False,
-            "disable_duet": False,
-            "disable_stitch": False
-        },
         "source_info": {
-            "source": "FILE_UPLOAD"
+            "source": "FILE_UPLOAD",
+            "video_size": video_size,
+            "chunk_size": video_size,
+            "total_chunk_count": 1
         }
     }
 
-    if publish_time:
-        payload["post_info"]["publish_time"] = publish_time
-
     headers = {
-        "Authorization": f"Bearer {TIKTOK_ACCESS_TOKEN}",
+        "Authorization": f"Bearer {get_access_token()}",
         "Content-Type": "application/json"
     }
 
-    print("🟡 [TikTok] Creando contenedor...")
+    # 🔍 LOG REQUEST
+    print("\n================ TIKTOK INIT REQUEST ================")
+    print("ENV: SANDBOX")
+    print("URL:", url)
+    print("HEADERS:")
+    pprint.pprint(headers)
+    print("PAYLOAD:")
+    pprint.pprint(payload)
+    print("====================================================\n")
+
     r = requests.post(url, json=payload, headers=headers)
 
+    # 🔍 LOG RESPONSE
+    print("\n================ TIKTOK INIT RESPONSE ================")
+    print("STATUS:", r.status_code)
     try:
-        r.raise_for_status()
+        pprint.pprint(r.json())
     except Exception:
-        print("❌ ERROR creando contenedor TikTok:")
         print(r.text)
-        raise
+    print("====================================================\n")
+
+    r.raise_for_status()
 
     data = r.json()["data"]
-    publish_id = data["publish_id"]
-    upload_url = data["upload_url"]
-
-    print(f"✅ [TikTok] Contenedor creado. publish_id={publish_id}")
-    return publish_id, upload_url
+    return data["publish_id"], data["upload_url"]
 
 
 # =====================================================
-# 2. SUBIR VIDEO (PUT DIRECTO)
+# 2. SUBIR VIDEO BINARIO
 # =====================================================
 def subir_video_tiktok(upload_url: str, ruta_video: str):
-    print("🟡 [TikTok] Subiendo video...")
+    video_size = os.path.getsize(ruta_video)
+
+    headers = {
+        "Content-Type": "video/mp4",
+        "Content-Range": f"bytes 0-{video_size - 1}/{video_size}"
+    }
 
     with open(ruta_video, "rb") as f:
-        r = requests.put(upload_url, data=f)
+        r = requests.put(upload_url, data=f, headers=headers)
 
-    try:
-        r.raise_for_status()
-    except Exception:
-        print("❌ ERROR subiendo video a TikTok:")
-        print(r.text)
-        raise
-
-    print("🎉 [TikTok] Video subido correctamente.")
+    r.raise_for_status()
 
 
 # =====================================================
-# 3. LÓGICA PRINCIPAL
+# 3. FLUJO PRINCIPAL
 # =====================================================
 def subir_siguiente_video_tiktok():
     video = obtener_siguiente_video_para("tiktok")
-
-    if video is None:
+    if not video:
         print("✔ No hay videos pendientes para TikTok.")
         return
 
     archivo = video["archivo"]
     tipo = video.get("tipo", "oracion")
-    publicar_en = video.get("publicar_en")
 
-    print("\n📤 [TikTok] Subiendo video")
-    print(f"   Archivo: {archivo}")
-    print(f"   Publicar en: {publicar_en}")
-
-    # 🔒 1️⃣ Bloqueo inmediato
     marcar_como_procesando("tiktok", archivo)
 
     try:
-        descripcion = generar_descripcion(
+        # Generamos descripción SOLO para dejar trazabilidad,
+        # TikTok INBOX no la usa (se edita en la app)
+        _ = generar_descripcion(
             tipo=tipo,
-            hora_texto=publicar_en,
+            hora_texto=video.get("publicar_en"),
             archivo_texto=archivo,
             plataforma="tiktok"
         )
 
-        publish_time = convertir_fecha_para("tiktok", publicar_en)
+        publish_id, upload_url = crear_contenedor_tiktok(archivo)
 
-        # 2️⃣ Crear contenedor
-        publish_id, upload_url = crear_contenedor_tiktok(
-            descripcion=descripcion,
-            publish_time=publish_time
-        )
-
-        # 3️⃣ Subir MP4
         subir_video_tiktok(upload_url, archivo)
 
-        # 4️⃣ Marcar como publicado
         marcar_como_publicado("tiktok", archivo, publish_id)
-
-        print("\n✔ [TikTok] Video publicado / programado correctamente.\n")
+        print("🎉 TikTok (SANDBOX / INBOX) subido correctamente")
 
     except Exception as e:
         marcar_como_pendiente("tiktok", archivo)
-        print(f"❌ [TikTok] Error. Se revierte a pendiente: {e}")
+        print(f"❌ Error TikTok, rollback aplicado: {e}")
         raise
 
 
@@ -148,3 +132,4 @@ def subir_siguiente_video_tiktok():
 # =====================================================
 if __name__ == "__main__":
     subir_siguiente_video_tiktok()
+

@@ -26,3 +26,12 @@ planificar.py -> crea los videos con el sistema OSO
 subir_video_xxxxx -> sube el video a x plataforma y actualiza el historial 
 gestor_publicacion -> revisa si ya los videos fueron publicados y mueve de pendientes a publicados.
 
+
+
+
+#Para tik tok
+
+🟢 Paso 2 — Bootstrap OAuth (una sola vez)
+python3 generar_token_tiktok.py --oauth
+
+python3 subir_video_tiktok.py

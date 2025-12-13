@@ -146,37 +146,30 @@ def mover_archivo(video):
 
     destino = os.path.join(destino_dir, base)
 
-    try:
-        shutil.move(archivo, destino)
-        video["archivo"] = destino  # actualizar ruta real
-        return True
-    except Exception as e:
-        print(f"[ERROR] No se pudo mover archivo físico: {e}")
-        return False
-
+    shutil.move(archivo, destino)
+    video["archivo"] = destino
 
 # =====================================================
 # 6. MOVER A PUBLICADOS EN HISTORIAL
 # =====================================================
 def mover_a_publicados(video):
-    ok = mover_archivo(video)
-    if not ok:
-        return
-
     hist = cargar_historial()
 
-    # remover de pendientes
-    hist["pendientes"] = [
-        v for v in hist["pendientes"]
-        if v["archivo"] != video["archivo"]
-    ]
+    # buscar el objeto real
+    real = next((v for v in hist["pendientes"] if v["archivo"] == video["archivo"]), None)
+    if not real:
+        return
 
-    # agregar a publicados
-    hist["publicados"].append(video)
+    hist["pendientes"].remove(real)
+    hist["publicados"].append(real)
 
     guardar_historial(hist)
-    print(f"✔ Video movido a publicados: {video['archivo']}")
 
+    try:
+        if os.path.exists(real["archivo"]):
+            mover_archivo(real)
+    except Exception as e:
+        print(f"⚠ Error moviendo archivo físico: {e}")
 
 # =====================================================
 # 7. CONVERTIR FECHA PARA PLATAFORMAS

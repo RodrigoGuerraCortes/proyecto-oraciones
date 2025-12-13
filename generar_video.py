@@ -15,7 +15,7 @@ import textwrap
 from moviepy.editor import concatenate_videoclips
 import hashlib
 from logic.text_seleccion import elegir_no_repetido
-
+from generar_aleatoridad import elegir_imagen_no_reciente, elegir_musica_no_reciente
 
 import json 
 
@@ -422,21 +422,18 @@ def crear_fondo(duracion, imagen_fija=None):
     print(" [FONDO] Generando fondo…")
     print("============================")
 
-    imagenes = os.listdir("imagenes")
-    imagenes = [i for i in imagenes if i.lower() != "vignette.png"]
-    
     global ultima_imagen_usada
-
+    historial = cargar_historial()
 
     if imagen_fija:
         ultima_imagen_usada = imagen_fija
         ruta = os.path.join("imagenes", imagen_fija)
         print(f"[FONDO] Usando imagen fija: {imagen_fija}")
     else:
-        elegida = random.choice(imagenes)
+        elegida = elegir_imagen_no_reciente(historial, ventana=10)
         ultima_imagen_usada = elegida
         ruta = os.path.join("imagenes", elegida)
-        print(f"[FONDO] Imagen seleccionada: {elegida}")
+        print(f"[FONDO] Imagen seleccionada (no reciente): {elegida}")
 
     try:
         pil = Image.open(ruta)
@@ -460,14 +457,9 @@ def crear_fondo(duracion, imagen_fija=None):
 
     def zoom_safe(t):
         factor = 1.04 - 0.03 * (t / duracion)
-        if factor < 1.0:
-            factor = 1.0
-        if factor > 1.04:
-            factor = 1.04
-        return factor
+        return max(1.0, min(1.04, factor))
 
-    fondo = fondo.resize(zoom_safe) 
-    #fondo = fondo.resize(lambda t: 1.04 - 0.03 * (t / duracion))
+    fondo = fondo.resize(zoom_safe)
 
     grad = Image.new("RGBA", (ANCHO, ALTO))
     d = ImageDraw.Draw(grad)
@@ -495,10 +487,15 @@ def audio_loop(audio, duration):
 
 
 def crear_audio(duracion, musica_fija=None):
-    audios_disponibles = os.listdir("musica")
+    historial = cargar_historial()
+
+    audios_disponibles = [
+        f for f in os.listdir("musica")
+        if f.lower().endswith(".mp3")
+    ]
 
     # -----------------------------------
-    # 🎵 SI HAY MÚSICA FIJA (elegida con --musica=)
+    # 🎵 MÚSICA FIJA
     # -----------------------------------
     if musica_fija:
         ruta = os.path.join("musica", musica_fija)
@@ -506,25 +503,24 @@ def crear_audio(duracion, musica_fija=None):
 
         audio = AudioFileClip(ruta)
 
-        # Loop si es más corta que el video
         if audio.duration < duracion:
             print("[AUDIO] Música corta → loop automático")
             audio = audio_loop(audio, duration=duracion)
         else:
             audio = audio.subclip(0, duracion)
 
-        return audio, musica_fija   # ⭐ SIEMPRE DEVOLVER 2 VALORES
+        return audio, musica_fija
 
     # -----------------------------------
-    # 🎵 MÚSICA ALEATORIA
+    # 🎵 MÚSICA ALEATORIA (MEJORADA)
     # -----------------------------------
     intentos = 0
     while intentos < 3:
         try:
-            archivo = random.choice(audios_disponibles)
+            archivo = elegir_musica_no_reciente(historial)
             ruta = os.path.join("musica", archivo)
 
-            print(f"[AUDIO] Intento {intentos+1}: {ruta}")
+            print(f"[AUDIO] Música seleccionada (no reciente): {archivo}")
 
             audio = AudioFileClip(ruta)
             dur_audio = audio.duration
@@ -536,20 +532,21 @@ def crear_audio(duracion, musica_fija=None):
                 inicio = random.uniform(0, max(0, dur_audio - duracion))
                 audio = audio.subclip(inicio, inicio + duracion)
 
-            return audio, archivo  # ⭐ DEVOLVER 2 VALORES
+            return audio, archivo
 
         except Exception as e:
             print(f"[AUDIO ERROR] {e}")
             intentos += 1
 
     # -----------------------------------
-    # 🎵 FALLBACK (nunca debe suceder)
+    # 🎵 FALLBACK
     # -----------------------------------
     archivo = audios_disponibles[0]
     print("[AUDIO] Fallback silencioso")
     audio = AudioFileClip(os.path.join("musica", archivo)).subclip(0, duracion)
 
     return audio, archivo
+
 
 
 # --------------------------------------------

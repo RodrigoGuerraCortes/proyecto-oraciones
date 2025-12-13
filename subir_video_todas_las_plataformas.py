@@ -88,18 +88,20 @@ def obtener_videos_del_dia(dia):
 # ---------------------------------------------------------
 # Estado completo 
 # ---------------------------------------------------------
+def estado_final(estado):
+    return estado in ("publicado", "fallido")
+
+
 def plataformas_completas(video):
     """
-    COMPLETADO = YouTube + Facebook + Instagram publicados.
-    TikTok aún no se considera obligatorio.
+    Un video se considera COMPLETO cuando TODAS las plataformas
+    están en estado FINAL (publicado o fallido).
     """
     p = video.get("plataformas", {})
 
-    requerido = ["youtube", "facebook", "instagram", "tiktok"]
-
-    for plataforma in requerido:
-        estado = p.get(plataforma, {}).get("estado")
-        if estado != "publicado":
+    for plataforma, datos in p.items():
+        estado = datos.get("estado")
+        if not estado_final(estado):
             return False
 
     return True
