@@ -29,7 +29,7 @@
                 "tiktok": {
                     "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado":"2025-12-12T01:49:54.929755"
+                    "fecha_publicado": "2025-12-12T01:49:54.929755"
                 }
             }
         },
@@ -88,14 +88,14 @@
                     "fecha_publicado": "2025-12-12T01:50:27.162166"
                 },
                 "instagram": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-12T01:50:27.162166"
                 },
                 "tiktok": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-12T01:50:27.162166"
                 }
             }
         },
@@ -121,14 +121,14 @@
                     "fecha_publicado": "2025-12-12T02:52:48.301977"
                 },
                 "instagram": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-12T02:52:48.301977"
                 },
                 "tiktok": {
-                    "estado": "pendiente",
+                    "estado": "publicado",
                     "video_id": null,
-                    "fecha_publicado": null
+                    "fecha_publicado": "2025-12-12T02:52:48.301977"
                 }
             }
         },
@@ -154,9 +154,9 @@
                     "fecha_publicado": "2025-12-12T03:07:45.939839"
                 },
                 "instagram": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
+                    "estado": "publicado",
+                    "video_id": "17843196015650760",
+                    "fecha_publicado": "2025-12-13T11:43:35.415786"
                 },
                 "tiktok": {
                     "estado": "pendiente",
@@ -187,9 +187,9 @@
                     "fecha_publicado": "2025-12-12T03:11:59.369874"
                 },
                 "instagram": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
+                    "estado": "publicado",
+                    "video_id": "18081872276130479",
+                    "fecha_publicado": "2025-12-13T11:19:30.989811"
                 },
                 "tiktok": {
                     "estado": "pendiente",
@@ -863,6 +863,39 @@
                     "estado": "pendiente",
                     "video_id": null,
                     "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/publicados/oracions/oracion_por_los_hijos_pequenos_breve.mp4",
+            "tipo": "oracion",
+            "musica": "christian-439968.mp3",
+            "licencia": "musica/licence/licence_christian-439968.txt",
+            "imagen": "32.png",
+            "publicar_en": "2025-12-13T11:00:00-03:00",
+            "fecha_generado": "2025-12-11T12:41:04.797519",
+            "tag": "56522cf77e3c4885",
+            "tag_legacy": "c43b93a7b220",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "B2DpaFIEY2c",
+                    "fecha_publicado": "2025-12-12T01:50:07.807862"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1387660652950870",
+                    "fecha_publicado": "2025-12-12T02:52:48.301977"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-12T02:52:48.301977"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": null,
+                    "fecha_publicado": "2025-12-12T02:52:48.301977"
                 }
             }
         }
