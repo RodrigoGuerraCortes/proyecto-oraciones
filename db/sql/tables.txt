@@ -1,0 +1,41 @@
+
+CREATE TABLE text_usage (
+    id SERIAL PRIMARY KEY,
+    channel_id INT REFERENCES channels(id),
+    video_id UUID REFERENCES videos(id),
+    tipo VARCHAR(20),
+    texto TEXT NOT NULL,
+    used_at TIMESTAMP DEFAULT now()
+);
+
+
+CREATE TABLE publications (
+    id SERIAL PRIMARY KEY,
+    video_id UUID REFERENCES videos(id),
+    platform_id INT REFERENCES platforms(id),
+
+    estado VARCHAR(20) NOT NULL,
+    publicar_en TIMESTAMP NOT NULL,
+    fecha_intento TIMESTAMP,
+    fecha_publicado TIMESTAMP,
+
+    external_id TEXT,
+    error TEXT,
+
+    created_at TIMESTAMP DEFAULT now()
+);
+
+
+CREATE TABLE platform_schedules (
+    id SERIAL PRIMARY KEY,
+    channel_id INT REFERENCES channels(id),
+    platform_id INT REFERENCES platforms(id),
+    hora TIME NOT NULL,
+    tipo VARCHAR(20) NOT NULL
+);
+
+CREATE INDEX idx_publications_estado_fecha
+ON publications (estado, publicar_en);
+
+CREATE INDEX idx_text_usage_channel_tipo
+ON text_usage (channel_id, tipo, used_at);

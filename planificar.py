@@ -9,7 +9,7 @@ from historial import cargar_historial, guardar_historial
 
 PYTHON = sys.executable
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-GENERADOR = os.path.join(BASE_DIR, "generar_video_v2.py")
+GENERADOR = os.path.join(BASE_DIR, "generar_video.py")
 
 # Regla A → OSO POR DÍA
 SLOTS_DEL_DIA = {

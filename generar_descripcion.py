@@ -129,7 +129,9 @@ Genera una descripción única.
             f"{licencia_texto}"
         )
 
-    return f"{texto_corto}\n\n{hashtags_finales}{bloque_licencia}"
+        return f"{texto_corto}\n\n{hashtags_finales}{bloque_licencia}"
+
+    return f"{texto_corto}\n\n{hashtags_finales}"
 
 
 # =====================================================================

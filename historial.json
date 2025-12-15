@@ -1,5 +1,402 @@
 {
-    "pendientes": [],
+    "pendientes": [
+        {
+            "archivo": "videos/oraciones/oracion_de_proteccion_en_la_noche_familiar.mp4",
+            "tipo": "oracion",
+            "musica": "5.mp3",
+            "licencia": "musica/licence/licence_5.txt",
+            "imagen": "13.png",
+            "publicar_en": "2025-12-15T11:00:00-03:00",
+            "fecha_generado": "2025-12-13T19:56:21.337441",
+            "tag": "ea99556bc60ee245",
+            "tag_legacy": "79383c46dd9f",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "8JUyqW4UwBs",
+                    "fecha_publicado": "2025-12-14T02:05:47.024171"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1748263925843858",
+                    "fecha_publicado": "2025-12-14T02:05:52.358484"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": "17843305440650760",
+                    "fecha_publicado": "2025-12-14T02:07:08.516032"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": "v_inbox_file~v2.7583575155037816844",
+                    "fecha_publicado": "2025-12-14T02:05:37.739221"
+                }
+            }
+        },
+        {
+            "archivo": "videos/salmos/salmo_14_el_senor_ve_el_corazon.mp4",
+            "tipo": "salmo",
+            "musica": "ave-maria-417992.mp3",
+            "licencia": "musica/licence/licence_ave-maria-417992.txt",
+            "imagen": "11.png",
+            "publicar_en": "2025-12-15T15:30:00-03:00",
+            "fecha_generado": "2025-12-13T20:01:43.220825",
+            "tag": "e6a3e86885e6f96f",
+            "tag_legacy": "77a8a21f50e2",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "cMK0PQ51tC4",
+                    "fecha_publicado": "2025-12-14T02:06:44.072519"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1513860559834072",
+                    "fecha_publicado": "2025-12-14T02:06:52.934811"
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": "v_inbox_file~v2.7583575061559576588",
+                    "fecha_publicado": "2025-12-14T02:05:46.039895"
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_bendita_sea_tu_pureza.mp4",
+            "tipo": "oracion",
+            "musica": "silent-prayer-instrumental-212811.mp3",
+            "licencia": "musica/licence/licence_silent-prayer-instrumental-212811.txt",
+            "imagen": "28.png",
+            "publicar_en": "2025-12-15T23:10:00-03:00",
+            "fecha_generado": "2025-12-13T20:05:00.265875",
+            "tag": "b770a7694e79c6ee",
+            "tag_legacy": "3b63b2919c9f",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_para_pedir_paz_interior.mp4",
+            "tipo": "oracion",
+            "musica": "prayer-vigil-no-15-amen-420055.mp3",
+            "licencia": "musica/licence/licence_prayer-vigil-no-15-amen-420055.txt",
+            "imagen": "18.png",
+            "publicar_en": "2025-12-16T11:00:00-03:00",
+            "fecha_generado": "2025-12-13T20:07:26.633917",
+            "tag": "5a128144a9a5c831",
+            "tag_legacy": "b4457ad05c9d",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/salmos/salmo_11_refugio_en_tiempos_dificiles.mp4",
+            "tipo": "salmo",
+            "musica": "cathedral-164234.mp3",
+            "licencia": "musica/licence/licence_cathedral-164234.txt",
+            "imagen": "espiritu_santo",
+            "publicar_en": "2025-12-16T15:30:00-03:00",
+            "fecha_generado": "2025-12-13T20:12:46.949251",
+            "tag": "1eaecad5f4d325cb",
+            "tag_legacy": "5a8363ec6dc5",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_a_san_miguel.mp4",
+            "tipo": "oracion",
+            "musica": "Eternal Garden - Dan Henig.mp3",
+            "licencia": "musica/licence/licence_Eternal Garden - Dan Henig.txt",
+            "imagen": "10.png",
+            "publicar_en": "2025-12-16T23:10:00-03:00",
+            "fecha_generado": "2025-12-13T20:16:03.375430",
+            "tag": "69373bc2ee01f0a7",
+            "tag_legacy": "25cb50a43eb2",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_para_empezar_el_dia.mp4",
+            "tipo": "oracion",
+            "musica": "Sleepy Hollow - E's Jammy Jams.mp3",
+            "licencia": "musica/licence/licence_Sleepy Hollow - E's Jammy Jams.txt",
+            "imagen": "2.png",
+            "publicar_en": "2025-12-17T11:00:00-03:00",
+            "fecha_generado": "2025-12-13T20:18:28.768836",
+            "tag": "75772137a8624a54",
+            "tag_legacy": "883c447efb54",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/salmos/salmo_35_el_senor_pelea_por_mi.mp4",
+            "tipo": "salmo",
+            "musica": "The Palace Gardens - Asher Fulero.mp3",
+            "licencia": "musica/licence/licence_The Palace Gardens - Asher Fulero.txt",
+            "imagen": "15.png",
+            "publicar_en": "2025-12-17T15:30:00-03:00",
+            "fecha_generado": "2025-12-13T20:23:51.777317",
+            "tag": "2a4db7fe2d286bd7",
+            "tag_legacy": "060a002001f5",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_para_abrazar_el_consuelo.mp4",
+            "tipo": "oracion",
+            "musica": "10.mp3",
+            "licencia": "musica/licence/licence_10.txt",
+            "imagen": "19.png",
+            "publicar_en": "2025-12-17T23:10:00-03:00",
+            "fecha_generado": "2025-12-13T20:26:17.753040",
+            "tag": "9f13b10e6aa806c7",
+            "tag_legacy": "25e26b4289ea",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_los_companeros_de_trabajo.mp4",
+            "tipo": "oracion",
+            "musica": "cathedral-164234.mp3",
+            "licencia": "musica/licence/licence_cathedral-164234.txt",
+            "imagen": "24.png",
+            "publicar_en": "2025-12-18T11:00:00-03:00",
+            "fecha_generado": "2025-12-13T20:28:43.991738",
+            "tag": "afd7681022fa64ec",
+            "tag_legacy": "39611f6b5c43",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/salmos/salmo_34_bendecire_al_senor_en_todo_tiempo.mp4",
+            "tipo": "salmo",
+            "musica": "Lights - Patrick Patrikios.mp3",
+            "licencia": "musica/licence/licence_Lights - Patrick Patrikios.txt",
+            "imagen": "14.png",
+            "publicar_en": "2025-12-18T15:30:00-03:00",
+            "fecha_generado": "2025-12-13T20:35:45.176739",
+            "tag": "9df0e7ca60bde966",
+            "tag_legacy": "238e83987065",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_de_san_ignacio.mp4",
+            "tipo": "oracion",
+            "musica": "Gamela - E's Jammy Jams.mp3",
+            "licencia": "musica/licence/licence_Gamela - E's Jammy Jams.txt",
+            "imagen": "14.png",
+            "publicar_en": "2025-12-18T23:10:00-03:00",
+            "fecha_generado": "2025-12-13T20:39:01.009887",
+            "tag": "70e2b672cbb56c68",
+            "tag_legacy": "cc9186ef9649",
+            "plataformas": {
+                "youtube": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "facebook": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "instagram": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                },
+                "tiktok": {
+                    "estado": "pendiente",
+                    "video_id": null,
+                    "fecha_publicado": null
+                }
+            }
+        }
+    ],
     "publicados": [
         {
             "archivo": "videos/oraciones/acto_de_caridad.mp4",
@@ -897,6 +1294,105 @@
                     "fecha_publicado": "2025-12-13T13:43:07.909406"
                 }
             }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_para_confiar_a_los_hijos_a_dios.mp4",
+            "tipo": "oracion",
+            "musica": "5.mp3",
+            "licencia": "musica/licence/licence_5.txt",
+            "imagen": "1.png",
+            "publicar_en": "2025-12-14T11:00:00-03:00",
+            "fecha_generado": "2025-12-13T19:46:07.207972",
+            "tag": "d94ba2f248ff308d",
+            "tag_legacy": "b3abc5c4be15",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "mrstcaEwEaU",
+                    "fecha_publicado": "2025-12-14T01:53:00.127999"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "664491839965164",
+                    "fecha_publicado": "2025-12-14T01:50:06.584578"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": "17843303190650760",
+                    "fecha_publicado": "2025-12-14T01:54:12.872469"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": "17843303190650760",
+                    "fecha_publicado": "2025-12-14T01:54:12.872469"
+                }
+            }
+        },
+        {
+            "archivo": "videos/salmos/salmo_12_senor_guarda_mis_palabras.mp4",
+            "tipo": "salmo",
+            "musica": "Somnia I - Reed Mathis.mp3",
+            "licencia": "musica/licence/licence_Somnia I - Reed Mathis.txt",
+            "imagen": "12.png",
+            "publicar_en": "2025-12-14T15:30:00-03:00",
+            "fecha_generado": "2025-12-13T19:51:29.394211",
+            "tag": "4000c2a5bb5e49ae",
+            "tag_legacy": "cb1a8a35c83e",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "8pKeFlSDuLU",
+                    "fecha_publicado": "2025-12-14T02:03:15.368524"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "2661171777576660",
+                    "fecha_publicado": "2025-12-14T01:53:09.741294"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": "17843305164650760",
+                    "fecha_publicado": "2025-12-14T02:06:34.275655"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": "17843303190650760",
+                    "fecha_publicado": "2025-12-14T01:54:12.872469"
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_de_proteccion_en_el_viaje_breve.mp4",
+            "tipo": "oracion",
+            "musica": "11.mp3",
+            "licencia": "musica/licence/licence_11.txt",
+            "imagen": "28.png",
+            "publicar_en": "2025-12-14T23:10:00-03:00",
+            "fecha_generado": "2025-12-13T19:53:56.059966",
+            "tag": "e57db244e3ed6ce5",
+            "tag_legacy": "5f228bb1706d",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "xunKNKxYI3o",
+                    "fecha_publicado": "2025-12-14T02:05:40.959481"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1870041677217818",
+                    "fecha_publicado": "2025-12-14T02:03:15.775620"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": "17843305233650760",
+                    "fecha_publicado": "2025-12-14T02:06:42.018914"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": "17843303190650760",
+                    "fecha_publicado": "2025-12-14T01:54:12.872469"
+                }
+            }
         }
     ],
     "textos_usados": {
@@ -920,6 +1416,46 @@
             {
                 "nombre": "oracion_por_los_padres_de_familia_breve",
                 "fecha": "2025-12-11T12:51:39.218431"
+            },
+            {
+                "nombre": "oracion_para_confiar_a_los_hijos_a_dios",
+                "fecha": "2025-12-13T19:43:42.396381"
+            },
+            {
+                "nombre": "oracion_de_proteccion_en_el_viaje_breve",
+                "fecha": "2025-12-13T19:51:31.274520"
+            },
+            {
+                "nombre": "oracion_de_proteccion_en_la_noche_familiar",
+                "fecha": "2025-12-13T19:53:57.973055"
+            },
+            {
+                "nombre": "oracion_bendita_sea_tu_pureza",
+                "fecha": "2025-12-13T20:01:45.106144"
+            },
+            {
+                "nombre": "oracion_para_pedir_paz_interior",
+                "fecha": "2025-12-13T20:05:02.168147"
+            },
+            {
+                "nombre": "oracion_a_san_miguel",
+                "fecha": "2025-12-13T20:12:48.829607"
+            },
+            {
+                "nombre": "oracion_para_empezar_el_dia",
+                "fecha": "2025-12-13T20:16:05.266461"
+            },
+            {
+                "nombre": "oracion_para_abrazar_el_consuelo",
+                "fecha": "2025-12-13T20:23:53.587894"
+            },
+            {
+                "nombre": "oracion_por_los_companeros_de_trabajo",
+                "fecha": "2025-12-13T20:26:19.622813"
+            },
+            {
+                "nombre": "oracion_de_san_ignacio",
+                "fecha": "2025-12-13T20:35:46.981148"
             }
         ],
         "textos/salmos": [
@@ -930,6 +1466,26 @@
             {
                 "nombre": "salmo_40_yo_esperaba_el_senor",
                 "fecha": "2025-12-11T12:41:06.854808"
+            },
+            {
+                "nombre": "salmo_12_senor_guarda_mis_palabras",
+                "fecha": "2025-12-13T19:46:09.130062"
+            },
+            {
+                "nombre": "salmo_14_el_senor_ve_el_corazon",
+                "fecha": "2025-12-13T19:56:23.295456"
+            },
+            {
+                "nombre": "salmo_11_refugio_en_tiempos_dificiles",
+                "fecha": "2025-12-13T20:07:28.547597"
+            },
+            {
+                "nombre": "salmo_35_el_senor_pelea_por_mi",
+                "fecha": "2025-12-13T20:18:30.519524"
+            },
+            {
+                "nombre": "salmo_34_bendecire_al_senor_en_todo_tiempo",
+                "fecha": "2025-12-13T20:28:45.888233"
             }
         ]
     }
