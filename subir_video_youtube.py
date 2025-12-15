@@ -154,3 +154,38 @@ if __name__ == "__main__":
         privacidad = "public"
 
     subir_siguiente_youtube(privacidad)
+
+
+
+def publish_video_youtube_desde_db(
+    archivo,
+    tipo,
+    publicar_en,
+    licencia,
+    privacidad="public"
+):
+    titulo_base = os.path.splitext(os.path.basename(archivo))[0]
+    titulo = f"{titulo_base.replace('_', ' ').title()} — 1 minuto 🙏✨"
+
+    descripcion = generar_descripcion(
+        tipo=tipo,
+        hora_texto=publicar_en,
+        archivo_texto=archivo,
+        plataforma="youtube",
+        licence=licencia
+    )
+
+    tags = generar_tags_from_descripcion(descripcion)
+
+    publish_at = convertir_fecha_para("youtube", publicar_en)
+
+    youtube_id = subir_video_youtube(
+        ruta=archivo,
+        titulo=titulo,
+        descripcion=descripcion,
+        tags=tags,
+        privacidad=privacidad,
+        publish_at=publish_at
+    )
+
+    return youtube_id

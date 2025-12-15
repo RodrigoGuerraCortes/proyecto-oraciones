@@ -35,3 +35,19 @@ gestor_publicacion -> revisa si ya los videos fueron publicados y mueve de pendi
 python3 generar_token_tiktok.py --oauth
 
 python3 subir_video_tiktok.py
+
+
+
+SEGUNDA ETAPA BASE DE DATOS PARA MANEJAR LOS VIDEOS 
+
+
+.venv/bin/python -c "
+from publisher.facebook import FacebookPublisher
+FacebookPublisher().run()
+"
+
+
+.venv/bin/python -c "
+from publisher.youtube import YouTubePublisher
+YouTubePublisher().run()
+"

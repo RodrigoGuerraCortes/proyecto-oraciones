@@ -1,39 +1,6 @@
 {
     "pendientes": [
         {
-            "archivo": "videos/oraciones/oracion_de_proteccion_en_la_noche_familiar.mp4",
-            "tipo": "oracion",
-            "musica": "5.mp3",
-            "licencia": "musica/licence/licence_5.txt",
-            "imagen": "13.png",
-            "publicar_en": "2025-12-15T11:00:00-03:00",
-            "fecha_generado": "2025-12-13T19:56:21.337441",
-            "tag": "ea99556bc60ee245",
-            "tag_legacy": "79383c46dd9f",
-            "plataformas": {
-                "youtube": {
-                    "estado": "publicado",
-                    "video_id": "8JUyqW4UwBs",
-                    "fecha_publicado": "2025-12-14T02:05:47.024171"
-                },
-                "facebook": {
-                    "estado": "publicado",
-                    "video_id": "1748263925843858",
-                    "fecha_publicado": "2025-12-14T02:05:52.358484"
-                },
-                "instagram": {
-                    "estado": "publicado",
-                    "video_id": "17843305440650760",
-                    "fecha_publicado": "2025-12-14T02:07:08.516032"
-                },
-                "tiktok": {
-                    "estado": "publicado",
-                    "video_id": "v_inbox_file~v2.7583575155037816844",
-                    "fecha_publicado": "2025-12-14T02:05:37.739221"
-                }
-            }
-        },
-        {
             "archivo": "videos/salmos/salmo_14_el_senor_ve_el_corazon.mp4",
             "tipo": "salmo",
             "musica": "ave-maria-417992.mp3",
@@ -109,39 +76,6 @@
             "fecha_generado": "2025-12-13T20:07:26.633917",
             "tag": "5a128144a9a5c831",
             "tag_legacy": "b4457ad05c9d",
-            "plataformas": {
-                "youtube": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
-                },
-                "facebook": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
-                },
-                "instagram": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
-                },
-                "tiktok": {
-                    "estado": "pendiente",
-                    "video_id": null,
-                    "fecha_publicado": null
-                }
-            }
-        },
-        {
-            "archivo": "videos/salmos/salmo_11_refugio_en_tiempos_dificiles.mp4",
-            "tipo": "salmo",
-            "musica": "cathedral-164234.mp3",
-            "licencia": "musica/licence/licence_cathedral-164234.txt",
-            "imagen": "espiritu_santo",
-            "publicar_en": "2025-12-16T15:30:00-03:00",
-            "fecha_generado": "2025-12-13T20:12:46.949251",
-            "tag": "1eaecad5f4d325cb",
-            "tag_legacy": "5a8363ec6dc5",
             "plataformas": {
                 "youtube": {
                     "estado": "pendiente",
@@ -1391,6 +1325,39 @@
                     "estado": "publicado",
                     "video_id": "17843303190650760",
                     "fecha_publicado": "2025-12-14T01:54:12.872469"
+                }
+            }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_de_proteccion_en_la_noche_familiar.mp4",
+            "tipo": "oracion",
+            "musica": "5.mp3",
+            "licencia": "musica/licence/licence_5.txt",
+            "imagen": "13.png",
+            "publicar_en": "2025-12-15T11:00:00-03:00",
+            "fecha_generado": "2025-12-13T19:56:21.337441",
+            "tag": "ea99556bc60ee245",
+            "tag_legacy": "79383c46dd9f",
+            "plataformas": {
+                "youtube": {
+                    "estado": "publicado",
+                    "video_id": "8JUyqW4UwBs",
+                    "fecha_publicado": "2025-12-14T02:05:47.024171"
+                },
+                "facebook": {
+                    "estado": "publicado",
+                    "video_id": "1748263925843858",
+                    "fecha_publicado": "2025-12-14T02:05:52.358484"
+                },
+                "instagram": {
+                    "estado": "publicado",
+                    "video_id": "17843305440650760",
+                    "fecha_publicado": "2025-12-14T02:07:08.516032"
+                },
+                "tiktok": {
+                    "estado": "publicado",
+                    "video_id": "v_inbox_file~v2.7583575155037816844",
+                    "fecha_publicado": "2025-12-14T02:05:37.739221"
                 }
             }
         }
