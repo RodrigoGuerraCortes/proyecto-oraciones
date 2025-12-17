@@ -112,15 +112,10 @@ def guardar_historial(data):
     print(f"[DEBUG] guardar_historial() llamado desde → {quien_llamo()}")
     print("[DEBUG] Datos a guardar:")
 
-    print(json.dumps(data, indent=4))
-
     # asegurar consistencia
     final = {}
     for clave, valor in ESTRUCTURA_HISTORIAL.items():
         final[clave] = data.get(clave, valor.copy())
-
-    print("\n[DEBUG] Datos que realmente se escriben en historial.json:")
-    print(json.dumps(final, indent=4))
 
     with open(HISTORIAL, "w") as f:
         json.dump(final, f, indent=4)

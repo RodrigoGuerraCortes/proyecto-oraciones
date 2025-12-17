@@ -153,27 +153,38 @@ def generar_descripcion_facebook(tipo, hora_texto, archivo_texto):
         contenido = ""
 
     prompt = f"""
-Eres experto en contenido católico viral para **Facebook Reels**.
+Eres experto en contenido católico optimizado para **Facebook Reels**.
 
-Necesito que generes **UNA sola línea**, máximo 10–12 palabras,
-muy emocional, muy directa y con 1 emoji permitido.
+Genera **UNA sola línea**, máximo 8–10 palabras.
+1 emoji permitido.
 
-Reglas:
-- NO resumas ni reescribas el texto original.
-- NO uses frases genéricas (“hermoso mensaje”, “bonitas palabras”).
-- NO repitas frases existentes.
-- NO agregues hashtags.
-- NO digas “Amén”.
-- Debe sonar humano, cálido y ESPIRITUAL.
+La frase DEBE:
+- Expresar ayuda inmediata (no reflexión)
+- Indicar para qué sirve el video
+- Sonar humana, cotidiana y directa
+- Invitar a quedarse viendo
 
-Datos:
-- Tipo de contenido: {tipo}
+OBLIGATORIO:
+- Usar UN verbo de ayuda concreta (ej: sostener, calmar, acompañar, aliviar, descansar, fortalecer)
+- Hablar en presente
 
-Texto base (solo inspiración):
+PROHIBIDO:
+- Frases que comiencen con “Cuando sientes…”
+- Lenguaje poético o abstracto
+- Generalidades espirituales
+- “Amén”
+- Hashtags
+- Palabras como “mensaje”, “reflexión”, “bonito”
+
+Tipo de contenido: {tipo}
+
+Texto base (solo contexto, no copiar):
 \"\"\"{contenido}\"\"\"
 
-Genera SOLO UNA línea emocional.
+Genera UNA línea clara, útil y humana.
 """
+
+
 
     try:
         resp = client.chat.completions.create(
@@ -190,7 +201,7 @@ Genera SOLO UNA línea emocional.
         )
 
     # Hashtags optimizados para viralidad en Reels
-    hashtags = "#oracion #jesus #catolico #fe #amen #dios #cristiano #espiritualidad"
+    hashtags = "#oracion #jesus #catolico #fe #dios #cristiano #espiritualidad"
 
     return f"{frase}\n\n{hashtags}"
 
@@ -219,6 +230,9 @@ Necesito que generes:
 - NO escribas “Amén”
 - NO incluyas hashtags en la frase
 - Debe sonar íntima y profunda
+
+Texto base (solo inspiración):
+\"\"\"{contenido}\"\"\"
 """
 
     try:

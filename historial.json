@@ -329,6 +329,39 @@
                     "fecha_publicado": null
                 }
             }
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_los_padres_de_familia.mp4",
+            "tipo": "oracion",
+            "musica": "The Palace Gardens - Asher Fulero.mp3",
+            "licencia": "musica/licence/licence_The Palace Gardens - Asher Fulero.txt",
+            "imagen": "20.png",
+            "publicar_en": "2025-12-19T11:00:00-03:00",
+            "fecha_generado": "2025-12-15T23:38:06.084466",
+            "tag": "5f06ba43af9ac8ad",
+            "tag_legacy": "1733768b5545"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_la_unidad_familiar.mp4",
+            "tipo": "oracion",
+            "musica": "prayer-for-peace-389251.mp3",
+            "licencia": "musica/licence/licence_prayer-for-peace-389251.txt",
+            "imagen": "jesus",
+            "publicar_en": "2025-12-19T23:10:00-03:00",
+            "fecha_generado": "2025-12-15T23:44:17.079432",
+            "tag": "82fd4849039554aa",
+            "tag_legacy": "d6310d897caf"
+        },
+        {
+            "archivo": "videos/oraciones/oracion_por_los_enfermos_de_alma.mp4",
+            "tipo": "oracion",
+            "musica": "10.mp3",
+            "licencia": "musica/licence/licence_10.txt",
+            "imagen": "26.png",
+            "publicar_en": "2025-12-20T11:00:00-03:00",
+            "fecha_generado": "2025-12-16T00:05:13.745969",
+            "tag": "3ee052c6628449ba",
+            "tag_legacy": "75ecca013f7d"
         }
     ],
     "publicados": [
@@ -1423,6 +1456,146 @@
             {
                 "nombre": "oracion_de_san_ignacio",
                 "fecha": "2025-12-13T20:35:46.981148"
+            },
+            {
+                "nombre": "oracion_por_los_padres_de_familia",
+                "fecha": "2025-12-15T23:37:29.964707"
+            },
+            {
+                "nombre": "oracion_por_la_unidad_familiar",
+                "fecha": "2025-12-15T23:41:52.729674"
+            },
+            {
+                "nombre": "oracion_de_san_jose",
+                "fecha": "2025-12-15T23:59:57.780489"
+            },
+            {
+                "nombre": "oracion_por_los_enfermos_de_alma",
+                "fecha": "2025-12-16T00:02:47.424135"
+            },
+            {
+                "nombre": "oracion_de_la_manana",
+                "fecha": "2025-12-17T13:50:40.940781"
+            },
+            {
+                "nombre": "oracion_para_ofrecer_el_trabajo_a_dios",
+                "fecha": "2025-12-17T13:51:00.618927"
+            },
+            {
+                "nombre": "oracion_agradecimiento_por_el_trabajo",
+                "fecha": "2025-12-17T13:54:29.760216"
+            },
+            {
+                "nombre": "oracion_por_quien_busca_empleo_digno",
+                "fecha": "2025-12-17T13:56:11.487839"
+            },
+            {
+                "nombre": "oracion_para_quien_necesita_consuelo",
+                "fecha": "2025-12-17T13:56:40.664508"
+            },
+            {
+                "nombre": "oracion_acto_de_caridad",
+                "fecha": "2025-12-17T13:58:19.364128"
+            },
+            {
+                "nombre": "oracion_para_recibir_fortaleza",
+                "fecha": "2025-12-17T13:58:56.401846"
+            },
+            {
+                "nombre": "oracion_al_sagrado_corazon",
+                "fecha": "2025-12-17T13:59:32.724886"
+            },
+            {
+                "nombre": "oracion_por_el_trabajo_de_cada_dia",
+                "fecha": "2025-12-17T14:00:09.625508"
+            },
+            {
+                "nombre": "oracion_agradecimiento_por_los_amigos",
+                "fecha": "2025-12-17T14:00:44.875863"
+            },
+            {
+                "nombre": "oracion_por_los_hijos_corta",
+                "fecha": "2025-12-17T14:01:20.677862"
+            },
+            {
+                "nombre": "oracion_regina_coeli",
+                "fecha": "2025-12-17T14:01:57.582533"
+            },
+            {
+                "nombre": "oracion_agradecimiento_por_el_perdon",
+                "fecha": "2025-12-17T14:02:33.598554"
+            },
+            {
+                "nombre": "oracion_agradecimiento_por_la_fe",
+                "fecha": "2025-12-17T14:03:11.063831"
+            },
+            {
+                "nombre": "oracion_por_los_enfermos_de_casa",
+                "fecha": "2025-12-17T14:03:47.348344"
+            },
+            {
+                "nombre": "oracion_por_la_familia_cristiana",
+                "fecha": "2025-12-17T14:04:23.753337"
+            },
+            {
+                "nombre": "oracion_agradecimiento_por_la_familia",
+                "fecha": "2025-12-17T14:05:02.251975"
+            },
+            {
+                "nombre": "oracion_para_discernir_una_vocacion",
+                "fecha": "2025-12-17T14:05:40.748454"
+            },
+            {
+                "nombre": "oracion_de_proteccion_para_los_hijos_breve",
+                "fecha": "2025-12-17T14:06:18.671051"
+            },
+            {
+                "nombre": "oracion_de_santa_teresa",
+                "fecha": "2025-12-17T14:06:56.454385"
+            },
+            {
+                "nombre": "oracion_para_cuidar_el_amor_en_dios_breve",
+                "fecha": "2025-12-17T14:11:18.373501"
+            },
+            {
+                "nombre": "oracion_por_un_enfermo_en_hospital",
+                "fecha": "2025-12-17T14:11:58.244960"
+            },
+            {
+                "nombre": "oracion_agradecimiento_por_los_sacramentos",
+                "fecha": "2025-12-17T14:12:40.764695"
+            },
+            {
+                "nombre": "oracion_acto_de_contricion",
+                "fecha": "2025-12-17T14:13:20.800650"
+            },
+            {
+                "nombre": "oracion_por_los_enfermos_de_alma_breve",
+                "fecha": "2025-12-17T14:13:59.074507"
+            },
+            {
+                "nombre": "oracion_agradecimiento_por_las_pequenas_cosasm",
+                "fecha": "2025-12-17T14:14:36.168015"
+            },
+            {
+                "nombre": "oracion_para_cuidar_el_amor_en_dios",
+                "fecha": "2025-12-17T14:15:14.179129"
+            },
+            {
+                "nombre": "oracion_padre_nuestro",
+                "fecha": "2025-12-17T14:15:54.609587"
+            },
+            {
+                "nombre": "oracion_para_encontrar_paz",
+                "fecha": "2025-12-17T14:16:33.871905"
+            },
+            {
+                "nombre": "oracion_alma_de_cristo",
+                "fecha": "2025-12-17T14:17:11.465963"
+            },
+            {
+                "nombre": "oracion_por_los_hijos_pequenos",
+                "fecha": "2025-12-17T14:17:50.303368"
             }
         ],
         "textos/salmos": [

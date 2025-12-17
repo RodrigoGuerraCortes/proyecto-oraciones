@@ -1,7 +1,7 @@
 import os
 import json
 import shutil
-from generar_video import crear_video_oracion, crear_video_salmo, cargar_historial_extendido, guardar_historial_extendido, elegir_no_repetido_media
+from generar_video_legacy import crear_video_oracion, crear_video_salmo, cargar_historial_extendido, guardar_historial_extendido, elegir_no_repetido_media
 
 # ------------------------------------------
 # CONFIGURACIÓN DE TEST

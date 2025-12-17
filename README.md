@@ -51,3 +51,9 @@ FacebookPublisher().run()
 from publisher.youtube import YouTubePublisher
 YouTubePublisher().run()
 "
+
+
+.venv/bin/python -c "
+from publisher.instagram import InstagramPublisher
+InstagramPublisher().run()
+"
