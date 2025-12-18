@@ -57,3 +57,11 @@ YouTubePublisher().run()
 from publisher.instagram import InstagramPublisher
 InstagramPublisher().run()
 "
+
+
+
+OSO 
+
+
+.venv/bin/python -m generator.entrypoint 1 oso
+.venv/bin/python -m generator.entrypoint 2 oso test

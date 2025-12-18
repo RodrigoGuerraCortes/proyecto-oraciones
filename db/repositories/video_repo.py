@@ -3,9 +3,11 @@
 import uuid
 from typing import Optional
 from db.connection import get_connection
+from datetime import datetime, timedelta
 
 
-def insert_video(data: dict) -> uuid.UUID:
+
+def insert_video(data: dict) -> None:
     query = """
         INSERT INTO videos (
             id,
@@ -16,6 +18,7 @@ def insert_video(data: dict) -> uuid.UUID:
             licencia,
             imagen,
             texto_base,
+            fingerprint,
             fecha_generado
         )
         VALUES (
@@ -27,7 +30,8 @@ def insert_video(data: dict) -> uuid.UUID:
             %(licencia)s,
             %(imagen)s,
             %(texto_base)s,
-            %(fecha_generado)s
+            %(fingerprint)s,
+            NOW()
         );
     """
 
@@ -35,8 +39,31 @@ def insert_video(data: dict) -> uuid.UUID:
         with conn.cursor() as cur:
             cur.execute(query, data)
 
-    return data["id"]
 
+
+
+
+def fingerprint_existe_ultimos_dias(
+    fingerprint: str,
+    dias: int = 120
+) -> bool:
+    query = """
+        SELECT 1
+        FROM videos
+        WHERE fingerprint = %(fingerprint)s
+          AND fecha_generado >= %(desde)s
+        LIMIT 1
+    """
+
+    desde = datetime.utcnow() - timedelta(days=dias)
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(query, {
+                "fingerprint": fingerprint,
+                "desde": desde
+            })
+            return cur.fetchone() is not None
 
 def get_video_by_id(video_id: uuid.UUID) -> Optional[dict]:
     query = """

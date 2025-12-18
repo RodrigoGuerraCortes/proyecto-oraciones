@@ -8,17 +8,26 @@ from generator.image.titulo import crear_imagen_titulo
 from generator.image.texto import crear_imagen_texto
 from generator.audio.selector import crear_audio
 from generator.video.composer import componer_video
-from generator.content.tag import generar_tag_inteligente
-from historial import registrar_video_generado, tag_ya_existe
-from generator.scheduling.slot_resolver import programar_publicacion_exacta
+from generator.content.fingerprinter import generar_fingerprint_contenido
+from db.repositories.video_repo import insert_video, fingerprint_existe_ultimos_dias
+#from generator.scheduling.slot_resolver import programar_publicacion_exacta
 from generator.cleanup import limpiar_temporales
 from generator.utils.texto import dividir_en_bloques, calcular_duracion_bloque
 from generator.image.decision import decidir_imagen_video
+import os
 
 ORACION_LINEAS_MAX = 10
 CTA_DUR = 5
 
-def generar_oracion(path_in: str, path_out: str, imagen_fija=None, musica_fija=None, modo_test=False):
+def generar_oracion(
+    *,
+    video_id,
+    path_in: str,
+    path_out: str,
+    imagen_fija=None,
+    musica_fija=None,
+    modo_test=False
+):
     with open(path_in, "r", encoding="utf-8") as f:
         texto = f.read()
 
@@ -67,26 +76,28 @@ def generar_oracion(path_in: str, path_out: str, imagen_fija=None, musica_fija=N
 
     licencia_path = f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
 
-    # Tag
-    tag_nuevo = generar_tag_inteligente(
+    duracion_norm = int(round(audio_duracion))
+
+    # Fingerprint del contenido
+    fingerprint = generar_fingerprint_contenido(
         tipo="oracion",
         texto=texto,
         imagen=imagen_usada,
         musica=musica_usada,
-        duracion=audio_duracion
+        duracion=duracion_norm
     )
 
     intentos = 0
-    while tag_ya_existe(tag_nuevo) and intentos < 5:
-        print("⚠ TAG duplicado → regenerando música e imagen...")
+    while fingerprint_existe_ultimos_dias(fingerprint) and intentos < 5:
+        print("⚠ Contenido duplicado (120 días) → cambiando música")
         #fondo, grad = crear_fondo(dur_total, None)
         audio, musica_usada = crear_audio(audio_duracion, None)
-        tag_nuevo = generar_tag_inteligente(
+        fingerprint = generar_fingerprint_contenido(
             tipo="oracion",
             texto=texto,
             imagen=imagen_usada,
             musica=musica_usada,
-            duracion=audio_duracion
+            duracion=duracion_norm
         )
         intentos += 1
 
@@ -96,15 +107,22 @@ def generar_oracion(path_in: str, path_out: str, imagen_fija=None, musica_fija=N
         if modo_test:
             print(f"[TEST] Video generado (no persistido): {path_out}")
         else:
-            registrar_video_generado(
-                archivo_video=path_out,
-                tipo="oracion",  # o salmo
-                musica=musica_usada,
-                licencia=licencia_path,
-                imagen=imagen_usada,
-                publicar_en=programar_publicacion_exacta("oracion"),
-                tag=tag_nuevo
-            )
+            try:
+                insert_video({
+                    "id": video_id,
+                    "channel_id": 7,  # luego lo haces dinámico
+                    "archivo": path_out,
+                    "tipo": "oracion",
+                    "musica": musica_usada,
+                    "licencia": licencia_path,
+                    "imagen": imagen_usada,
+                    "texto_base": texto,
+                    "fingerprint": fingerprint,
+                })
+            except Exception:
+                # rollback del filesystem
+                os.remove(path_out)
+                raise
     else:
         raise RuntimeError(f"No se pudo crear el archivo final: {path_out}")
 

@@ -15,7 +15,7 @@ from historial import (
     tag_ya_existe,
 )
 
-from generator.content.tag import generar_tag_inteligente
+from generator.content.fingerprinter import generar_tag_inteligente
 from generator.cleanup import limpiar_temporales
 from generator.image.fondo import crear_fondo, get_ultima_imagen_usada
 from generator.image.titulo import crear_imagen_titulo
