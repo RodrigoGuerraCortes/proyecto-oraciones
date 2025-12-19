@@ -1,7 +1,6 @@
 # generator/publisher/base.py
 print(">>> BASE PUBLISHER NUEVO CARGADO <<<")
 
-
 from datetime import datetime, timedelta
 from db.connection import get_connection
 
@@ -20,18 +19,29 @@ class BasePublisher:
     allow_future_publication = False
     max_days_a_publicar = None  # requerido si allow_future_publication=True
 
-    def run(self, *, dry_run=False, preview_days=None):
+    def run(self, *, dry_run=False, preview_days=None, force_now=False):
         if not self.platform_code:
             raise RuntimeError("platform_code no definido")
 
         now = datetime.now()
 
-        # -------------------------------
-        # 1️⃣ Calcular límite temporal
-        # -------------------------------
-        if dry_run and preview_days:
-            limite = now + timedelta(days=preview_days)
+        # -------------------------------------------------
+        # 1️⃣ Calcular límite temporal (REFACTORIZADO)
+        # -------------------------------------------------
+        if force_now:
+            # Override explícito (testing / emergencia)
+            limite = now
+
+        elif dry_run:
+            # Dry-run SIEMPRE puede mirar al futuro (editorial)
+            if preview_days:
+                limite = now + timedelta(days=preview_days)
+            else:
+                # Default: 24 horas
+                limite = now + timedelta(days=1)
+
         else:
+            # Modo real
             if self.allow_future_publication:
                 if not self.max_days_a_publicar:
                     raise RuntimeError(
@@ -44,9 +54,9 @@ class BasePublisher:
         with get_connection() as conn:
             with conn.cursor() as cur:
 
-                # -------------------------------
+                # -------------------------------------------------
                 # 2️⃣ platform_id
-                # -------------------------------
+                # -------------------------------------------------
                 cur.execute(
                     "SELECT id FROM platforms WHERE code = %s",
                     (self.platform_code,),
@@ -59,27 +69,47 @@ class BasePublisher:
 
                 platform_id = row["id"] if isinstance(row, dict) else row[0]
 
-                # -------------------------------
+                # -------------------------------------------------
                 # 3️⃣ Buscar publicaciones
-                # -------------------------------
-                cur.execute(
-                    """
-                    SELECT
-                        p.id           AS publication_id,
-                        p.publicar_en  AS publicar_en,
-                        v.archivo      AS archivo,
-                        v.tipo         AS tipo,
-                        v.licencia     AS licencia,
-                        v.texto_base   AS texto_base
-                    FROM publications p
-                    JOIN videos v ON v.id = p.video_id
-                    WHERE p.platform_id = %s
-                      AND p.estado = 'scheduled'
-                      AND p.publicar_en <= %s
-                    ORDER BY p.publicar_en ASC
-                    """,
-                    (platform_id, limite),
-                )
+                # -------------------------------------------------
+                if force_now:
+                    cur.execute(
+                        """
+                        SELECT
+                            p.id           AS publication_id,
+                            p.publicar_en  AS publicar_en,
+                            v.archivo      AS archivo,
+                            v.tipo         AS tipo,
+                            v.licencia     AS licencia,
+                            v.texto_base   AS texto_base
+                        FROM publications p
+                        JOIN videos v ON v.id = p.video_id
+                        WHERE p.platform_id = %s
+                        AND p.estado = 'scheduled'
+                        ORDER BY p.publicar_en ASC
+                        """,
+                        (platform_id,),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        SELECT
+                            p.id           AS publication_id,
+                            p.publicar_en  AS publicar_en,
+                            v.archivo      AS archivo,
+                            v.tipo         AS tipo,
+                            v.licencia     AS licencia,
+                            v.texto_base   AS texto_base
+                        FROM publications p
+                        JOIN videos v ON v.id = p.video_id
+                        WHERE p.platform_id = %s
+                        AND p.estado = 'scheduled'
+                        AND p.publicar_en <= %s
+                        ORDER BY p.publicar_en ASC
+                        """,
+                        (platform_id, limite),
+                    )
+
 
                 publicaciones = cur.fetchall()
 
@@ -90,19 +120,15 @@ class BasePublisher:
                     )
                     return
 
-                # -------------------------------
+                # -------------------------------------------------
                 # 4️⃣ DRY RUN → solo mostrar
-                # -------------------------------
+                # -------------------------------------------------
                 if dry_run:
                     print(
                         f"\n===== DRY RUN {self.platform_code.upper()} ====="
                     )
-                    print(
-                        f"Fecha actual : {now}"
-                    )
-                    print(
-                        f"Hasta        : {limite}"
-                    )
+                    print(f"Fecha actual : {now}")
+                    print(f"Hasta        : {limite}")
 
                     for row in publicaciones:
                         self.preview_publication(**row)
@@ -112,9 +138,9 @@ class BasePublisher:
                     )
                     return
 
-                # -------------------------------
+                # -------------------------------------------------
                 # 5️⃣ MODO REAL → UNA publicación
-                # -------------------------------
+                # -------------------------------------------------
                 row = publicaciones[0]
 
                 publication_id = row["publication_id"]
@@ -136,9 +162,9 @@ class BasePublisher:
                 )
                 conn.commit()
 
-        # -------------------------------
+        # -------------------------------------------------
         # 6️⃣ Publicar fuera de TX
-        # -------------------------------
+        # -------------------------------------------------
         try:
             external_id = self.publish_video(
                 archivo=archivo,

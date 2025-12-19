@@ -216,3 +216,7 @@ The scheduling layer is:
 - Ready for asynchronous workers
 
 You can safely move forward to the publishing phase.
+
+
+
+.venv/bin/python -m generator.cli.publish_facebook --dry-run --preview-2d
