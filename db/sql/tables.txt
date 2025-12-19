@@ -39,3 +39,48 @@ ON publications (estado, publicar_en);
 
 CREATE INDEX idx_text_usage_channel_tipo
 ON text_usage (channel_id, tipo, used_at);
+
+
+
+CREATE TABLE public.videos (
+	id uuid NOT NULL,
+	channel_id int4 NULL,
+	archivo text NOT NULL,
+	tipo varchar(20) NOT NULL,
+	musica text NULL,
+	licencia text NULL,
+	imagen text NULL,
+	texto_base text NOT NULL,
+	fecha_generado timestamp NOT NULL,
+	created_at timestamp DEFAULT now() NULL,
+	fingerprint varchar(32) NULL,
+	CONSTRAINT videos_pkey PRIMARY KEY (id)
+);
+CREATE INDEX idx_videos_fingerprint_fecha ON public.videos USING btree (fingerprint, fecha_generado);
+
+
+-- public.videos foreign keys
+
+ALTER TABLE public.videos ADD CONSTRAINT videos_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES public.channels(id);
+
+
+
+CREATE TABLE public.platforms (
+	id serial4 NOT NULL,
+	code varchar(20) NOT NULL,
+	CONSTRAINT platforms_code_key UNIQUE (code),
+	CONSTRAINT platforms_pkey PRIMARY KEY (id)
+);
+
+
+-- public.system_config definition
+
+-- Drop table
+
+-- DROP TABLE public.system_config;
+
+CREATE TABLE public.system_config (
+	"key" varchar(50) NOT NULL,
+	value timestamp NOT NULL,
+	CONSTRAINT system_config_pkey PRIMARY KEY (key)
+);
