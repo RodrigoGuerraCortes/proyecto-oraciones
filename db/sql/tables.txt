@@ -84,3 +84,35 @@ CREATE TABLE public.system_config (
 	value timestamp NOT NULL,
 	CONSTRAINT system_config_pkey PRIMARY KEY (key)
 );
+
+
+CREATE TABLE interactions (
+    id SERIAL PRIMARY KEY,
+    publication_id INT NOT NULL,
+    platform_id INT NOT NULL,
+    type VARCHAR(30) NOT NULL, -- pinned_comment
+    external_id VARCHAR(255),
+    status VARCHAR(20) NOT NULL, -- pending | done | failed
+    error TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE (publication_id, platform_id, type)
+);
+
+
+
+
+CREATE TABLE channel_accounts (
+    id SERIAL PRIMARY KEY,
+    channel_id INT NOT NULL REFERENCES channels(id),
+    platform_id INT NOT NULL REFERENCES platforms(id),
+
+    external_id VARCHAR NOT NULL,     -- ID real en la plataforma
+    username VARCHAR,                 -- opcional (@handle, page name)
+    metadata JSONB,                   -- opcional (tokens, flags, etc.)
+
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT now(),
+
+    UNIQUE (channel_id, platform_id)
+);
