@@ -47,3 +47,18 @@ def normalizar_salmo_titulo(base: str) -> str:
     )
     nombre = nombre_raw.title()
     return f"Salmo {numero} — {nombre}"
+
+
+
+def normalizar_titulo_es(titulo: str) -> str:
+    reemplazos = {
+        "Oracion": "Oración",
+        "Salmo": "Salmo",
+        "Agradecimiento": "Agradecimiento",
+        "Familia": "Familia",
+    }
+
+    for k, v in reemplazos.items():
+        titulo = titulo.replace(k, v)
+
+    return titulo

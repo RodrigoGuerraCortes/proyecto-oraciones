@@ -5,7 +5,7 @@ from moviepy.video.fx.fadein import fadein
 from moviepy.audio.fx.volumex import volumex
 from moviepy.editor import CompositeAudioClip
 
-from generator.audio.tts_edge import generar_voz_edge
+from generator.audio.tts_edge import generar_voz_edge, _normalizar_texto_tts
 from generator.image.fondo import crear_fondo
 from generator.image.titulo import crear_imagen_titulo
 from generator.image.texto import crear_imagen_texto
@@ -15,8 +15,10 @@ from generator.content.fingerprinter import generar_fingerprint_contenido
 from generator.cleanup import limpiar_temporales
 from generator.image.decision import decidir_imagen_video
 from db.repositories.video_repo import insert_video, fingerprint_existe_ultimos_dias
-
-
+from generator.content.guiones.oracion_guiada_base import GUIÓN_ORACION_GUIADA_BASE
+from moviepy.editor import concatenate_audioclips
+from generator.audio.silence import generar_silencio
+from generator.utils.texto import normalizar_titulo_es
 # -----------------------
 # CONFIGURACIÓN GENERAL
 # -----------------------
@@ -30,6 +32,9 @@ TEXTO_ONSCREEN_MIN = 8
 TEXTO_ONSCREEN_MAX = 14
 
 VOZ_DIR = "voz"
+
+# Duración reducida solo para test de long
+DUR_TEST_LONG = 28   # segundos
 
 
 # -----------------------
@@ -106,10 +111,18 @@ def generar_oracion_long(
     base = os.path.splitext(os.path.basename(path_in))[0]
     titulo = base.replace("_", " ").title()
 
-    dur_total = max(DUR_OBJ_MIN, min(DUR_OBJ_MAX, int(duracion_objetivo)))
+    if modo_test:
+        dur_total = DUR_TEST_LONG
+    else:
+        dur_total = max(DUR_OBJ_MIN, min(DUR_OBJ_MAX, int(duracion_objetivo)))
+
 
     parrafos = _split_parrafos(texto)
     texto_intro = parrafos[0]
+
+    if modo_test:
+        # en test solo mostramos el texto inicial
+        parrafos = [texto_intro]
 
     duraciones = _asignar_duraciones(parrafos, dur_total)
 
@@ -125,6 +138,7 @@ def generar_oracion_long(
 
     fondo, grad = crear_fondo(dur_total, imagen_usada)
 
+    titulo = normalizar_titulo_es(titulo)
     crear_imagen_titulo(titulo, "titulo.png")
     titulo_clip = (
         ImageClip("titulo.png")
@@ -132,6 +146,52 @@ def generar_oracion_long(
         .set_position(("center", 120))
         .set_opacity(1)
     )
+
+
+    os.makedirs(VOZ_DIR, exist_ok=True)
+
+    voz_intro_path = os.path.join(VOZ_DIR, f"intro_{video_id}.wav")
+
+    
+
+    texto_tts = _normalizar_texto_tts(texto_intro)
+
+    voz_intro_clip = generar_voz_edge(
+        texto=texto_tts,
+        salida_wav=voz_intro_path
+    ).set_start(0)
+
+    dur_voz_intro = voz_intro_clip.duration
+
+    # -----------------------
+    # VOZ GUIADA (ORACIÓN ACOMPAÑADA)
+    # -----------------------
+
+    clips_guiados = []
+
+    t_inicio_guiada = dur_voz_intro + 2.0  # pausa tras la oración base
+    t_actual = t_inicio_guiada
+
+    for idx, frase in enumerate(GUIÓN_ORACION_GUIADA_BASE, start=1):
+        voz_guiada_path = os.path.join(
+            VOZ_DIR, f"guiada_{video_id}_{idx}.wav"
+        )
+
+        voz_guiada_clip = generar_voz_edge(
+            texto=_normalizar_texto_tts(frase),
+            salida_wav=voz_guiada_path
+        ).set_start(t_actual)
+
+        clips_guiados.append(voz_guiada_clip)
+        t_actual += voz_guiada_clip.duration
+
+        # silencio contemplativo (clave para retención)
+        silencio_clip = generar_silencio(3.0).set_start(t_actual)
+        clips_guiados.append(silencio_clip)
+        t_actual += 3.0
+
+    dur_fin_guiada = t_actual
+
 
     # -----------------------
     # Texto en pantalla (bloques)
@@ -144,10 +204,14 @@ def generar_oracion_long(
         tmp_png = f"bloque_long_{i}.png"
         crear_imagen_texto(p, tmp_png)
 
-        onscreen = min(
-            max(TEXTO_ONSCREEN_MIN, dur_p * 0.25),
-            TEXTO_ONSCREEN_MAX
-        )
+        if i == 1:
+            # el texto del intro dura exactamente lo mismo que la voz
+            onscreen = dur_voz_intro
+        else:
+            onscreen = min(
+                max(TEXTO_ONSCREEN_MIN, dur_p * 0.25),
+                TEXTO_ONSCREEN_MAX
+            )
 
         c = (
             ImageClip(tmp_png)
@@ -172,22 +236,9 @@ def generar_oracion_long(
     musica_clip, musica_usada = crear_audio(audio_duracion, musica_fija)
     musica_clip = volumex(musica_clip, 0.18)
 
-    if modo_test:
-        audio_final = musica_clip
-    else:
-        os.makedirs(VOZ_DIR, exist_ok=True)
-
-        voz_intro_path = os.path.join(VOZ_DIR, f"intro_{video_id}.wav")
-
-        voz_intro_clip = generar_voz_edge(
-            texto=texto_intro,
-            salida_wav=voz_intro_path
-        ).set_start(0)
-
-        audio_final = CompositeAudioClip([
-            musica_clip,
-            voz_intro_clip
-        ]).set_duration(audio_duracion)
+    audio_final = CompositeAudioClip(
+        [musica_clip, voz_intro_clip] + clips_guiados
+    ).set_duration(audio_duracion)
 
     # -----------------------
     # Fingerprint / persistencia
