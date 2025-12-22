@@ -18,7 +18,7 @@ EDITORIAL_RULES = {
     1: {"dias": 60, "max_reps": 1},    # YouTube
     2: {"dias": 30, "max_reps": 3},    # Facebook
     3: {"dias": 30, "max_reps": 3},    # Instagram
-    4: {"dias": 7,  "max_reps": 999},  # TikTok
+    4: {"dias": 7,  "max_reps": 1},  # TikTok
 }
 
 ESTADOS_VIVOS = ("scheduled", "publishing", "published")
@@ -157,6 +157,15 @@ def _buscar_video_valido(
             continue
 
         if not os.path.exists(video["archivo"]):
+            continue
+        
+        # 🚫 NUEVA REGLA GLOBAL (CRÍTICA)
+        if _video_publicado_recientemente(
+            channel_id=channel_id,
+            video_id=video["id"],
+            publicar_en=publicar_en,
+            dias=30
+        ):
             continue
 
         if _slug_colision(video, publicar_en, ventana_slug, channel_id, platform_id):
@@ -334,3 +343,28 @@ def _insertar_publication(video_id: str, platform_id: int, publicar_en: datetime
         return True
     except Exception:
         return False
+
+
+def _video_publicado_recientemente(
+    channel_id: int,
+    video_id: str,
+    publicar_en: datetime,
+    dias: int = 21
+) -> bool:
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 1
+                FROM publications p
+                JOIN videos v ON v.id = p.video_id
+                WHERE v.channel_id = %s
+                  AND p.video_id = %s
+                  AND p.estado IN ('scheduled','publishing','published')
+                  AND p.publicar_en >= %s
+                LIMIT 1
+            """, (
+                channel_id,
+                video_id,
+                publicar_en - timedelta(days=dias)
+            ))
+            return cur.fetchone() is not None

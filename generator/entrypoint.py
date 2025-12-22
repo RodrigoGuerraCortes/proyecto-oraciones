@@ -49,6 +49,14 @@ def main():
     if tipo in ("oracion", "salmo"):
         generar_videos(tipo, cantidad, modo_test=MODO_TEST)
         return
+    
+    if tipo in ("oracion", "salmo", "oracion_long"):
+        generar_videos(tipo, cantidad, modo_test=MODO_TEST)
+        return
+        # aquí podrías integrar con tu generar_videos() si lo tienes por pipeline.
+        # por ahora, llamada directa si quieres:
+        # generar_oracion_long(video_id=..., path_in=..., path_out=..., ...)
+
 
     print("ERROR: tipo inválido (use oracion, salmo u oso)")
     sys.exit(1)

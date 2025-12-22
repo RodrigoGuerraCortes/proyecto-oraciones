@@ -2,27 +2,33 @@
 import uuid
 from generator.generar_oracion import generar_oracion
 from generator.generar_salmo import generar_salmo
+from generator.generar_oracion_long import generar_oracion_long
+
 
 def generar_videos(tipo: str, cantidad: int, modo_test: bool = False):
     """
     Genera N videos del tipo indicado usando el pipeline.
-    - tipo: 'oracion' | 'salmo'
-    - cantidad: int
+    - tipo: 'oracion' | 'salmo' | 'oracion_long'
     """
     from generator.content.selector import elegir_texto_para
 
-    assert tipo in ("oracion", "salmo"), f"Tipo inválido: {tipo}"
+    assert tipo in ("oracion", "salmo", "oracion_long"), f"Tipo inválido: {tipo}"
 
     print(f"[PIPELINE] Generando {cantidad} videos tipo={tipo}")
 
     for i in range(cantidad):
-        path_txt, base = elegir_texto_para(tipo)
+        # Reutilizamos selector existente
+        path_txt, base = elegir_texto_para("oracion" if tipo == "oracion_long" else tipo)
 
         video_id = uuid.uuid4()
         video_id_short = str(video_id).split("-")[0]
 
         if tipo == "oracion":
             carpeta = "videos/test/oraciones" if modo_test else "videos/oraciones"
+
+        elif tipo == "oracion_long":
+            carpeta = "videos/test/oraciones_long" if modo_test else "videos/oraciones_long"
+
         else:
             carpeta = "videos/test/salmos" if modo_test else "videos/salmos"
 
@@ -35,6 +41,15 @@ def generar_videos(tipo: str, cantidad: int, modo_test: bool = False):
                 path_out=salida,
                 modo_test=modo_test
             )
+
+        elif tipo == "oracion_long":
+            generar_oracion_long(
+                video_id=video_id,
+                path_in=path_txt,
+                path_out=salida,
+                modo_test=modo_test
+            )
+
         else:
             generar_salmo(
                 video_id=video_id,

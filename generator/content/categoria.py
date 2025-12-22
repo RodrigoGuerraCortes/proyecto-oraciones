@@ -1,5 +1,6 @@
 # generator/content/categoria.py
-import os
+# generator/content/categoria.py
+import random
 
 def decidir_categoria_video(tipo: str, titulo: str, texto: str) -> str:
     t = f"{titulo} {texto}".lower()
@@ -17,8 +18,8 @@ def decidir_categoria_video(tipo: str, titulo: str, texto: str) -> str:
         return "maria"
 
     if any(k in t for k in ["josé", "san josé", "jose"]):
-        if "niño" in t or "jesús" in t:
-            return "jose_jesus_nino"
+        if any(k in t for k in ["niño", "jesús"]):
+            return "jose_jesus_niño"
 
     if any(k in t for k in ["papa", "pontífice", "vaticano"]):
         return "papa"
@@ -35,5 +36,11 @@ def decidir_categoria_video(tipo: str, titulo: str, texto: str) -> str:
     if any(k in t for k in ["creación", "naturaleza", "montaña", "cielo", "mar"]):
         return "naturaleza"
 
-    # Fallback seguro
-    return "jesus"
+    # Fallback neutro distribuido
+    fallback = random.choices(
+        population=["naturaleza", "angel", "misa", "cielo"],
+        weights=[0.35, 0.25, 0.20, 0.15],
+        k=1
+    )[0]
+
+    return fallback
