@@ -15,9 +15,11 @@ from generator.cleanup import limpiar_temporales
 from generator.utils.texto import dividir_en_bloques, calcular_duracion_bloque
 from generator.image.decision import decidir_imagen_video
 import os
+from generator.experiments.voice_ab import decidir_tts_para_video
 
 ORACION_LINEAS_MAX = 10
 CTA_DUR = 5
+TTS_PORCENTAJE_ORACION = 0.20
 
 def generar_oracion(
     *,
@@ -26,7 +28,8 @@ def generar_oracion(
     path_out: str,
     imagen_fija=None,
     musica_fija=None,
-    modo_test=False
+    modo_test=False,
+    force_tts: bool | None = None
 ):
     with open(path_in, "r", encoding="utf-8") as f:
         texto = f.read()
@@ -71,10 +74,28 @@ def generar_oracion(
         clips.append(c)
         t += dur_b
 
-    audio_duracion = dur_total + CTA_DUR
-    audio, musica_usada = crear_audio(audio_duracion, musica_fija)
 
-    licencia_path = f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+    usar_tts = decidir_tts_para_video(
+        porcentaje=TTS_PORCENTAJE_ORACION,
+        seed=f"{texto}|{imagen_usada}|{video_id}"
+    )
+
+    if force_tts is not None:
+        usar_tts = force_tts
+
+    audio_duracion = dur_total + CTA_DUR
+    audio, musica_usada = crear_audio(
+        audio_duracion,
+        musica_fija,
+        usar_tts=usar_tts,
+        texto_tts=texto
+    )
+
+    licencia_path = (
+        f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+        if musica_usada
+        else None
+    )
 
     duracion_norm = int(round(audio_duracion))
 
@@ -118,6 +139,12 @@ def generar_oracion(
                     "imagen": imagen_usada,
                     "texto_base": texto,
                     "fingerprint": fingerprint,
+                    "metadata": {
+                        "has_voice": usar_tts,
+                        "voice_engine": "edge_tts" if usar_tts else None,
+                        "experiment": "tts_oracion_v1",
+                        "tts_ratio": TTS_PORCENTAJE_ORACION,
+                    }
                 })
             except Exception:
                 # rollback del filesystem

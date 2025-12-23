@@ -6,10 +6,10 @@ from generator.oso import generar_oso
 from generator.cleanup import limpiar_imagenes_corruptas
 
 MODO_TEST = False
-
+FORCE_ONE_TTS = False
 
 def main():
-    global MODO_TEST
+    global MODO_TEST, FORCE_ONE_TTS
 
     limpiar_imagenes_corruptas()
 
@@ -19,6 +19,10 @@ def main():
     if "test" in sys.argv:
         MODO_TEST = True
         print("⚠ MODO TEST ACTIVADO")
+
+    if "tts-one" in sys.argv:
+        FORCE_ONE_TTS = True
+        print("🔊 TTS-ONE ACTIVADO (se forzará 1 video con voz)")
 
     # -------------------------------------------------
     # Validación básica
@@ -47,10 +51,10 @@ def main():
         return
 
     if tipo in ("oracion", "salmo"):
-        generar_videos(tipo, cantidad, modo_test=MODO_TEST)
+        generar_videos(tipo, cantidad, modo_test=MODO_TEST, force_one_tts=FORCE_ONE_TTS)
         return
     
-    if tipo in ("oracion", "salmo", "long"):
+    if tipo in ("long"):
         generar_videos(tipo, cantidad, modo_test=MODO_TEST)
         return
         # aquí podrías integrar con tu generar_videos() si lo tienes por pipeline.

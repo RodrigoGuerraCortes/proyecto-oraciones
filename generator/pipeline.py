@@ -5,7 +5,7 @@ from generator.generar_salmo import generar_salmo
 from generator.generar_oracion_long import generar_oracion_long
 
 
-def generar_videos(tipo: str, cantidad: int, modo_test: bool = False):
+def generar_videos(tipo: str, cantidad: int, modo_test: bool = False, force_one_tts: bool = False):
     """
     Genera N videos del tipo indicado usando el pipeline.
     - tipo: 'oracion' | 'salmo' | 'long'
@@ -16,7 +16,15 @@ def generar_videos(tipo: str, cantidad: int, modo_test: bool = False):
 
     print(f"[PIPELINE] Generando {cantidad} videos tipo={tipo}")
 
+    tts_forzado_pendiente = force_one_tts
+
     for i in range(cantidad):
+
+        force_tts = None
+        if tts_forzado_pendiente:
+            force_tts = True
+            tts_forzado_pendiente = False
+
         # Reutilizamos selector existente
         path_txt, base = elegir_texto_para("oracion" if tipo == "long" else tipo)
 
@@ -39,7 +47,8 @@ def generar_videos(tipo: str, cantidad: int, modo_test: bool = False):
                 video_id=video_id,
                 path_in=path_txt,
                 path_out=salida,
-                modo_test=modo_test
+                modo_test=modo_test,
+                force_tts=force_tts
             )
 
         elif tipo == "long":

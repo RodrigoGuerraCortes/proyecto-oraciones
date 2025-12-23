@@ -204,6 +204,9 @@ Flujo completo típico (recordatorio mental)
 # 1) Generar videos
 .venv/bin/python -m generator.entrypoint 1 oso
 
+# 1) Generar video long
+.venv/bin/python -m generator.entrypoint 1 long
+
 # 2) Crear publicaciones (scheduler)
 .venv/bin/python -m generator.publications.run_scheduler
 

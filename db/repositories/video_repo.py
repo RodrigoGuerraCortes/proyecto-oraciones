@@ -4,7 +4,7 @@ import uuid
 from typing import Optional
 from db.connection import get_connection
 from datetime import datetime, timedelta
-from psycopg2.extras import Json
+from psycopg.types.json import Json
 
 def insert_video(data: dict) -> None:
     query = """
@@ -36,7 +36,10 @@ def insert_video(data: dict) -> None:
         );
     """
 
-    # 🔧 ADAPTACIÓN CORRECTA JSON → PostgreSQL
+    if "metadata" not in data:
+        data["metadata"] = None
+
+    # ✅ Adaptación correcta dict → JSON para metadata
     if "metadata" in data and isinstance(data["metadata"], dict):
         data["metadata"] = Json(data["metadata"])
 

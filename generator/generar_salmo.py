@@ -1,32 +1,50 @@
-# generator/generar_salmo.py
-
 import os
-from moviepy.editor import ImageClip
+import uuid
+from moviepy.editor import (
+    ImageClip,
+    concatenate_audioclips,
+    CompositeAudioClip
+)
 from moviepy.video.fx.fadein import fadein
+
 from generator.image.fondo import crear_fondo
 from generator.image.titulo import crear_imagen_titulo
 from generator.image.texto import crear_imagen_texto
 from generator.audio.selector import crear_audio
+from generator.audio.tts_edge import generar_voz_edge
+from generator.audio.silence import generar_silencio
 from generator.video.composer import componer_video
 from generator.content.fingerprinter import generar_fingerprint_contenido
 from generator.cleanup import limpiar_temporales
 from generator.utils.texto import normalizar_salmo_titulo
 from generator.image.decision import decidir_imagen_video
-from db.repositories.video_repo import insert_video,fingerprint_existe_ultimos_dias
-import os
-# Salmos
+from generator.experiments.voice_ab import decidir_tts_para_video
+from db.repositories.video_repo import insert_video, fingerprint_existe_ultimos_dias
+
+# -----------------------------
+# Configuración Salmos
+# -----------------------------
 MAX_ESTROFAS = 7
-SEGUNDOS_ESTROFA = 16
+SEGUNDOS_ESTROFA = 16        # SOLO modo clásico
 CTA_DUR = 5
+TTS_PORCENTAJE_SALMO = 0.50
+
+PAUSA_ENTRE_ESTROFAS = 1.2
+PAUSA_TITULO = 1.0
+
 
 def generar_salmo(
-        *,
-        video_id,
-        path_in: str, 
-        path_out: str, 
-        imagen_fija=None, 
-        musica_fija=None, 
-        modo_test=False):
+    *,
+    video_id,
+    path_in: str,
+    path_out: str,
+    imagen_fija=None,
+    musica_fija=None,
+    modo_test=False
+):
+    # -------------------------------------------------
+    # Texto base
+    # -------------------------------------------------
     with open(path_in, "r", encoding="utf-8") as f:
         texto = f.read()
 
@@ -36,44 +54,163 @@ def generar_salmo(
     estrofas = [e.strip() for e in texto.split("\n\n") if e.strip()]
     estrofas = estrofas[:MAX_ESTROFAS]
 
-    if modo_test:
-        dur_total = 2
-        duraciones = [2] * len(estrofas)
-    else:
-        dur_total = len(estrofas) * SEGUNDOS_ESTROFA
-        duraciones = [SEGUNDOS_ESTROFA] * len(estrofas)
-    
+    # -------------------------------------------------
+    # Decisión A/B TTS (50%)
+    # -------------------------------------------------
+    usar_tts = decidir_tts_para_video(
+        porcentaje=TTS_PORCENTAJE_SALMO,
+        seed=f"{texto}|{video_id}"
+    )
+
+    # -------------------------------------------------
+    # Imagen / fondo
+    # -------------------------------------------------
     imagen_usada = decidir_imagen_video(
         tipo="salmo",
         titulo=titulo,
         texto=texto
-    )   
+    )
 
-    fondo, grad = crear_fondo(dur_total, imagen_usada)
+    # =================================================
+    # ========= MODO CLÁSICO (SIN VOZ) =================
+    # =================================================
+    if not usar_tts:
 
-    crear_imagen_titulo(titulo, "titulo.png")
-    titulo_clip = ImageClip("titulo.png").set_duration(dur_total).set_position(("center", 120)).set_opacity(1)
+        if modo_test:
+            duraciones = [2] * len(estrofas)
+        else:
+            duraciones = [SEGUNDOS_ESTROFA] * len(estrofas)
 
-    clips = []
-    t = 0
-    for e, dur_e in zip(estrofas, duraciones):
-        e = (
-            e.replace("senor", "señor")
-             .replace("Senor", "Señor")
-             .replace("dios", "Dios")
+        dur_total = sum(duraciones)
+        audio_duracion = dur_total + CTA_DUR
+
+        fondo, grad = crear_fondo(dur_total, imagen_usada)
+
+        crear_imagen_titulo(titulo, "titulo.png")
+        titulo_clip = (
+            ImageClip("titulo.png")
+            .set_duration(dur_total)
+            .set_position(("center", 120))
+            .set_opacity(1)
         )
-        crear_imagen_texto(e, "estrofa.png")
-        c = ImageClip("estrofa.png").set_duration(dur_e).set_position("center").set_opacity(1)
-        if not modo_test:
-            c = c.fx(fadein, 0.8).set_start(t)
-        clips.append(c)
-        t += dur_e
 
-    audio_duracion = dur_total + CTA_DUR
-    audio, musica_usada = crear_audio(audio_duracion, musica_fija)
+        clips = []
+        t = 0
 
-    licencia_path = f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+        for e, dur_e in zip(estrofas, duraciones):
+            e = (
+                e.replace("senor", "señor")
+                 .replace("Senor", "Señor")
+                 .replace("dios", "Dios")
+            )
 
+            crear_imagen_texto(e, "estrofa.png")
+            c = (
+                ImageClip("estrofa.png")
+                .set_duration(dur_e)
+                .set_position("center")
+                .set_start(t)
+                .fx(fadein, 0.8)
+            )
+
+            clips.append(c)
+            t += dur_e
+
+        audio, musica_usada = crear_audio(audio_duracion, musica_fija)
+
+    # =================================================
+    # ========= MODO TTS SINCRONIZADO ==================
+    # =================================================
+    else:
+        voces = []
+        duraciones = []
+
+        # ---------- TÍTULO HABLADO ----------
+        tts_titulo_path = f"tmp/tts_titulo_{uuid.uuid4().hex}.wav"
+        voz_titulo = generar_voz_edge(
+            texto=titulo,
+            salida_wav=tts_titulo_path
+        )
+
+        voces.append(voz_titulo)
+        voces.append(generar_silencio(PAUSA_TITULO))
+        duraciones.append(voz_titulo.duration + PAUSA_TITULO)
+
+        # ---------- ESTROFAS ----------
+        for e in estrofas:
+            tts_path = f"tmp/tts_{uuid.uuid4().hex}.wav"
+
+            texto_tts = (
+                e.replace("senor", "señor")
+                 .replace("Senor", "Señor")
+                 .replace("dios", "Dios")
+            )
+
+            voz = generar_voz_edge(
+                texto=texto_tts,
+                salida_wav=tts_path
+            )
+
+            voces.append(voz)
+            voces.append(generar_silencio(PAUSA_ENTRE_ESTROFAS))
+            duraciones.append(voz.duration + PAUSA_ENTRE_ESTROFAS)
+
+        dur_total = sum(duraciones)
+        audio_duracion = dur_total + CTA_DUR
+
+        fondo, grad = crear_fondo(dur_total, imagen_usada)
+
+        # ---------- TÍTULO VISUAL (solo mientras se dice) ----------
+        crear_imagen_titulo(titulo, "titulo.png")
+        titulo_clip = (
+            ImageClip("titulo.png")
+            .set_duration(duraciones[0])
+            .set_position(("center", 120))
+            .set_opacity(1)
+        )
+
+        # ---------- CLIPS DE TEXTO ----------
+        clips = []
+        t = duraciones[0]  # después del título hablado
+
+        for e, dur_e in zip(estrofas, duraciones[1:]):
+            crear_imagen_texto(e, "estrofa.png")
+
+            c = (
+                ImageClip("estrofa.png")
+                .set_duration(dur_e)
+                .set_position("center")
+                .set_start(t)
+                .fx(fadein, 0.8)
+            )
+
+            clips.append(c)
+            t += dur_e
+
+        voz_salmo = concatenate_audioclips(voces)
+
+        if voz_salmo.duration < audio_duracion:
+            voz_salmo = concatenate_audioclips([
+                voz_salmo,
+                generar_silencio(audio_duracion - voz_salmo.duration)
+            ])
+        else:
+            voz_salmo = voz_salmo.subclip(0, audio_duracion)
+
+        musica_clip, musica_usada = crear_audio(
+            audio_duracion,
+            musica_fija,
+            usar_tts=False
+        )
+
+        musica_clip = musica_clip.volumex(0.35)
+        voz_salmo = voz_salmo.volumex(1.0)
+
+        audio = CompositeAudioClip([musica_clip, voz_salmo])
+
+    # -------------------------------------------------
+    # Fingerprint
+    # -------------------------------------------------
     fingerprint = generar_fingerprint_contenido(
         tipo="salmo",
         texto=texto,
@@ -84,9 +221,20 @@ def generar_salmo(
 
     intentos = 0
     while fingerprint_existe_ultimos_dias(fingerprint) and intentos < 5:
-        print("⚠ Contenido duplicado (120 días) → cambiando música")
-        #fondo, grad = crear_fondo(dur_total, None)
-        audio, musica_usada = crear_audio(audio_duracion, None)
+        print("⚠ Contenido duplicado → cambiando música")
+
+        musica_clip, musica_usada = crear_audio(
+            audio_duracion,
+            None,
+            usar_tts=False
+        )
+        musica_clip = musica_clip.volumex(0.35)
+
+        if usar_tts:
+            audio = CompositeAudioClip([musica_clip, voz_salmo])
+        else:
+            audio = musica_clip
+
         fingerprint = generar_fingerprint_contenido(
             tipo="salmo",
             texto=texto,
@@ -94,30 +242,44 @@ def generar_salmo(
             musica=musica_usada,
             duracion=audio_duracion
         )
+
         intentos += 1
 
+    licencia_path = (
+        f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+        if musica_usada
+        else None
+    )
+
+
+    # -------------------------------------------------
+    # Composición final
+    # -------------------------------------------------
     componer_video(fondo, grad, titulo_clip, audio, clips, path_out)
 
+    # -------------------------------------------------
+    # Persistencia
+    # -------------------------------------------------
     if os.path.exists(path_out):
-        if modo_test:
-            print(f"[TEST] Video generado (no persistido): {path_out}")
-        else:
-            try:
-                insert_video({
-                    "id": video_id,
-                    "channel_id": 7,  # luego lo haces dinámico
-                    "archivo": path_out,
-                    "tipo": "salmo",
-                    "musica": musica_usada,
-                    "licencia": licencia_path,
-                    "imagen": imagen_usada,
-                    "texto_base": texto,
-                    "fingerprint": fingerprint,
-                })
-            except Exception:
-                # rollback del filesystem
-                os.remove(path_out)
-                raise
+        if not modo_test:
+            insert_video({
+                "id": video_id,
+                "channel_id": 7,
+                "archivo": path_out,
+                "tipo": "salmo",
+                "musica": musica_usada,
+                "imagen": imagen_usada,
+                "texto_base": texto,
+                "fingerprint": fingerprint,
+                "licencia": licencia_path,
+                "metadata": {
+                    "has_voice": usar_tts,
+                    "voice_engine": "edge_tts" if usar_tts else None,
+                    "voice_scope": "titulo+estrofa" if usar_tts else None,
+                    "experiment": "tts_salmo_v2",
+                    "tts_ratio": TTS_PORCENTAJE_SALMO,
+                }
+            })
     else:
         raise RuntimeError(f"No se pudo crear el archivo final: {path_out}")
 
