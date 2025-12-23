@@ -64,3 +64,58 @@ def elegir_texto_para(tipo: str, ventana: int = 30):
 
     elegido = random.choice(candidatas)
     return os.path.join(carpeta, elegido), elegido.replace(".txt", "")
+
+# Orden editorial fijo de guiones long
+GUION_IDS_LONG_ORDEN = [
+    "LONG_A",
+    "LONG_B",
+    "LONG_C",
+    "LONG_D",
+    "LONG_E",
+    "LONG_F",
+]
+
+
+def get_ultimo_guion_usado(channel_id: int) -> str | None:
+    """
+    Devuelve el último guion_guiado_id usado en videos.tipo='long' para el canal.
+    Asume que videos.metadata contiene {"guion_guiado_id": "..."}.
+    """
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT metadata
+                FROM videos
+                WHERE channel_id = %s
+                  AND tipo = 'long'
+                  AND metadata IS NOT NULL
+                ORDER BY created_at DESC
+                LIMIT 1
+            """, (channel_id,))
+            row = cur.fetchone()
+            if not row:
+                return None
+
+            md = row.get("metadata") or {}
+            return md.get("guion_guiado_id")
+
+def elegir_siguiente_guion_long(channel_id: int):
+    """
+    Devuelve (guion_id, guion_guiado) rotando en orden,
+    evitando repetir el último guion usado.
+    """
+    from generator.content.guiones.oracion_guiada_base import GUIÓNES_ORACION_GUIADA_LONG
+
+
+    ultimo = get_ultimo_guion_usado(channel_id)
+
+    # Primer long del canal
+    if not ultimo or ultimo not in GUION_IDS_LONG_ORDEN:
+        guion_id = GUION_IDS_LONG_ORDEN[0]
+        return guion_id, GUIÓNES_ORACION_GUIADA_LONG[guion_id]
+
+    idx = GUION_IDS_LONG_ORDEN.index(ultimo)
+    next_idx = (idx + 1) % len(GUION_IDS_LONG_ORDEN)
+    guion_id = GUION_IDS_LONG_ORDEN[next_idx]
+
+    return guion_id, GUIÓNES_ORACION_GUIADA_LONG[guion_id]

@@ -4,8 +4,7 @@ import uuid
 from typing import Optional
 from db.connection import get_connection
 from datetime import datetime, timedelta
-
-
+from psycopg2.extras import Json
 
 def insert_video(data: dict) -> None:
     query = """
@@ -19,7 +18,8 @@ def insert_video(data: dict) -> None:
             imagen,
             texto_base,
             fingerprint,
-            fecha_generado
+            fecha_generado,
+            metadata
         )
         VALUES (
             %(id)s,
@@ -31,14 +31,18 @@ def insert_video(data: dict) -> None:
             %(imagen)s,
             %(texto_base)s,
             %(fingerprint)s,
-            NOW()
+            NOW(),
+            %(metadata)s
         );
     """
+
+    # 🔧 ADAPTACIÓN CORRECTA JSON → PostgreSQL
+    if "metadata" in data and isinstance(data["metadata"], dict):
+        data["metadata"] = Json(data["metadata"])
 
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(query, data)
-
 
 
 

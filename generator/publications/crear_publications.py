@@ -1,3 +1,5 @@
+# generator/publications/crear_publications.py
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -17,11 +19,17 @@ from generator.publications.editorial_windows import (
 # ======================================================
 
 EDITORIAL_RULES = {
-    1: {"dias": 60, "max_reps": 1},    # YouTube
-    2: {"dias": 30, "max_reps": 3},    # Facebook
-    3: {"dias": 30, "max_reps": 3},    # Instagram
-    4: {"dias": 7,  "max_reps": 1},    # TikTok
+    "short": {
+        1: {"dias": 60, "max_reps": 1},
+        2: {"dias": 30, "max_reps": 3},
+        3: {"dias": 30, "max_reps": 3},
+        4: {"dias": 7,  "max_reps": 1},
+    },
+    "long": {
+        1: {"dias": 3650, "max_reps": 1},  # YouTube long
+    }
 }
+
 
 ESTADOS_VIVOS = ("scheduled", "publishing", "published")
 
@@ -71,7 +79,11 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
             """, (channel_id, bootstrap_date))
             videos = cur.fetchall()
 
-    slots_por_plataforma = Counter(s["platform_id"] for s in schedules)
+    slots_por_plataforma = Counter(
+    (s["platform_id"], s["tipo"]) for s in schedules
+)
+
+    platform_ids = list({s["platform_id"] for s in schedules})
     publicaciones_creadas: List[Dict[str, Any]] = []
 
     for dia_offset in range(dias):
@@ -80,15 +92,24 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
         consumidas_por_plataforma = _contar_publicaciones_del_dia_por_plataforma(
             channel_id,
             fecha_base,
-            list(slots_por_plataforma.keys()),
+            platform_ids,
         )
 
         for s in schedules:
             platform_id = s["platform_id"]
             tipo = s["tipo"]
 
-            slots_del_dia = slots_por_plataforma[platform_id]
-            ya_consumidas = consumidas_por_plataforma.get(platform_id, 0)
+            if tipo == "long":
+                print(
+                    f"[LONG][SLOT] channel={channel_id} "
+                    f"platform={platform_id} "
+                    f"fecha={fecha_base.date()} "
+                    f"hora={s['hora']}"
+                )
+
+            key = (platform_id, tipo)
+            slots_del_dia = slots_por_plataforma[key]
+            ya_consumidas = consumidas_por_plataforma.get(key, 0)
 
             if ya_consumidas >= slots_del_dia:
                 continue
@@ -119,7 +140,7 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
                     "platform": platform_id,
                     "tipo": tipo,
                 })
-                consumidas_por_plataforma[platform_id] = ya_consumidas + 1
+                consumidas_por_plataforma[key] = ya_consumidas + 1
 
     return publicaciones_creadas
 
@@ -136,8 +157,20 @@ def _buscar_video_valido(
     platform_id: int
 ) -> Optional[Dict[str, Any]]:
 
-    ventana_slug = VENTANAS[tipo]["slug"]
-    ventana_texto = VENTANAS[tipo]["texto"]
+    if tipo == "long":
+        print(
+            f"[LONG][CHECK] buscando long "
+            f"channel={channel_id} "
+            f"platform={platform_id} "
+            f"fecha={publicar_en}"
+        )
+
+    if tipo != "long":
+        ventana_slug = VENTANAS[tipo]["slug"]
+        ventana_texto = VENTANAS[tipo]["texto"]
+    else:
+        ventana_slug = None
+        ventana_texto = None
 
     dias_reuso_plataforma = PLATFORM_REUSE_DAYS.get(platform_id, 3)
 
@@ -146,10 +179,39 @@ def _buscar_video_valido(
         if video["tipo"] != tipo:
             continue
 
+        if tipo == "long":
+            print(
+                f"[LONG][VIDEO] candidato id={video['id']} "
+                f"archivo={os.path.basename(video['archivo'])}"
+            )
+
         if not os.path.exists(video["archivo"]):
             continue
 
-        # 🔒 Anti-spam GLOBAL (muy corto)
+        # 🚫 LONG = evento único
+        if tipo == "long":
+            if _video_publicado_globalmente_reciente(
+                channel_id,
+                video["id"],
+                publicar_en,
+                dias=3650,
+            ):
+                print(
+                    f"[LONG][SKIP] ya publicado antes "
+                    f"id={video['id']}"
+                )
+                continue
+
+            # ✅ LONG válido
+            print(
+                f"[LONG][OK] seleccionado id={video['id']}"
+            )
+            return video
+
+        # ==========================
+        # SHORTS (sin cambios)
+        # ==========================
+
         if _video_publicado_globalmente_reciente(
             channel_id,
             video["id"],
@@ -158,7 +220,6 @@ def _buscar_video_valido(
         ):
             continue
 
-        # 📺 Reuso editorial POR PLATAFORMA
         if _video_publicado_recientemente_en_plataforma(
             channel_id,
             video["id"],
@@ -174,12 +235,21 @@ def _buscar_video_valido(
         if _texto_colision(video, publicar_en, ventana_texto, channel_id, platform_id):
             continue
 
-        if _excede_exposicion_editorial(channel_id, video["id"], platform_id):
+        if _excede_exposicion_editorial(channel_id, video["id"], platform_id, tipo):
             continue
 
         return video
 
+    if tipo == "long":
+        print(
+            f"[LONG][MISS] no se encontró long válido "
+            f"channel={channel_id} "
+            f"platform={platform_id} "
+            f"fecha={publicar_en}"
+        )
+
     return None
+
 
 
 # ======================================================
@@ -238,8 +308,8 @@ def _texto_colision(video, publicar_en, ventana, channel_id, platform_id) -> boo
 # Regla editorial de exposición
 # ======================================================
 
-def _excede_exposicion_editorial(channel_id, video_id, platform_id) -> bool:
-    rule = EDITORIAL_RULES.get(platform_id)
+def _excede_exposicion_editorial(channel_id, video_id, platform_id, tipo) -> bool:
+    rule = EDITORIAL_RULES.get(tipo, {}).get(platform_id)
     if not rule:
         return False
 
@@ -275,7 +345,7 @@ def _contar_publicaciones_del_dia_por_plataforma(channel_id, fecha_base, platfor
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(f"""
-                SELECT p.platform_id, COUNT(*) AS total
+                SELECT p.platform_id,  v.tipo, COUNT(*) AS total
                 FROM publications p
                 JOIN videos v ON v.id = p.video_id
                 WHERE v.channel_id = %s
@@ -283,10 +353,12 @@ def _contar_publicaciones_del_dia_por_plataforma(channel_id, fecha_base, platfor
                   AND p.estado IN {ESTADOS_VIVOS}
                   AND p.publicar_en >= %s
                   AND p.publicar_en < %s
-                GROUP BY p.platform_id
+                GROUP BY p.platform_id, v.tipo
             """, (channel_id, platform_ids, inicio, fin))
-            return {r["platform_id"]: r["total"] for r in cur.fetchall()}
-
+            return {
+                (r["platform_id"], r["tipo"]): r["total"]
+                for r in cur.fetchall()
+            }
 
 def _slot_ocupado(channel_id, platform_id, publicar_en) -> bool:
     with get_connection() as conn:

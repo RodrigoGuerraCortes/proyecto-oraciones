@@ -1,10 +1,9 @@
 import os
 
-from moviepy.editor import ImageClip
+from moviepy.editor import ImageClip, CompositeAudioClip
 from moviepy.video.fx.fadein import fadein
 from moviepy.video.fx.fadeout import fadeout
 from moviepy.audio.fx.volumex import volumex
-from moviepy.editor import CompositeAudioClip
 
 from generator.audio.tts_edge import generar_voz_edge, _normalizar_texto_tts
 from generator.image.fondo import crear_fondo
@@ -15,10 +14,11 @@ from generator.video.composer import componer_video
 from generator.content.fingerprinter import generar_fingerprint_contenido
 from generator.cleanup import limpiar_temporales
 from generator.image.decision import decidir_imagen_video
-from db.repositories.video_repo import insert_video, fingerprint_existe_ultimos_dias
-from generator.content.guiones.oracion_guiada_base import GUIÓN_ORACION_GUIADA_LONG
+from db.repositories.video_repo import insert_video
+
 from generator.audio.silence import generar_silencio
 from generator.utils.texto import normalizar_titulo_es
+from generator.content.selector import elegir_siguiente_guion_long, elegir_texto_para
 
 # -----------------------
 # CONFIGURACIÓN GENERAL
@@ -31,6 +31,13 @@ DUR_OBJ_MAX = 300
 
 TEXTO_ONSCREEN_MIN = 8
 TEXTO_ONSCREEN_MAX = 14
+
+FADE_TEXTO_IN = 0.6
+FADE_TEXTO_OUT = 0.6
+
+SILENCIO_CORTO = 3.0
+SILENCIO_MEDITATIVO = 6.0
+SILENCIO_FINAL = 6.0
 
 VOZ_DIR = "voz"
 DUR_TEST_LONG = 28
@@ -60,6 +67,16 @@ def _asignar_duraciones(parrafos: list[str], dur_total: int) -> list[float]:
     return durs
 
 
+def _duracion_silencio_frase(frase: str) -> float:
+    """
+    Silencio contextual según el contenido espiritual de la frase
+    """
+    f = frase.lower()
+    if "silencio" in f or "permanece" in f:
+        return SILENCIO_MEDITATIVO
+    return SILENCIO_CORTO
+
+
 # -----------------------
 # FUNCIÓN PRINCIPAL
 # -----------------------
@@ -67,15 +84,22 @@ def _asignar_duraciones(parrafos: list[str], dur_total: int) -> list[float]:
 def generar_oracion_long(
     *,
     video_id,
-    path_in: str,
+    path_in: str | None,
     path_out: str,
     musica_fija: str | None = None,
     duracion_objetivo: int = 240,
     modo_test: bool = False
 ):
     # -----------------------
-    # Texto base
+    # TEXTO BASE
     # -----------------------
+
+    # -----------------------
+    # TEXTO BASE (NO REPETIBLE EN LONG)
+    # -----------------------
+
+    if path_in is None:
+        path_in, _ = elegir_texto_para("long")
 
     with open(path_in, "r", encoding="utf-8") as f:
         texto = f.read().strip()
@@ -95,16 +119,16 @@ def generar_oracion_long(
     duraciones = _asignar_duraciones(parrafos, dur_total)
 
     # -----------------------
-    # Fondo
+    # FONDO
     # -----------------------
 
-    imagen_usada = decidir_imagen_video("oracion_long", titulo, texto)
+    imagen_usada = decidir_imagen_video("long", titulo, texto)
     fondo, grad = crear_fondo(dur_total, imagen_usada)
 
     os.makedirs(VOZ_DIR, exist_ok=True)
 
     # -----------------------
-    # VOZ + CLIP TÍTULO
+    # VOZ + TÍTULO
     # -----------------------
 
     voz_titulo_path = os.path.join(VOZ_DIR, f"titulo_{video_id}.wav")
@@ -137,28 +161,62 @@ def generar_oracion_long(
     dur_voz_intro = voz_intro.duration
 
     # -----------------------
-    # VOZ GUIADA
+    # VOZ GUIADA (CON SILENCIO INTELIGENTE)
     # -----------------------
 
     clips_guiados = []
+    clips_texto_guiado = []
+
     t_actual = dur_voz_titulo + dur_voz_intro + 3.0
 
-    for idx, frase in enumerate(GUIÓN_ORACION_GUIADA_LONG, start=1):
+    guion_id, guion_guiado = elegir_siguiente_guion_long(channel_id=7)
+
+    print(f"[LONG] video_id={video_id} guion={guion_id}")
+
+
+    for idx, frase in enumerate(guion_guiado, start=1):
         voz_path = os.path.join(VOZ_DIR, f"guiada_{video_id}_{idx}.wav")
+
         voz_clip = generar_voz_edge(
             texto=_normalizar_texto_tts(frase),
             salida_wav=voz_path
         ).set_start(t_actual)
 
         clips_guiados.append(voz_clip)
+
+        # TEXTO GUIADO EN PANTALLA
+        crear_imagen_texto(frase, f"guiada_txt_{idx}.png")
+
+        texto_clip = (
+            ImageClip(f"guiada_txt_{idx}.png")
+            .set_start(t_actual)
+            .set_duration(voz_clip.duration)
+            .set_position("center")
+            .fx(fadein, 0.5)
+            .fx(fadeout, 0.5)
+        )
+
+        clips_texto_guiado.append(texto_clip)
+
         t_actual += voz_clip.duration
 
-        silencio = generar_silencio(3.0).set_start(t_actual)
+        silencio_dur = _duracion_silencio_frase(frase)
+        silencio = generar_silencio(silencio_dur).set_start(t_actual)
+
         clips_guiados.append(silencio)
-        t_actual += 3.0
+        t_actual += silencio_dur
+
 
     # -----------------------
-    # TEXTO EN PANTALLA
+    # SILENCIO FINAL CONTROLADO
+    # -----------------------
+
+    silencio_final = generar_silencio(SILENCIO_FINAL).set_start(t_actual)
+    clips_guiados.append(silencio_final)
+    t_actual += SILENCIO_FINAL
+
+    # -----------------------
+    # TEXTO EN PANTALLA (CON FADE IN / OUT)
     # -----------------------
 
     clips_texto = []
@@ -177,7 +235,8 @@ def generar_oracion_long(
             .set_duration(onscreen)
             .set_start(t)
             .set_position("center")
-            .fx(fadein, 0.6)
+            .fx(fadein, FADE_TEXTO_IN)
+            .fx(fadeout, FADE_TEXTO_OUT)
         )
 
         clips_texto.append(c)
@@ -187,7 +246,8 @@ def generar_oracion_long(
     # AUDIO FINAL
     # -----------------------
 
-    audio_duracion = dur_total + CTA_DUR
+    audio_duracion = max(t_actual, dur_total) + CTA_DUR
+
     musica_clip, musica_usada = crear_audio(audio_duracion, musica_fija)
     musica_clip = volumex(musica_clip, 0.18)
 
@@ -204,30 +264,33 @@ def generar_oracion_long(
         grad=grad,
         titulo_clip=titulo_clip,
         audio=audio_final,
-        clips_texto=clips_texto,
+        clips_texto=clips_texto + clips_texto_guiado,
         salida=path_out
     )
 
     licencia_path = f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
-
 
     if not modo_test:
         insert_video({
             "id": video_id,
             "channel_id": 7,
             "archivo": path_out,
-            "tipo": "oracion_long",
+            "tipo": "long",
             "musica": musica_usada,
             "licencia": licencia_path,
             "imagen": imagen_usada,
             "texto_base": texto,
             "fingerprint": generar_fingerprint_contenido(
-                tipo="oracion_long",
+                tipo="long",
                 texto=texto,
                 imagen=imagen_usada,
                 musica=musica_usada,
                 duracion=int(audio_duracion)
-            )
+            ),
+            "metadata": {
+                "guion_guiado_id": guion_id,
+                "guion_guiado_frases": guion_guiado
+            }
         })
 
     limpiar_temporales()

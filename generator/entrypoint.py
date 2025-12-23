@@ -50,7 +50,7 @@ def main():
         generar_videos(tipo, cantidad, modo_test=MODO_TEST)
         return
     
-    if tipo in ("oracion", "salmo", "oracion_long"):
+    if tipo in ("oracion", "salmo", "long"):
         generar_videos(tipo, cantidad, modo_test=MODO_TEST)
         return
         # aquí podrías integrar con tu generar_videos() si lo tienes por pipeline.

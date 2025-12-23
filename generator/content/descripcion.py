@@ -7,6 +7,7 @@ from generator.content.descriptions.youtube import generar_descripcion_youtube
 from generator.content.descriptions.facebook import generar_descripcion_facebook
 from generator.content.descriptions.instagram import generar_descripcion_instagram
 from generator.content.descriptions.tiktok import generar_descripcion_tiktok
+from generator.content.descriptions.youtube_long import generar_descripcion_youtube_long
 # Cargar variables del .env
 load_dotenv("config/.env")
 
@@ -36,12 +37,19 @@ def generar_descripcion(
     """
 
     if plataforma == "youtube":
-        return generar_descripcion_youtube(
-                tipo=tipo,
+        if tipo == "long":
+            return generar_descripcion_youtube_long(
                 hora_texto=hora_texto,
-                archivo_texto=archivo_texto,
                 texto_base=texto_base,
                 licence=licence,
+            )
+        else:
+            return generar_descripcion_youtube(
+                    tipo=tipo,
+                    hora_texto=hora_texto,
+                    archivo_texto=archivo_texto,
+                    texto_base=texto_base,
+                    licence=licence,
             )
     elif plataforma == "facebook":
         return generar_descripcion_facebook(

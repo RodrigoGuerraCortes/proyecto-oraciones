@@ -1,3 +1,5 @@
+# generator/publications/run_scheduler.py
+
 from db.connection import get_connection
 from generator.publications.crear_publications import crear_publications
 

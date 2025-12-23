@@ -5,3 +5,5 @@ client_secret.json
 token.pickle
 venv/
 __pycache__/
+*.wav
+*.pyc
