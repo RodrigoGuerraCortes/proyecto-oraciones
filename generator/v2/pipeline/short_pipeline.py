@@ -102,6 +102,7 @@ def run_short_pipeline(
             title_style=resolved["title_style"],
             text_style=resolved["text_style"],
             cta_image_path=channel_config["branding"]["cta"],
+            watermark_path=channel_config["branding"].get("water_mark"),
             modo_test=modo_test,
         )
 

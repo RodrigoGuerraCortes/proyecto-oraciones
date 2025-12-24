@@ -1,13 +1,11 @@
 # generator/v2/video/title_renderer.py
 
 from dataclasses import dataclass
-from typing import List
 import textwrap
-
 from PIL import Image, ImageDraw, ImageFont
 
-
 ANCHO = 1080
+ALTO = 1920
 
 
 @dataclass
@@ -20,17 +18,22 @@ class TitleStyle:
     max_width_chars: int = 18
 
 
-def split_title_lines(title: str, max_width: int) -> List[str]:
-    return textwrap.wrap(title, width=max_width)
-
-
-def render_title_image(
+def render_title_layer(
     *,
     title: str,
     output_path: str,
     style: TitleStyle,
 ):
-    img = Image.new("RGBA", (ANCHO, 360), (0, 0, 0, 0))
+    """
+    Renderiza el TÍTULO como una CAPA PNG COMPLETA (1080x1920).
+    Posición fija V1: y = 120
+    """
+    from pathlib import Path
+
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    img = Image.new("RGBA", (ANCHO, ALTO), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
     try:
@@ -38,20 +41,24 @@ def render_title_image(
     except Exception:
         font = ImageFont.load_default()
 
-    lines = split_title_lines(title, style.max_width_chars)
+    lines = textwrap.wrap(title, width=style.max_width_chars)
 
-    y = 20
+    y = 120
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
         x = (ANCHO - w) // 2
 
-        # sombra
-        for dx, dy in [(-3,0),(3,0),(0,-3),(0,3)]:
-            draw.text((x+dx, y+dy), line, font=font, fill=style.shadow_color)
+        for dx, dy in [
+            (-3, 0), (3, 0), (0, -3), (0, 3),
+            (-3, -3), (3, -3), (-3, 3), (3, 3),
+        ]:
+            draw.text((x + dx, y + dy), line, font=font, fill=style.shadow_color)
 
         draw.text((x, y), line, font=font, fill=style.text_color)
         y += h + style.line_spacing
 
+    # 🔴 ESTO FALTABA
     img.save(output_path)
+

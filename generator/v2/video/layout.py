@@ -34,7 +34,7 @@ def default_short_layout() -> ShortLayout:
     - texto centrado pero dentro de una zona, no canvas completo
     - watermark abajo/derecha
     """
-    title = Zone(x=0, y=40, w=ANCHO, h=360)
+    title = Zone(x=0, y=40, w=ANCHO, h=200)
 
     # Zona central: debajo del título + margen; arriba del watermark
     text_top = title.y + title.h + 30
