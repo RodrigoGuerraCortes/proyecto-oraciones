@@ -215,3 +215,7 @@ Flujo completo típico (recordatorio mental)
 
 # 4) Fijar comentario (bot)
 .venv/bin/python -m generator.bots.pin_comments.worker
+
+
+# Ejecución de test para version 2
+.venv/bin/pytest
