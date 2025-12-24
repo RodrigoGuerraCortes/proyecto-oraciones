@@ -37,9 +37,21 @@ def resolve_short_config(
     # -------------------------
     # Estilos (default)
     # -------------------------
+
+
     background_cfg = BackgroundConfig()
     title_style = TitleStyle()
-    text_style = TextStyle()
+
+    layout = fmt.get("layout", {})
+    text_layout = layout.get("text", {})
+    title_layout = layout.get("title", {})
+
+    text_style = TextStyle(
+        font_path=f"/usr/share/fonts/truetype/dejavu/{text_layout.get('font', 'DejaVuSans.ttf')}",
+        font_size=text_layout.get("font_size", 54),
+        line_spacing=text_layout.get("line_spacing", 18),
+        max_width_px=text_layout.get("max_width", 820),
+    )
 
     return {
         "render_cfg": render_cfg,
@@ -47,4 +59,5 @@ def resolve_short_config(
         "background_cfg": background_cfg,
         "title_style": title_style,
         "text_style": text_style,
+        "text_y_start": text_layout.get("y_start", 360),
     }

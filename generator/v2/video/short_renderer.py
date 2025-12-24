@@ -42,6 +42,7 @@ def render_short(
     background_cfg,
     title_style: TitleStyle,
     text_style: TextStyle,
+    text_y_start: int,
     cta_image_path: str | None = None,
     watermark_path: str | None = None,
     modo_test: bool = False,
@@ -97,6 +98,7 @@ def render_short(
         lines=parsed.blocks[0].text.splitlines(),
         output_path=str(text_png),
         style=text_style,
+        y_start=text_y_start,
     )
 
     if not text_png.exists():
