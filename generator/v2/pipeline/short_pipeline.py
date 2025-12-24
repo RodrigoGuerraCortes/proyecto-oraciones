@@ -1,3 +1,4 @@
+# generator/v2/pipeline/short_pipeline.py
 import uuid
 import os
 
@@ -6,6 +7,9 @@ from generator.v2.content.parser import parse_content
 
 from generator.v2.video.short_renderer import render_short
 from generator.v2.pipeline.config_resolver import resolve_short_config
+from generator.v2.video.background_selector.with_history import (
+    HistoryBackgroundSelector
+)
 
 
 def run_short_pipeline(
@@ -79,9 +83,21 @@ def run_short_pipeline(
         audio_req.tts_text = full_text
 
         # -----------------------------------
-        # 5) Imagen base (placeholder por ahora)
+        # 5) Imagen base (background)
         # -----------------------------------
-        image_path = "imagenes/vignette.png"
+        bg_selector = HistoryBackgroundSelector(
+            base_path=resolved["background_selector_cfg"]["base_path"],
+            ventana=resolved["background_selector_cfg"]["ventana"],
+            fallback=resolved["background_selector_cfg"]["fallback"],
+        )
+
+        image_path = bg_selector.elegir(
+            text=full_text,
+            title=parsed.title,
+            format_code=format_code,
+            channel_id=channel_id,
+        )
+
 
         # -----------------------------------
         # 6) Output

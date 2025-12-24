@@ -12,10 +12,11 @@ ALTO = 1920
 class TitleStyle:
     font_path: str = "DejaVuSerif-Bold.ttf"
     font_size: int = 70
-    text_color: str = "#e4d08a"
+    title_color: str = "#e4d08a"
     shadow_color: str = "black"
     line_spacing: int = 12
     max_width_chars: int = 18
+    y: int = 120
 
 
 def render_title_layer(
@@ -26,7 +27,7 @@ def render_title_layer(
 ):
     """
     Renderiza el TÍTULO como una CAPA PNG COMPLETA (1080x1920).
-    Posición fija V1: y = 120
+    Centrado horizontalmente, y en Y fija (V1).
     """
     from pathlib import Path
 
@@ -41,9 +42,11 @@ def render_title_layer(
     except Exception:
         font = ImageFont.load_default()
 
-    lines = textwrap.wrap(title, width=style.max_width_chars)
 
-    y = 120
+
+    lines = textwrap.wrap(normalize_title(title), width=style.max_width_chars)
+
+    y = style.y
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
         w = bbox[2] - bbox[0]
@@ -56,9 +59,27 @@ def render_title_layer(
         ]:
             draw.text((x + dx, y + dy), line, font=font, fill=style.shadow_color)
 
-        draw.text((x, y), line, font=font, fill=style.text_color)
+        draw.text((x, y), line, font=font, fill=style.title_color)
         y += h + style.line_spacing
 
     # 🔴 ESTO FALTABA
     img.save(output_path)
 
+
+MINOR_WORDS = {
+    "de", "para", "el", "la", "los", "las",
+    "y", "en", "al", "del", "un", "una"
+}
+
+
+def normalize_title(text: str) -> str:
+    words = text.strip().lower().split()
+    result = []
+
+    for i, w in enumerate(words):
+        if i == 0 or w not in MINOR_WORDS:
+            result.append(w.capitalize())
+        else:
+            result.append(w)
+
+    return " ".join(result)

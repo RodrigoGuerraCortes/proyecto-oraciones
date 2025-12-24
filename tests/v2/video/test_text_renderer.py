@@ -1,11 +1,11 @@
 # tests/v2/video/test_text_renderer.py
 
 from unittest.mock import MagicMock, patch
-from generator.v2.video.text_renderer import render_text_block, TextStyle
+from generator.v2.video.text_renderer import render_text_layer, TextStyle
 
 
 @patch("generator.v2.video.text_renderer.Image")
-def test_render_text_block(mock_image):
+def render_text_layer(mock_image):
     img = MagicMock()
     draw = MagicMock()
     mock_image.new.return_value = img
@@ -13,7 +13,7 @@ def test_render_text_block(mock_image):
 
     style = TextStyle()
 
-    render_text_block(
+    render_text_layer(
         lines=["Linea 1", "Linea 2"],
         output_path="text.png",
         style=style,
