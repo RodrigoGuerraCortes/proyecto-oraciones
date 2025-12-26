@@ -28,7 +28,6 @@ def run_short_pipeline(
 
     fmt = channel_config["formats"][format_code]
 
-    base_path = channel_config["content"]["base_path"]
     content_path = fmt["content"]["path"]
     mode = fmt["content"]["type"]            # "plain" | "stanzas"
     max_blocks = fmt["content"].get("max_blocks")
@@ -42,16 +41,29 @@ def run_short_pipeline(
 
     for i in range(quantity):
 
+       
+
         # -----------------------------------
-        # 1) Selección de contenido (filesystem)
+        # 1) Resolver config
+        # -----------------------------------
+        resolved = resolve_short_config(
+            channel_config=channel_config,
+            format_code=format_code,
+        )
+
+        base_path = resolved["content_base_path"]
+
+        # -----------------------------------
+        # 2) Selección de contenido (filesystem)
         # -----------------------------------
         path_txt, base_name = elegir_texto_simple(
             base_path=base_path,
             sub_path=content_path,
         )
 
+
         # -----------------------------------
-        # 2) Lectura del archivo
+        # 3) Lectura del archivo
         # -----------------------------------
         with open(path_txt, "r", encoding="utf-8") as f:
             raw_text = f.read()
@@ -59,7 +71,7 @@ def run_short_pipeline(
         title = base_name.replace("_", " ").strip()
 
         # -----------------------------------
-        # 3) Parseo
+        # 4) Parseo
         # -----------------------------------
         parsed = parse_content(
             raw_text=raw_text,
@@ -71,13 +83,7 @@ def run_short_pipeline(
         # Texto completo (para TTS)
         full_text = "\n\n".join(b.text for b in parsed.blocks)
 
-        # -----------------------------------
-        # 4) Resolver config
-        # -----------------------------------
-        resolved = resolve_short_config(
-            channel_config=channel_config,
-            format_code=format_code,
-        )
+
 
         audio_req = resolved["audio_req"]
         audio_req.tts_text = full_text
@@ -118,8 +124,10 @@ def run_short_pipeline(
             title_style=resolved["title_style"],
             text_style=resolved["text_style"],
             text_y_start=resolved["text_y_start"], 
-            cta_image_path=channel_config["branding"]["cta"],
-            watermark_path=channel_config["branding"].get("water_mark"),
+            cta_image_path=resolved["cta_path"],
+            watermark_path=resolved["watermark_path"],
+            music_base_path=resolved["music_base_path"],
+            music_strategy=resolved["music_strategy"],
             modo_test=modo_test,
         )
 

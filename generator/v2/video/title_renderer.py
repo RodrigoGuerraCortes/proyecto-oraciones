@@ -71,15 +71,23 @@ MINOR_WORDS = {
     "y", "en", "al", "del", "un", "una"
 }
 
-
 def normalize_title(text: str) -> str:
-    words = text.strip().lower().split()
+    words = text.strip().split()
+    if not words:
+        return text
+
     result = []
 
     for i, w in enumerate(words):
-        if i == 0 or w not in MINOR_WORDS:
-            result.append(w.capitalize())
+        lw = w.lower()
+
+        if i == 0:
+            # Solo la primera palabra se capitaliza
+            result.append(lw[:1].upper() + lw[1:])
+        elif lw in MINOR_WORDS:
+            result.append(lw)
         else:
-            result.append(w)
+            # Mantiene tildes y mayúscula inicial
+            result.append(lw[:1].upper() + lw[1:])
 
     return " ".join(result)

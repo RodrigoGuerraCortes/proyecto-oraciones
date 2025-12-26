@@ -45,6 +45,8 @@ def render_short(
     text_y_start: int,
     cta_image_path: str | None = None,
     watermark_path: str | None = None,
+    music_base_path: str | None = None,
+    music_strategy: str | None = None,
     modo_test: bool = False,
 ):
     """
