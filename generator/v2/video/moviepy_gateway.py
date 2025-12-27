@@ -27,7 +27,7 @@ class MoviePyGatewayImpl(MoviePyGateway):
         return CompositeVideoClip(clips)
 
     def concat(self, clips):
-        return concatenate_videoclips(clips)
+        return concatenate_videoclips(clips, method="compose")
 
     def write(self, clip, path: str, fps: int):
         clip.write_videofile(

@@ -7,6 +7,7 @@ from generator.v2.video.title_renderer import TitleStyle
 from generator.v2.video.text_renderer import TextStyle
 from generator.v2.audio.models import AudioRequest
 from dotenv import load_dotenv
+import random
 
 load_dotenv()
 
@@ -31,18 +32,7 @@ def resolve_short_config(
         cta_seconds=fmt["cta"]["seconds"],
     )
 
-    # -------------------------
-    # Audio (v2 puro)
-    # -------------------------
-    audio_cfg = fmt["audio"]
-
-    audio_req = AudioRequest(
-        duration=0,                     # se setea luego
-        tts_enabled=audio_cfg["tts"]["enabled"],
-        tts_text=None,                  # se setea luego
-        music_enabled=audio_cfg["music"],
-    )
-
+   
     # -------------------------
     # Estilos (default)
     # -------------------------
@@ -108,14 +98,23 @@ def resolve_short_config(
 
     music_base_path = os.path.join(BASE_STORAGE_PATH, music_base_rel)
 
+
+    audio_cfg = fmt["audio"]
+    tts_cfg = audio_cfg.get("tts", {})
+    tts_enabled = False
     # Nota: music_enabled final = global AND formato
     music_enabled_final = music_enabled_global and bool(audio_cfg.get("music", False))
+    
+    if tts_cfg.get("enabled", False):
+        ratio = float(tts_cfg.get("ratio", 1.0))
+        tts_enabled = random.random() < ratio
 
     audio_req = AudioRequest(
-        duration=0,
-        tts_enabled=audio_cfg["tts"]["enabled"],
-        tts_text=None,
+        duration=0, # se setea en el renderer
+        tts_enabled=tts_enabled,
+        tts_text=None, # se setea en el renderer
         music_enabled=music_enabled_final,
+        music_base_path=music_base_path, 
     )
 
 

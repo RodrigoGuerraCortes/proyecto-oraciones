@@ -21,7 +21,7 @@ class ComposerRequest:
     audio: AudioClip
     cta_layers: Optional[List[ImageClip]]
     output_path: str
-    fps: int = 30
+    fps: int = 20
 
 
 @dataclass

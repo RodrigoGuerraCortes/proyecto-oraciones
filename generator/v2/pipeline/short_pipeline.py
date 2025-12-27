@@ -13,6 +13,7 @@ from generator.v2.video.background_selector.with_history import (
 from generator.v2.content.title_resolver import resolve_title
 from generator.v2.content.segmentation import dividir_en_bloques_por_lineas
 from generator.v2.content.parser import ParsedContent, ContentBlock
+from generator.v2.audio.tts_normalizer import normalize_text_for_tts
 
 def run_short_pipeline(
     *,
@@ -131,7 +132,14 @@ def run_short_pipeline(
 
 
         audio_req = resolved["audio_req"]
-        audio_req.tts_text = full_text
+        tts_text = normalize_text_for_tts(full_text)
+        audio_req.tts_text = tts_text
+
+        if modo_test:
+            audio_req.tts_enabled = True
+            audio_req.music_enabled = False
+            audio_req.tts_blocks = None
+            audio_req.tts_text = normalize_text_for_tts(full_text)
 
         # -----------------------------------
         # 5) Imagen base (background)
@@ -162,6 +170,12 @@ def run_short_pipeline(
             blocks=[ContentBlock(text=b) for b in visual_blocks],
         )
 
+        print(
+            "[PIPELINE] "
+            f"channel={channel_id} | "
+            f"format={format_code} | "
+            f"modo_test={modo_test}"
+        )
 
         # -----------------------------------
         # 7) Render
