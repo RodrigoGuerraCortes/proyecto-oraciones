@@ -132,6 +132,10 @@ def resolve_short_config(
         font_size=text_layout.get("font_size", 54),
         line_spacing=text_layout.get("line_spacing", 18),
         max_width_px=text_layout.get("max_width", 820),
+
+        # outline
+        outline_px=text_layout.get("outline_px", 2),
+        outline_color=text_layout.get("outline_color", "black"),
     )
 
     title_style = TitleStyle(

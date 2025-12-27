@@ -15,6 +15,8 @@ from generator.v2.video.text_renderer import render_text_layer, TextStyle
 from generator.v2.video.watermark_renderer import render_watermark_layer
 from generator.v2.video.composer import compose_video
 from generator.v2.video.composer_models import ComposerRequest
+from generator.v2.content.segmentation import calcular_duracion_bloque
+from generator.v2.video.cta_renderer import render_cta_clip
 
 ANCHO = 1080
 ALTO = 1920
@@ -23,13 +25,12 @@ ALTO = 1920
 @dataclass
 class ShortRenderConfig:
     """
-    Mantener este dataclass es parte del contrato del pipeline:
-    config_resolver.py lo importa y lo construye.
+    Mantener este dataclass es parte del contrato del pipeline.
     """
     max_lines: int
     cta_seconds: int
     fade_seconds: float = 1.0
-    enable_fade_between_blocks: bool = False
+    enable_fade_between_blocks: bool = True
 
 
 def render_short(
@@ -50,14 +51,56 @@ def render_short(
     modo_test: bool = False,
 ):
     """
-    Renderer V2 por capas PNG (debug-friendly).
-    MoviePy solo compone; PIL decide layout.
+    Renderer V2 por capas PNG.
     """
-    # Duración visual (por ahora simple y determinista)
-    durations = [2.0] * len(parsed.blocks) if modo_test else [5.0] * len(parsed.blocks)
-    total_visual_duration = sum(durations)
 
-    # Fondo
+    # -------------------------------------------------
+    # 1) Directorios
+    # -------------------------------------------------
+    render_dir = Path(output_path).parent
+    layers_dir = render_dir / "layers"
+    layers_dir.mkdir(parents=True, exist_ok=True)
+
+    # -------------------------------------------------
+    # 2) TEXTO → clips secuenciales + duración REAL
+    # -------------------------------------------------
+    text_clips: List[ImageClip] = []
+    current_t = 0.0
+
+    for i, block in enumerate(parsed.blocks):
+        text_png = (layers_dir / f"text_block_{i}.png").resolve()
+
+        render_text_layer(
+            lines=block.text.splitlines(),
+            output_path=str(text_png),
+            style=text_style,
+            y_start=text_y_start,
+        )
+
+        if not text_png.exists():
+            raise RuntimeError(f"[RENDER ERROR] text layer not created: {text_png}")
+        
+        base_duration = calcular_duracion_bloque(block.text)
+        duration = _adjust_duration_for_test(base_duration, modo_test)
+
+        clip = (
+            ImageClip(str(text_png))
+            .set_start(current_t)
+            .set_duration(duration)
+        )
+
+        if config.enable_fade_between_blocks:
+            clip = clip.fadein(config.fade_seconds).fadeout(config.fade_seconds)
+
+        text_clips.append(clip)
+        current_t += duration
+
+    # duración TOTAL del video (texto manda)
+    total_visual_duration = current_t
+
+    # -------------------------------------------------
+    # 3) FONDO (depende de duración total)
+    # -------------------------------------------------
     fondo, grad = render_background(
         image_path=image_path,
         duration=total_visual_duration,
@@ -66,14 +109,9 @@ def render_short(
 
     layers: List[ImageClip] = [fondo, grad]
 
-    # Carpeta layers junto al output (ordenado y fácil de borrar)
-    render_dir = Path(output_path).parent
-    layers_dir = render_dir / "layers"
-    layers_dir.mkdir(parents=True, exist_ok=True)
-
-    # -------------------------
-    # TÍTULO (capa completa)
-    # -------------------------
+    # -------------------------------------------------
+    # 4) TÍTULO (capa completa)
+    # -------------------------------------------------
     title_png = (layers_dir / "title.png").resolve()
 
     render_title_layer(
@@ -89,30 +127,10 @@ def render_short(
         ImageClip(str(title_png))
         .set_duration(total_visual_duration)
     )
-    # -------------------------
-    # TEXTO (capa completa)
-    # - Para layout: solo primer bloque (plain)
-    # - max_lines está disponible en config si luego quieres aplicarlo
-    # -------------------------
-    text_png = (layers_dir / "text.png").resolve()
 
-    render_text_layer(
-        lines=parsed.blocks[0].text.splitlines(),
-        output_path=str(text_png),
-        style=text_style,
-        y_start=text_y_start,
-    )
-
-    if not text_png.exists():
-        raise RuntimeError(f"[RENDER ERROR] text layer not created: {text_png}")
-
-    layers.append(
-        ImageClip(str(text_png))
-        .set_duration(total_visual_duration)
-    )
-    # -------------------------
-    # WATERMARK (capa completa)
-    # -------------------------
+    # -------------------------------------------------
+    # 5) WATERMARK (capa completa)
+    # -------------------------------------------------
     if watermark_path and os.path.exists(watermark_path):
         wm_png = (layers_dir / "watermark.png").resolve()
 
@@ -129,18 +147,58 @@ def render_short(
             .set_duration(total_visual_duration)
         )
 
-    # -------------------------
-    # Composición final
-    # (audio/cta se reintroducen después de cerrar layout)
-    # -------------------------
+
+    # -------------------------------------------------
+    # 5.5) CTA (capa completa)
+    # -------------------------------------------------
+    cta_layers = None
+
+    if cta_image_path:
+        CTA_DURATION = config.cta_seconds
+
+        fondo_cta, grad_cta = render_background(
+            image_path=image_path,
+            duration=CTA_DURATION,
+            config=background_cfg,
+        )
+
+        cta_clip = render_cta_clip(
+            cta_image_path=cta_image_path,
+            duration=CTA_DURATION,
+        )
+
+        cta_layers = [fondo_cta, grad_cta]
+
+        if cta_clip:
+            cta_layers.append(cta_clip)
+    
+
+    # -------------------------------------------------
+    # 6) COMPOSICIÓN FINAL
+    # -------------------------------------------------
     compose_video(
         request=ComposerRequest(
-            base_layers=layers,
+            base_layers=layers + text_clips,
             overlays=[],
             audio=None,
-            cta_layers=None,
+            cta_layers=cta_layers,
             output_path=output_path,
         )
     )
 
-    return {"output": output_path, "layers_dir": str(layers_dir)}
+    return {
+        "output": output_path,
+        "layers_dir": str(layers_dir),
+    }
+
+
+
+def _adjust_duration_for_test(duration: float, modo_test: bool) -> float:
+    """
+    Reduce duración solo en modo test para acelerar validaciones visuales.
+    """
+    if not modo_test:
+        return duration
+
+    # mínimo legible + fade visible
+    return max(3.0, duration * 0.15)

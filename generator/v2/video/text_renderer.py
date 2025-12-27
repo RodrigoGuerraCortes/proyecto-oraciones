@@ -17,6 +17,8 @@ class TextStyle:
     shadow_color: str = "black"
     line_spacing: int = 18
     max_width_px: int = 820
+    outline_px: int = 2
+    outline_color: str = "black"
 
 
 def render_text_layer(
@@ -90,17 +92,33 @@ def render_text_layer(
         w = bbox[2] - bbox[0]
         x = block_x + (style.max_width_px - w) // 2
 
-        # sombra
-        for dx, dy in [(-1, -1), (1, -1), (-1, 1), (1, 1)]: 
-            draw.text((x + dx, y + dy), line, font=font, fill=style.shadow_color)
+        # ==========================
+        # CONTORNO REAL (configurable)
+        # ==========================
+        if style.outline_px > 0:
+            o = style.outline_px
+            outline_offsets = [
+                (-o, 0), (o, 0), (0, -o), (0, o),
+                (-o, -o), (o, -o), (-o, o), (o, o),
+            ]
 
+            for dx, dy in outline_offsets:
+                draw.text(
+                    (x + dx, y + dy),
+                    line,
+                    font=font,
+                    fill=style.outline_color,
+                )
+
+
+        # ==========================
+        # TEXTO PRINCIPAL
+        # ==========================
         draw.text(
             (x, y),
-            line,   
+            line,
             font=font,
             fill=style.color,
-            stroke_width=1,
-            stroke_fill="black",
         )
 
         y += line_h + style.line_spacing + 4

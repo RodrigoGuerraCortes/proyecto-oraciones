@@ -10,7 +10,9 @@ from generator.v2.pipeline.config_resolver import resolve_short_config
 from generator.v2.video.background_selector.with_history import (
     HistoryBackgroundSelector
 )
-
+from generator.v2.content.title_resolver import resolve_title
+from generator.v2.content.segmentation import dividir_en_bloques_por_lineas
+from generator.v2.content.parser import ParsedContent, ContentBlock
 
 def run_short_pipeline(
     *,
@@ -19,6 +21,7 @@ def run_short_pipeline(
     format_code: str,
     quantity: int,
     modo_test: bool = False,
+    force_text: str | None = None,
 ):
     """
     Pipeline genérico para SHORTS v2.
@@ -54,12 +57,25 @@ def run_short_pipeline(
         base_path = resolved["content_base_path"]
 
         # -----------------------------------
-        # 2) Selección de contenido (filesystem)
+        # 2) Selección de contenido (filesystem)    
         # -----------------------------------
-        path_txt, base_name = elegir_texto_simple(
-            base_path=base_path,
-            sub_path=content_path,
-        )
+        if force_text:
+            # path absoluto o relativo al base_path/content_path
+            if os.path.isabs(force_text):
+                path_txt = force_text
+            else:
+                path_txt = os.path.join(base_path, content_path, force_text)
+
+            if not os.path.exists(path_txt):
+                raise FileNotFoundError(f"Archivo de texto no existe: {path_txt}")
+
+            base_name = os.path.splitext(os.path.basename(path_txt))[0]
+
+        else:
+            path_txt, base_name = elegir_texto_simple(
+                base_path=base_path,
+                sub_path=content_path,
+            )
 
 
         # -----------------------------------
@@ -69,6 +85,10 @@ def run_short_pipeline(
             raw_text = f.read()
 
         title = base_name.replace("_", " ").strip()
+        title = resolve_title(
+            parsed_title=title,
+            path_txt=path_txt,
+        )
 
         # -----------------------------------
         # 4) Parseo
@@ -79,6 +99,31 @@ def run_short_pipeline(
             mode=mode,
             max_blocks=max_blocks,
         )
+
+
+        # -----------------------------------
+        # 4.1) Segmentación visual (V2)
+        # -----------------------------------
+        visual_blocks = []
+
+        for block in parsed.blocks:
+            sub_blocks = dividir_en_bloques_por_lineas(
+                texto=block.text,
+                font_path=resolved["text_style"].font_path,
+                font_size=resolved["text_style"].font_size,
+                max_width_px=resolved["text_style"].max_width_px,
+                max_lineas=14,  # configurable en el futuro
+            )
+
+            for sub in sub_blocks:
+                visual_blocks.append(sub)
+
+        if not visual_blocks:
+            raise RuntimeError("No se generaron bloques visuales")
+
+        # ⚠️ TEMPORAL (hasta refactor multi-bloque)
+        visible_text = visual_blocks[0]
+
 
         # Texto completo (para TTS)
         full_text = "\n\n".join(b.text for b in parsed.blocks)
@@ -111,11 +156,18 @@ def run_short_pipeline(
         video_id = uuid.uuid4().hex[:8]
         output_path = f"{output_dir}/{video_id}__{base_name}.mp4"
 
+
+        parsed_visible = ParsedContent(
+            title=parsed.title,
+            blocks=[ContentBlock(text=b) for b in visual_blocks],
+        )
+
+
         # -----------------------------------
         # 7) Render
         # -----------------------------------
         render_short(
-            parsed=parsed,
+            parsed=parsed_visible,
             output_path=output_path,
             image_path=image_path,
             audio_req=audio_req,

@@ -33,6 +33,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--text",
+        type=str,
+        help="Archivo de texto específico a usar (solo DEV/TEST)",
+    )
+
+    parser.add_argument(
         "--test",
         action="store_true",
         help="Modo test (paths de test, sin persistencia)",
@@ -52,6 +58,7 @@ def main():
         format_code=args.format,
         quantity=args.qty,
         modo_test=args.test,
+        force_text=args.text,
     )
 
 

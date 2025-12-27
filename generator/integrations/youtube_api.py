@@ -5,12 +5,13 @@ import pickle
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.http import MediaFileUpload
+from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 
 CLIENT_SECRETS_FILE = "client_secret.json"
 TOKEN_FILE = "token.pickle"
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload",
           "https://www.googleapis.com/auth/youtube.force-ssl",]
-
 
 def _get_service():
     creds = None
@@ -19,7 +20,23 @@ def _get_service():
         with open(TOKEN_FILE, "rb") as token:
             creds = pickle.load(token)
 
-    if not creds:
+    # -------------------------------
+    # REFRESH TOKEN SI ES NECESARIO
+    # -------------------------------
+    if creds and creds.expired and creds.refresh_token:
+        try:
+            creds.refresh(Request())
+            with open(TOKEN_FILE, "wb") as token:
+                pickle.dump(creds, token)
+        except RefreshError:
+            raise RuntimeError(
+                "OAuth token inválido o revocado. Reautoriza YouTube API."
+            )
+
+    # -------------------------------
+    # NO HAY CREDENCIALES → AUTH FLOW
+    # -------------------------------
+    if not creds or not creds.valid:
         flow = InstalledAppFlow.from_client_secrets_file(
             CLIENT_SECRETS_FILE, SCOPES
         )
@@ -29,7 +46,6 @@ def _get_service():
             pickle.dump(creds, token)
 
     return build("youtube", "v3", credentials=creds)
-
 
 def upload_video(
     *,
