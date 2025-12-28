@@ -45,7 +45,6 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
     with get_connection() as conn:
         with conn.cursor() as cur:
 
-            # Schedules activos
             cur.execute("""
                 SELECT platform_id, hora, tipo
                 FROM platform_schedules
@@ -58,7 +57,6 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
             if not schedules:
                 return []
 
-            # bootstrap_date
             cur.execute("""
                 SELECT value
                 FROM system_config
@@ -69,7 +67,6 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
                 raise RuntimeError("bootstrap_date no definido")
             bootstrap_date = row["value"]
 
-            # Inventario editorial
             cur.execute("""
                 SELECT *
                 FROM videos
@@ -79,15 +76,30 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
             """, (channel_id, bootstrap_date))
             videos = cur.fetchall()
 
-    slots_por_plataforma = Counter(
-    (s["platform_id"], s["tipo"]) for s in schedules
-)
-
     platform_ids = list({s["platform_id"] for s in schedules})
     publicaciones_creadas: List[Dict[str, Any]] = []
 
+    bootstrap_day = bootstrap_date.date()
+
     for dia_offset in range(dias):
         fecha_base = hoy + timedelta(days=dia_offset)
+
+        dias_desde_bootstrap = (fecha_base.date() - bootstrap_day).days
+        es_dia_olo = (dias_desde_bootstrap % 2 == 1)
+        
+        # -------------------------------
+        # Slots efectivos del día (OSO/OLO)
+        # -------------------------------
+        slots_por_plataforma = Counter()
+        for s in schedules:
+            platform_id = s["platform_id"]
+            tipo_eff = s["tipo"]
+
+            if platform_id == 1 and tipo_eff == "salmo" and es_dia_olo:
+                tipo_eff = "long"
+
+            slots_por_plataforma[(platform_id, tipo_eff)] += 1
+
 
         consumidas_por_plataforma = _contar_publicaciones_del_dia_por_plataforma(
             channel_id,
@@ -97,18 +109,14 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
 
         for s in schedules:
             platform_id = s["platform_id"]
-            tipo = s["tipo"]
+            tipo_original = s["tipo"]
+            tipo = tipo_original
 
-            if tipo == "long":
-                print(
-                    f"[LONG][SLOT] channel={channel_id} "
-                    f"platform={platform_id} "
-                    f"fecha={fecha_base.date()} "
-                    f"hora={s['hora']}"
-                )
+            if platform_id == 1 and tipo_original == "salmo" and es_dia_olo:
+                tipo = "long"
 
             key = (platform_id, tipo)
-            slots_del_dia = slots_por_plataforma[key]
+            slots_del_dia = slots_por_plataforma.get(key, 0)
             ya_consumidas = consumidas_por_plataforma.get(key, 0)
 
             if ya_consumidas >= slots_del_dia:
@@ -143,6 +151,7 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
                 consumidas_por_plataforma[key] = ya_consumidas + 1
 
     return publicaciones_creadas
+
 
 
 # ======================================================
