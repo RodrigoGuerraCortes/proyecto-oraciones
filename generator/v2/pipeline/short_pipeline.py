@@ -1,19 +1,21 @@
 # generator/v2/pipeline/short_pipeline.py
+
 import uuid
 import os
 
 from generator.v2.content.selector_simple import elegir_texto_simple
 from generator.v2.content.parser import parse_content
-
 from generator.v2.video.short_renderer import render_short
 from generator.v2.pipeline.config_resolver import resolve_short_config
-from generator.v2.video.background_selector.with_history import (
-    HistoryBackgroundSelector
-)
+from generator.v2.video.background_selector.with_history import HistoryBackgroundSelector
 from generator.v2.content.title_resolver import resolve_title
-from generator.v2.content.segmentation import dividir_en_bloques_por_lineas
-from generator.v2.content.parser import ParsedContent, ContentBlock
-from generator.v2.audio.tts_normalizer import normalize_text_for_tts
+
+from generator.v2.audio.audio_builder import build_audio
+from generator.v2.audio.models import AudioRequest, TTSBlock
+from generator.v2.audio.tts_engine import generate_voice
+
+from generator.v2.content.layout.layout_resolver import resolve_layout
+
 
 def run_short_pipeline(
     *,
@@ -28,72 +30,51 @@ def run_short_pipeline(
     Pipeline genérico para SHORTS v2.
     """
 
-    assert format_code in channel_config["formats"]
-
     fmt = channel_config["formats"][format_code]
-
     content_path = fmt["content"]["path"]
-    mode = fmt["content"]["type"]            # "plain" | "stanzas"
+    mode = fmt["content"]["type"]
     max_blocks = fmt["content"].get("max_blocks")
 
-    output_dir = (
-        f"videos/test/{format_code}"
-        if modo_test
-        else f"videos/{format_code}"
-    )
+    output_dir = f"videos/test/{format_code}" if modo_test else f"videos/{format_code}"
     os.makedirs(output_dir, exist_ok=True)
 
-    for i in range(quantity):
+    for _ in range(quantity):
 
-       
-
-        # -----------------------------------
-        # 1) Resolver config
-        # -----------------------------------
         resolved = resolve_short_config(
             channel_config=channel_config,
             format_code=format_code,
         )
 
+        audio_req = resolved["audio_req"]
+        audio_cfg = fmt["audio"]["tts"]
+        tts_mode = audio_cfg.get("mode", "continuous")
+
         base_path = resolved["content_base_path"]
 
         # -----------------------------------
-        # 2) Selección de contenido (filesystem)    
+        # Selección de texto
         # -----------------------------------
         if force_text:
-            # path absoluto o relativo al base_path/content_path
-            if os.path.isabs(force_text):
-                path_txt = force_text
-            else:
-                path_txt = os.path.join(base_path, content_path, force_text)
-
-            if not os.path.exists(path_txt):
-                raise FileNotFoundError(f"Archivo de texto no existe: {path_txt}")
-
+            path_txt = (
+                force_text
+                if os.path.isabs(force_text)
+                else os.path.join(base_path, content_path, force_text)
+            )
             base_name = os.path.splitext(os.path.basename(path_txt))[0]
-
         else:
             path_txt, base_name = elegir_texto_simple(
                 base_path=base_path,
                 sub_path=content_path,
             )
 
-
-        # -----------------------------------
-        # 3) Lectura del archivo
-        # -----------------------------------
         with open(path_txt, "r", encoding="utf-8") as f:
             raw_text = f.read()
 
-        title = base_name.replace("_", " ").strip()
         title = resolve_title(
-            parsed_title=title,
+            parsed_title=base_name.replace("_", " ").strip(),
             path_txt=path_txt,
         )
 
-        # -----------------------------------
-        # 4) Parseo
-        # -----------------------------------
         parsed = parse_content(
             raw_text=raw_text,
             title=title,
@@ -101,48 +82,88 @@ def run_short_pipeline(
             max_blocks=max_blocks,
         )
 
+        # =================================================
+        # TTS MODE: BLOCKS (ej: salmos)
+        # =================================================
+        if audio_req.tts_enabled and tts_mode == "blocks":
 
-        # -----------------------------------
-        # 4.1) Segmentación visual (V2)
-        # -----------------------------------
-        visual_blocks = []
+            tts_blocks: list[TTSBlock] = []
+            current_t = 0.0
 
-        for block in parsed.blocks:
-            sub_blocks = dividir_en_bloques_por_lineas(
-                texto=block.text,
-                font_path=resolved["text_style"].font_path,
-                font_size=resolved["text_style"].font_size,
-                max_width_px=resolved["text_style"].max_width_px,
-                max_lineas=14,  # configurable en el futuro
+            pause_after_title = float(audio_cfg.get("pause_after_title", 0.0))
+            pause_between = float(audio_cfg.get("pause_between_blocks", 0.0))
+
+            tts_dir = "tmp/tts"
+            os.makedirs(tts_dir, exist_ok=True)
+
+            # Título hablado (opcional)
+            if pause_after_title > 0:
+                path = f"{tts_dir}/{uuid.uuid4().hex}.wav"
+                voz = generate_voice(title, path)
+                dur = voz.duration + pause_after_title
+
+                tts_blocks.append(
+                    TTSBlock(text=title, start=current_t, duration=dur)
+                )
+                current_t += dur
+
+            # Estrofas
+            for block in parsed.blocks:
+                path = f"{tts_dir}/{uuid.uuid4().hex}.wav"
+                voz = generate_voice(block.text, path)
+                dur = voz.duration + pause_between
+
+                tts_blocks.append(
+                    TTSBlock(text=block.text, start=current_t, duration=dur)
+                )
+                current_t += dur
+
+            audio_req.tts_blocks = tts_blocks
+            audio_req.tts_text = None
+
+            cta_dur = resolved["render_cfg"].cta_seconds if resolved["cta_path"] else 0.0
+            audio_req.duration = current_t + cta_dur
+
+            fmt["content"]["_tts_enabled"] = True
+            fmt["content"]["_tts_mode"] = "blocks"
+            fmt["content"].pop("seconds_per_block", None)
+
+        # =================================================
+        # TTS MODE: CONTINUOUS (ej: oraciones)
+        # =================================================
+        elif audio_req.tts_enabled and tts_mode == "continuous":
+
+            full_text = "\n\n".join(b.text for b in parsed.blocks)
+            audio_req.tts_text = full_text
+            audio_req.tts_blocks = None
+
+            preview = AudioRequest(
+                duration=999.0,
+                tts_enabled=True,
+                tts_text=full_text,
+                music_enabled=False,
             )
 
-            for sub in sub_blocks:
-                visual_blocks.append(sub)
+            audio_preview = build_audio(preview)
+            fmt["content"]["_tts_duration"] = audio_preview.tts_duration
+            fmt["content"]["_tts_enabled"] = True
 
-        if not visual_blocks:
-            raise RuntimeError("No se generaron bloques visuales")
-
-        # ⚠️ TEMPORAL (hasta refactor multi-bloque)
-        visible_text = visual_blocks[0]
-
-
-        # Texto completo (para TTS)
-        full_text = "\n\n".join(b.text for b in parsed.blocks)
-
-
-
-        audio_req = resolved["audio_req"]
-        tts_text = normalize_text_for_tts(full_text)
-        audio_req.tts_text = tts_text
-
-        if modo_test:
-            audio_req.tts_enabled = True
-            audio_req.music_enabled = False
+        else:
+            audio_req.tts_enabled = False
+            audio_req.tts_text = None
             audio_req.tts_blocks = None
-            audio_req.tts_text = normalize_text_for_tts(full_text)
 
         # -----------------------------------
-        # 5) Imagen base (background)
+        # Layout
+        # -----------------------------------
+        visual_blocks = resolve_layout(
+            parsed=parsed,
+            content_cfg=fmt["content"],
+            text_style=resolved["text_style"],
+        )
+
+        # -----------------------------------
+        # Background
         # -----------------------------------
         bg_selector = HistoryBackgroundSelector(
             base_path=resolved["background_selector_cfg"]["base_path"],
@@ -151,37 +172,20 @@ def run_short_pipeline(
         )
 
         image_path = bg_selector.elegir(
-            text=full_text,
-            title=parsed.title,
+            text=raw_text,
+            title=title,
             format_code=format_code,
             channel_id=channel_id,
         )
 
+        output_path = f"{output_dir}/{uuid.uuid4().hex[:8]}__{base_name}.mp4"
 
         # -----------------------------------
-        # 6) Output
-        # -----------------------------------
-        video_id = uuid.uuid4().hex[:8]
-        output_path = f"{output_dir}/{video_id}__{base_name}.mp4"
-
-
-        parsed_visible = ParsedContent(
-            title=parsed.title,
-            blocks=[ContentBlock(text=b) for b in visual_blocks],
-        )
-
-        print(
-            "[PIPELINE] "
-            f"channel={channel_id} | "
-            f"format={format_code} | "
-            f"modo_test={modo_test}"
-        )
-
-        # -----------------------------------
-        # 7) Render
+        # Render
         # -----------------------------------
         render_short(
-            parsed=parsed_visible,
+            title=title,
+            blocks=visual_blocks,
             output_path=output_path,
             image_path=image_path,
             audio_req=audio_req,
@@ -189,12 +193,10 @@ def run_short_pipeline(
             background_cfg=resolved["background_cfg"],
             title_style=resolved["title_style"],
             text_style=resolved["text_style"],
-            text_y_start=resolved["text_y_start"], 
+            text_y_start=resolved["text_y_start"],
             cta_image_path=resolved["cta_path"],
             watermark_path=resolved["watermark_path"],
-            music_base_path=resolved["music_base_path"],
-            music_strategy=resolved["music_strategy"],
             modo_test=modo_test,
         )
 
-        print(f"[PIPELINE V2] OK {i+1}/{quantity} → {output_path}")
+        print(f"[PIPELINE V2] OK → {output_path}")
