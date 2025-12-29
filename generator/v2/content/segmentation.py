@@ -12,7 +12,26 @@ def dividir_en_bloques_por_lineas(
     max_width_px: int,
     max_lineas: int = 8,
 ) -> list[str]:
+    """
+    Divide el texto en bloques visuales.
+    Regla de oro: ningún bloque puede exceder max_lineas visibles.
+    """
 
+    # -------------------------------------------------
+    # 1) Normalización previa (ÚNICO lugar donde se trata "Amén")
+    # -------------------------------------------------
+    lineas = [l.strip() for l in texto.splitlines() if l.strip()]
+
+    if len(lineas) >= 2 and lineas[-1].lower().rstrip(".") in ("amen", "amén"):
+        # "Amén" SIEMPRE se une a la línea anterior
+        lineas[-2] = lineas[-2].rstrip(".") + ".\nAmén"
+        lineas.pop()
+
+    texto = "\n".join(lineas)
+
+    # -------------------------------------------------
+    # 2) Preparar medición real de texto
+    # -------------------------------------------------
     img = Image.new("RGB", (10, 10))
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(font_path, font_size)
@@ -26,29 +45,65 @@ def dividir_en_bloques_por_lineas(
 
     bloques: list[str] = []
 
+    # -------------------------------------------------
+    # 3) Segmentación visual + semántica
+    # -------------------------------------------------
     i = 0
     while i < len(wrapped_lines):
         ideal = i + max_lineas
 
+        # Caso final: lo que queda
         if ideal >= len(wrapped_lines):
-            bloques.append("\n".join(wrapped_lines[i:]))
+            restante = wrapped_lines[i:]
+
+            # Forzar chunks de max_lineas (nunca overflow visual)
+            while len(restante) > max_lineas:
+                bloques.append("\n".join(restante[:max_lineas]))
+                restante = restante[max_lineas:]
+
+            if restante:
+                bloques.append("\n".join(restante))
+
             break
 
+        # Intentar corte semántico cercano
         corte = _buscar_punto_corte(
             wrapped_lines,
             ideal=ideal,
             tolerancia=2,
         )
 
+        # Seguridad: nunca permitir overflow visual
+        if corte - i > max_lineas:
+            corte = ideal
+
         bloques.append("\n".join(wrapped_lines[i:corte]))
         i = corte
 
-    # regla "Amén"
+        # -------------------------------------------------
+        # Regla editorial: balancear último bloque si es muy corto
+        # -------------------------------------------------
+        MIN_LINEAS_ULTIMO = 5
+
     if len(bloques) >= 2:
-        ult = bloques[-1].strip().lower().rstrip(".")
-        if ult in ("amen", "amén"):
-            bloques[-2] += "\nAmén"
-            bloques.pop()
+        ultimo = bloques[-1]
+        lineas_ultimo = [l for l in ultimo.splitlines() if l.strip()]
+
+        if len(lineas_ultimo) < MIN_LINEAS_ULTIMO:
+            anterior = bloques[-2]
+            lineas_anterior = [l for l in anterior.splitlines() if l.strip()]
+
+            # mover líneas desde el final del bloque anterior
+            while (
+                len(lineas_ultimo) < MIN_LINEAS_ULTIMO
+                and len(lineas_anterior) > MIN_LINEAS_ULTIMO
+            ):
+                linea_movida = lineas_anterior.pop()
+                lineas_ultimo.insert(0, linea_movida)
+
+            bloques[-2] = "\n".join(lineas_anterior)
+            bloques[-1] = "\n".join(lineas_ultimo)
+
 
     return bloques
 
@@ -87,10 +142,12 @@ def _buscar_punto_corte(
     return ideal
 
 
-
-
 def calcular_duracion_bloque(texto: str) -> int:
+    """
+    Duración sugerida por cantidad de líneas visibles.
+    """
     n = len([l for l in texto.splitlines() if l.strip()])
+
     if n <= 7:
         return 20
     elif n <= 12:
