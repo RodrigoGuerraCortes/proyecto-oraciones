@@ -251,6 +251,19 @@ def generar_salmo(
         else None
     )
 
+    print("[DEBUG][DURATIONS]")
+    print(f"  - dur_total: {dur_total}")
+    print(f"  - CTA_DUR: {CTA_DUR}")
+    print(f"  - fondo duration: {fondo.duration}")
+    print(f"  - duracion total con CTA: {dur_total + CTA_DUR}")
+    print(f"  - audio_duracion: {audio_duracion}")
+    print(f"  - duraciones estrofas: {duraciones}")
+    print(f"  - número estrofas: {len(estrofas)}")
+    print(f"  - usar_tts: {usar_tts}")
+    print(f"  - musica_usada: {musica_usada}")
+    print(f"  - licencia_path: {licencia_path}")
+    print(f"  - fingerprint: {fingerprint}")
+    print("-------------------------------------------------")
 
     # -------------------------------------------------
     # Composición final

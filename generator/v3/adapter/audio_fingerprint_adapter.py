@@ -3,7 +3,7 @@ from generator.audio.selector import crear_audio
 from generator.content.fingerprinter import generar_fingerprint_contenido
 from db.repositories.video_repo import fingerprint_existe_ultimos_dias
 
-
+    
 def resolver_audio_y_fingerprint_v3(
     *,
     tipo: str,

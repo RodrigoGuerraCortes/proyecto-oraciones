@@ -6,10 +6,7 @@ import os
 from dotenv import load_dotenv
 
 from generator.v3.wrappers.generar_oracion import generar_oracion_v3
-# futuros:
-# from generator.v3.wrappers.generar_salmo import generar_salmo_v3
-from generator.v3.short.generar_short_stanza_generico import generar_short_stanza_generico
-
+from generator.v3.wrappers.generar_salmo import generar_salmo_v3
 
 load_dotenv()
 
@@ -77,7 +74,7 @@ def main():
             force_tts=True if args.force_tts else None,
         )
     elif args.format == "short_salmo":
-        generar_short_stanza_generico(
+        generar_salmo_v3(
             channel_id=args.channel,
             text_filename=args.text,
             output_path=args.out,
