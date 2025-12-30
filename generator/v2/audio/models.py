@@ -12,7 +12,7 @@ class TTSBlock:
 @dataclass
 class AudioRequest:
     duration: float
-    
+    music_duration: float | None = None
     music_enabled: bool = True
     music_base_path: str | None = None
     music_fixed: Optional[str] = None
@@ -21,11 +21,24 @@ class AudioRequest:
     tts_enabled: bool = False
     tts_text: Optional[str] = None
     tts_blocks: Optional[List[TTSBlock]] = None
+    tts_ratio: float = 1.0
     
+    # NUEVO: estrategia TTS
+    tts_mode: str = "continuous"  # "continuous" | "blocks"
+    pause_after_title: float = 0.0
+    pause_between_blocks: float = 0.0
+
     voice_volume: float = 1.0
 
 
 @dataclass
 class AudioResult:
-    audio_clip: any
-    music_used: Optional[str]
+    def __init__(
+        self,
+        audio_clip,
+        music_used=None,
+        tts_duration: float = 0.0,
+    ):
+        self.audio_clip = audio_clip
+        self.music_used = music_used
+        self.tts_duration = tts_duration

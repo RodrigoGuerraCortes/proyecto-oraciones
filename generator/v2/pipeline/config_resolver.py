@@ -102,17 +102,31 @@ def resolve_short_config(
     audio_cfg = fmt["audio"]
     tts_cfg = audio_cfg.get("tts", {})
     tts_enabled = False
+    tts_mode = tts_cfg.get("mode", "continuous")
+    pause_after_title = float(tts_cfg.get("pause_after_title", 0.0))
+    pause_between_blocks = float(tts_cfg.get("pause_between_blocks", 0.0))
+
+
     # Nota: music_enabled final = global AND formato
     music_enabled_final = music_enabled_global and bool(audio_cfg.get("music", False))
     
     if tts_cfg.get("enabled", False):
         ratio = float(tts_cfg.get("ratio", 1.0))
-        tts_enabled = random.random() < ratio
+        #  tts_enabled = random.random() < ratio
+        print(f"[CONFIG-RESOLVER] TTS enabled={tts_enabled} (ratio={ratio})")
+        
 
     audio_req = AudioRequest(
         duration=0, # se setea en el renderer
         tts_enabled=tts_enabled,
         tts_text=None, # se setea en el renderer
+        tts_blocks=None, # se setea en el renderer
+        tts_ratio=ratio,
+        # NUEVO
+        tts_mode=tts_mode,
+        pause_after_title=pause_after_title,
+        pause_between_blocks=pause_between_blocks,
+
         music_enabled=music_enabled_final,
         music_base_path=music_base_path, 
     )
