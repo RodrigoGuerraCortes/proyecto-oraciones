@@ -4,7 +4,7 @@ import os
 import tempfile
 from contextlib import contextmanager
 
-from generator.image.fondo import crear_fondo as crear_fondo_v1
+from generator.v3.generator.fondo import crear_fondo
 
 
 @contextmanager
@@ -35,6 +35,8 @@ def crear_fondo_v3(
 ):
     if not base_path:
         raise ValueError("base_path es obligatorio en v3")
+    
+    print(f"[FONDO ADAPTER] base_path: {base_path}, ruta_imagen: {ruta_imagen}")
 
     ruta_absoluta = os.path.join(base_path, ruta_imagen)
 
@@ -42,5 +44,5 @@ def crear_fondo_v3(
         raise FileNotFoundError(ruta_absoluta)
 
     # v1 cree que trabaja con ./imagenes
-    with imagenes_symlink(base_path):
-        return crear_fondo_v1(duracion, ruta_imagen)
+    #with imagenes_symlink(base_path):
+    return crear_fondo(duracion, ruta_absoluta, base_path)

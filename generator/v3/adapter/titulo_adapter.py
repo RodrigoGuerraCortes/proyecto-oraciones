@@ -1,7 +1,6 @@
 # generator/v3/adapter/titulo_adapter.py
 
-from generator.image.titulo import crear_imagen_titulo as crear_imagen_titulo_v1
-
+from generator.v3.generator.titulo import crear_imagen_titulo
 
 def crear_imagen_titulo_v3(
     *,
@@ -26,4 +25,4 @@ def crear_imagen_titulo_v3(
     """
 
     # Ignoramos parámetros visuales por ahora (v1 legacy)
-    return crear_imagen_titulo_v1(titulo, output)
+    return crear_imagen_titulo(titulo, output)

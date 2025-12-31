@@ -1,6 +1,7 @@
 # generator/v3/wrappers/generar_oracion.py
 
 import os
+import sys
 import uuid
 
 from db.repositories.channel_config_repo import get_channel_config
@@ -44,9 +45,19 @@ def generar_oracion_v3(
         text_filename,
     )
 
+    print("[WRAPPER short_oracion]")
+    print("Base storage path:", base_storage_path)
+    print("Audio Music Path:", resolved_config["audio"]["music"]["base_path"])
+    
+    music_path = resolved_config["audio"]["music"]["base_path"]
+
     # 4. Generar ID
     video_id = str(uuid.uuid4())
 
+    print("Watermark path:", resolved_config['visual']['watermark']['path'])
+
+  
+    
     # 5. Delegar al pipeline genérico
     generar_short_plain(
         resolved_config=resolved_config,
@@ -56,4 +67,5 @@ def generar_oracion_v3(
         modo_test=modo_test,
         force_tts=force_tts,
         channel_id=channel_id,
+        music_path=music_path,
     )

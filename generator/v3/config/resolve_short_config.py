@@ -1,6 +1,7 @@
 # generator/v3/config/config_resolver.py
 
 import os
+import sys
 
 
 def _abs_path(base_storage_path: str, relative_path: str | None) -> str | None:
@@ -146,6 +147,7 @@ def resolve_short_config(
         "music": music,
         "tts": tts,
     }
+
 
     # ------------------------------------------------------------------
     # RESULT FINAL

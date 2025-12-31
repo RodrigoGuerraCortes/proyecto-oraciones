@@ -2,10 +2,10 @@ import os
 from moviepy.editor import ImageClip
 from moviepy.video.fx.fadein import fadein
 
-from generator.v3.adapter.fondo_adapter import crear_fondo_v3
-from generator.v3.adapter.titulo_adapter import crear_imagen_titulo_v3
-from generator.v3.adapter.texto_adapter import crear_imagen_texto_v3
-from generator.v3.adapter.audio_adapter import crear_audio_v3
+from generator.v3.adapter.fondo_adapter import crear_fondo_v3 #Listo en V3
+from generator.v3.adapter.titulo_adapter import crear_imagen_titulo_v3 #Listo en V3
+from generator.v3.adapter.texto_adapter import crear_imagen_texto_v3 #Listo en V3
+from generator.v3.adapter.audio_adapter import crear_audio_v3 #Listo en V3
 from generator.v3.adapter.composer_adapter import componer_video_v3
 from generator.cleanup import limpiar_temporales
 from generator.utils.texto import dividir_en_bloques, calcular_duracion_bloque
@@ -23,7 +23,11 @@ def generar_short_plain(
     modo_test: bool = False,
     force_tts: bool | None = None,
     channel_id: int,
+    music_path: str,
 ):
+    
+
+
     # ---------------------------------------------------------
     # Leer texto
     # ---------------------------------------------------------
@@ -74,7 +78,7 @@ def generar_short_plain(
     # Imagen de fondo
     # ---------------------------------------------------------
     imagen_usada = decidir_imagen_video(
-        tipo="plain",
+        tipo=resolved_config["format"]["code"],
         titulo=titulo,
         texto=texto,
     )
@@ -191,6 +195,7 @@ def generar_short_plain(
         duracion=duracion_norm,
         usar_tts=usar_tts,
         texto_tts=texto,
+        music_path=music_path,
     )
 
     audio, musica_usada, fingerprint = resolver_audio_y_fingerprint_v3(
@@ -231,6 +236,8 @@ def generar_short_plain(
         audio=audio,
         text_clips=clips,
         output_path=output_path,
+        visual_cfg=resolved_config["visual"],
+        cta_cfg=cta_cfg,
     )
 
     if not os.path.exists(output_path):

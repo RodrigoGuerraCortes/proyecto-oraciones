@@ -1,4 +1,4 @@
-from generator.image.texto import crear_imagen_texto as crear_imagen_texto_v1
+from generator.v3.generator.texto import crear_imagen_texto 
 
 
 def crear_imagen_texto_v3(
@@ -24,4 +24,4 @@ def crear_imagen_texto_v3(
     """
 
     # Ignoramos parámetros visuales (legacy v1)
-    return crear_imagen_texto_v1(texto, output)
+    return crear_imagen_texto(texto, output)

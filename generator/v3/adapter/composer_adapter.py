@@ -1,6 +1,6 @@
 # generator/v3/adapter/composer_adapter.py
 
-from generator.video.composer import componer_video as componer_video_v1
+from generator.v3.generator.composer import componer_video
 
 
 def componer_video_v3(
@@ -11,13 +11,15 @@ def componer_video_v3(
     audio,
     text_clips,
     output_path,
+    visual_cfg: dict | None = None,
 ):
     # NO offsets
-    return componer_video_v1(
+    return componer_video(
         fondo,
         grad,
         titulo_clip,
         audio,
         text_clips,
         output_path,
+        visual_cfg=visual_cfg,
     )
