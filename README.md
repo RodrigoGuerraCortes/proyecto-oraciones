@@ -219,3 +219,9 @@ Flujo completo típico (recordatorio mental)
 
 # Ejecución de test para version 2
 .venv/bin/pytest
+
+
+PYTHONPATH=. .venv/bin/pytest generator/v3/long/test_runner.py::test_runner
+
+
+

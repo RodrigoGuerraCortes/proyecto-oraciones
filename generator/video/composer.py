@@ -19,7 +19,12 @@ def componer_video(fondo, grad, titulo_clip, audio, clips_texto, salida: str):
       - bloque final CTA (5s) con mismo fondo y grad
     Renderiza a salida.
     """
-    capas_principales = [fondo, grad, titulo_clip] + clips_texto
+    
+    #capas_principales = [fondo, grad, titulo_clip] + clips_texto
+    capas_principales = [
+        c for c in ([fondo, grad, titulo_clip] + clips_texto)
+        if c is not None
+    ]
 
     # watermark
     if os.path.exists(WATERMARK_PATH):

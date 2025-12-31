@@ -17,7 +17,15 @@ def normalizar_slug(nombre: str) -> str:
     return nombre.lower()
 
 
-def elegir_texto_para(tipo: str, ventana: int = 30):
+def elegir_texto_para(tipo: str, ventana: int = 30, path_forzado: str | None = None,):
+
+    # -----------------------------------------
+    # CASO ESPECIAL: archivo forzado
+    # -----------------------------------------
+    if path_forzado:
+        base = os.path.splitext(os.path.basename(path_forzado))[0]
+        return path_forzado, base
+
     carpeta = "textos/salmos" if tipo == "salmo" else "textos/oraciones"
 
     archivos = [f for f in os.listdir(carpeta) if f.endswith(".txt")]

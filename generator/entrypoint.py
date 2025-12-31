@@ -24,6 +24,13 @@ def main():
         FORCE_ONE_TTS = True
         print("🔊 TTS-ONE ACTIVADO (se forzará 1 video con voz)")
 
+    PATH_FORZADO = None
+
+    for arg in sys.argv:
+        if arg.startswith("path-forzado="):
+            PATH_FORZADO = arg.split("=", 1)[1]
+            print(f"⚠ PATH FORZADO ACTIVADO → {PATH_FORZADO}")
+
     # -------------------------------------------------
     # Validación básica
     # -------------------------------------------------
@@ -51,7 +58,7 @@ def main():
         return
 
     if tipo in ("oracion", "salmo"):
-        generar_videos(tipo, cantidad, modo_test=MODO_TEST, force_one_tts=FORCE_ONE_TTS)
+        generar_videos(tipo, cantidad, modo_test=MODO_TEST, force_one_tts=FORCE_ONE_TTS, path_forzado=PATH_FORZADO)
         return
     
     if tipo in ("long"):

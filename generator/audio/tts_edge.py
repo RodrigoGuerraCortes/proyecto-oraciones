@@ -56,3 +56,19 @@ def _normalizar_texto_tts(texto: str) -> str:
         .replace("amen", "Amén,")
     )
 
+
+
+def suavizar_finales_tts(texto: str) -> str:
+
+    print("[SUAVIZANDO TTS]")
+
+    reemplazos = {
+        "profundamente": "profunda mente…",
+        "lentamente": "lenta mente…",
+        "suavemente": "suave mente…",
+    }
+
+    for original, suavizado in reemplazos.items():
+        texto = texto.replace(original, suavizado)
+
+    return texto
