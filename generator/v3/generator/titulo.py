@@ -1,11 +1,15 @@
 # generator/v3/generator/titulo.py
 import textwrap
+import unicodedata
 from PIL import Image, ImageDraw, ImageFont
-
+import sys
 ANCHO = 1080
+from spellchecker import SpellChecker
 
 
 def crear_imagen_titulo(titulo: str, output: str):
+    spell = SpellChecker(language='es')
+
     img = Image.new("RGBA", (ANCHO, 360), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
@@ -13,6 +17,11 @@ def crear_imagen_titulo(titulo: str, output: str):
         font = ImageFont.truetype("DejaVuSerif-Bold.ttf", 70)
     except Exception:
         font = ImageFont.load_default()
+   
+
+    print(f"[Titulo] Título original: {titulo}")
+    print(f"[Titulo] output: {output}")
+
 
     # Salmo: "Salmo 34 — ..."
     if "—" in titulo:
@@ -20,12 +29,34 @@ def crear_imagen_titulo(titulo: str, output: str):
         numero = numero.strip()
         palabras = nombre.strip().split()
         mid = len(palabras) // 2
-        linea1 = " ".join(palabras[:mid])
-        linea2 = " ".join(palabras[mid:])
+        for palabra in palabras[:mid]:
+            print(f"Sugerencia para '{palabra}': {spell.correction(palabra)}")
+            linea1 = " ".join(spell.correction(palabra))
+
+        for palabra in palabras[:mid]:
+            print(f"Sugerencia para '{palabra}': {spell.correction(palabra)}")
+            linea2 = " ".join(spell.correction(palabras[mid:]))
+
         lineas = [numero, linea1, linea2]
+
+        print("Lineas:", lineas)
+
     else:
         # Oración: wrap por caracteres
-        lineas = textwrap.wrap(titulo, width=18)
+         #titulo puede ser "Oracion por la paz" spell debe adaptarse a cada palabra
+        palabras = titulo.split()
+        tituloNormalizado = ""
+        for palabra in palabras:
+            print(f"Sugerencia para '{palabra}': {spell.correction(palabra)}")
+            tituloNormalizado += spell.correction(palabra) + " "
+
+        #ahora capitalizamos la primera letra de cada palabra
+        tituloNormalizado = tituloNormalizado.strip().title()
+        print("Título:", tituloNormalizado)
+
+        lineas = textwrap.wrap(tituloNormalizado, width=18)
+
+        print("[Titulo] Lineas titulo oracion:", lineas)
 
     y = 20
     for linea in lineas:

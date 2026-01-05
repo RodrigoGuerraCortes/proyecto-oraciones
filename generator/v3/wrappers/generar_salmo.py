@@ -28,6 +28,8 @@ def generar_salmo_v3(
         base_storage_path=base_storage_path,
     )
 
+    music_path = resolved_config["audio"]["music"]["base_path"]
+
     text_path = os.path.join(
         resolved_config["content"]["base_path"],
         text_filename,
@@ -43,4 +45,5 @@ def generar_salmo_v3(
         modo_test=modo_test,
         force_tts=force_tts,
         channel_id=channel_id,
+        music_path=music_path,
     )

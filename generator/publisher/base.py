@@ -16,8 +16,8 @@ class BasePublisher:
     """
 
     platform_code = None
-    allow_future_publication = False
-    max_days_a_publicar = None  # requerido si allow_future_publication=True
+    allow_future_publication = True
+    max_days_a_publicar = 30  # requerido si allow_future_publication=True
 
     def run(self, *, dry_run=False, preview_days=None, force_now=False):
         if not self.platform_code:

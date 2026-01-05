@@ -17,14 +17,15 @@ from generator.v3.adapter.composer_adapter import componer_video_v3
 from generator.v3.adapter.audio_fingerprint_adapter import resolver_audio_y_fingerprint_v3
 from generator.v3.adapter.persistir_adapter import persistir_video_v3
 
-from generator.audio.tts_edge import generar_voz_edge, _normalizar_texto_tts, suavizar_finales_tts
-from generator.audio.selector import crear_audio
-from generator.audio.silence import generar_silencio
+from generator.v3.generator.audio.tts_edge import generar_voz_edge, _normalizar_texto_tts, suavizar_finales_tts
+from generator.v3.adapter.audio_adapter import crear_audio_v3 
+from generator.v3.generator.audio.silence import generar_silencio 
 
-from generator.image.decision import decidir_imagen_video
-from generator.cleanup import limpiar_temporales
-from generator.utils.texto import normalizar_titulo_es
 
+from generator.v3.generator.decision import decidir_imagen_video 
+from generator.v3.generator.cleanup import limpiar_temporales
+
+from generator.v3.generator.utils.calculo_bloques import normalizar_titulo_es #Listo en V3
 
 # --------------------------------------------------
 # Defaults (copiados de v1 y simplificados)
@@ -109,14 +110,16 @@ def generar_long_oracion_generico(
     # --------------------------------------------------
     content_cfg = resolved_config["content"]
     base_path = content_cfg["base_path"]
+    bg_cfg = resolved_config["visual"]["background"]
+    base_path_assest = bg_cfg.get("base_path")
 
-    oracion_dir = content_cfg["path"]
+    dir = content_cfg["path"]
     
 
     # --------------------------------------------------
     # 2) Leer texto base
     # --------------------------------------------------
-    text_path = os.path.join(base_path, oracion_dir, text_filename)
+    text_path = os.path.join(base_path, dir, text_filename)
     print("Leyendo texto base en:", text_path)
 
     texto = _leer_archivo_texto(text_path)
@@ -167,9 +170,8 @@ def generar_long_oracion_generico(
         tipo=format_code,
         titulo=titulo,
         texto=texto_para_imagen,
+        base_path_assest=base_path_assest,
     )
-
-    bg_cfg = resolved_config["visual"]["background"]
 
     # --------------------------------------------------
     # 5) Flags audio / TTS / CTA
@@ -194,7 +196,7 @@ def generar_long_oracion_generico(
     t = 0.0
 
     # --- Título ---
-    crear_imagen_titulo_v3(titulo=titulo, output="titulo.png")
+    crear_imagen_titulo_v3(titulo=titulo, output=base_path_assest + "/tmp/titulo.png")
 
     if usar_tts:
         wav = f"tmp/tts_titulo_{uuid.uuid4().hex}.wav"
@@ -206,7 +208,7 @@ def generar_long_oracion_generico(
         voz_clips.append(voz)
 
         titulo_clip = (
-            ImageClip("titulo.png")
+            ImageClip(base_path_assest + "/tmp/titulo.png")
             .set_start(t)
             .set_duration(voz.duration)
             .set_position("center")
@@ -217,7 +219,7 @@ def generar_long_oracion_generico(
         t += float(voz.duration) + 1.0
     else:
         titulo_clip = (
-            ImageClip("titulo.png")
+            ImageClip(base_path_assest + "/tmp/titulo.png")
             .set_start(t)
             .set_duration(3.0 if modo_test else 6.0)
             .set_position("center")
@@ -237,9 +239,9 @@ def generar_long_oracion_generico(
         voz_clips.append(voz)
 
         # ✅ VISUAL DEL INTRO
-        crear_imagen_texto_v3(texto=texto_intro, output="intro_txt.png")
+        crear_imagen_texto_v3(texto=texto_intro, output=base_path_assest + "/tmp/intro_txt.png")
         intro_clip = (
-            ImageClip("intro_txt.png")
+            ImageClip(base_path_assest + "/tmp/intro_txt.png")
             .set_start(t)
             .set_duration(voz.duration)
             .set_position("center")
@@ -309,10 +311,11 @@ def generar_long_oracion_generico(
     # 9) Música + mezcla
     # --------------------------------------------------
     if music_cfg.get("enabled", True):
-        musica_clip, musica_usada = crear_audio(
-            audio_duracion,
-            None,
+        musica_clip, musica_usada = crear_audio_v3(
+            duracion=audio_duracion,
             usar_tts=False,
+            texto_tts=None,
+            music_path=music_cfg.get("base_path"),
         )
         musica_clip = volumex(musica_clip, 0.18)
     else:
@@ -352,6 +355,9 @@ def generar_long_oracion_generico(
         audio=audio,
         text_clips=texto_clips,
         output_path=output_path,
+        visual_cfg=resolved_config["visual"],
+        cta_cfg=cta_cfg,
+        base_path_assest=base_path_assest,
     )
 
     if not os.path.exists(output_path):
@@ -360,8 +366,8 @@ def generar_long_oracion_generico(
     # --------------------------------------------------
     # 12) Persistencia
     # --------------------------------------------------
-    licencia_path = (
-        f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+    licencia_path = ( 
+        audio_cfg['music']['base_path'] + "/licence/licence_" + musica_usada.replace('.mp3','') + ".txt"
         if musica_usada
         else None
     )
@@ -383,4 +389,4 @@ def generar_long_oracion_generico(
         },
     )
 
-    limpiar_temporales()
+    limpiar_temporales(base_path_assest)

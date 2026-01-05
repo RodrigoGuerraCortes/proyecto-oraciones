@@ -14,6 +14,8 @@ def crear_fondo(duracion: float, ruta_imagen: str, base_path: str):
     ruta_imagen: ej 'jesus/30.png'
     """
 
+    base_path = base_path + "/tmp"
+
     print(f"[FONDO] Renderizando fondo con {ruta_imagen}")
 
     ruta = ruta_imagen
@@ -50,9 +52,9 @@ def crear_fondo(duracion: float, ruta_imagen: str, base_path: str):
             0.08
         )
 
-    pil.save("fondo_tmp.jpg")
+    pil.save(base_path + "/fondo_tmp.jpg")
 
-    fondo = ImageClip("fondo_tmp.jpg").set_duration(duracion)
+    fondo = ImageClip(base_path + "/" + "fondo_tmp.jpg").set_duration(duracion)
 
     def zoom_safe(t):
         factor = 1.04 - 0.03 * (t / duracion)
@@ -66,8 +68,8 @@ def crear_fondo(duracion: float, ruta_imagen: str, base_path: str):
     for y in range(ALTO):
         a = int(100 * (y / ALTO))
         d.line((0, y, ANCHO, y), fill=(0, 0, 0, a))
-    grad.save("grad_tmp.png")
+    grad.save(base_path + "/grad_tmp.png")
 
-    grad_clip = ImageClip("grad_tmp.png").set_duration(duracion)
+    grad_clip = ImageClip(base_path + "/grad_tmp.png").set_duration(duracion)
 
     return fondo, grad_clip

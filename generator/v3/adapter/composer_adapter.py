@@ -12,6 +12,8 @@ def componer_video_v3(
     text_clips,
     output_path,
     visual_cfg: dict | None = None,
+    cta_cfg: dict | None = None,
+    base_path_assest: str,
 ):
     # NO offsets
     return componer_video(
@@ -22,4 +24,6 @@ def componer_video_v3(
         text_clips,
         output_path,
         visual_cfg=visual_cfg,
+        cta_cfg=cta_cfg,
+        base_path_assest=base_path_assest,
     )

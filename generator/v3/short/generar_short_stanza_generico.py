@@ -2,23 +2,30 @@
 
 import os
 import uuid
+import sys
 from moviepy.editor import ImageClip
 from moviepy.video.fx.fadein import fadein
 
-from generator.v3.adapter.fondo_adapter import crear_fondo_v3
-from generator.v3.adapter.titulo_adapter import crear_imagen_titulo_v3
-from generator.v3.adapter.texto_adapter import crear_imagen_texto_v3
-from generator.v3.adapter.composer_adapter import componer_video_v3
-from generator.v3.adapter.audio_fingerprint_adapter import resolver_audio_y_fingerprint_v3
-from generator.v3.adapter.persistir_adapter import persistir_video_v3
-from generator.audio.selector import crear_audio
+from generator.v3.adapter.fondo_adapter import crear_fondo_v3 #Listo en V3
+from generator.v3.adapter.titulo_adapter import crear_imagen_titulo_v3 #Listo en V3
+from generator.v3.adapter.texto_adapter import crear_imagen_texto_v3 #Listo en V3
+from generator.v3.adapter.composer_adapter import componer_video_v3 #Listo en V3
+from generator.v3.adapter.audio_fingerprint_adapter import resolver_audio_y_fingerprint_v3 #Listo en V3
+from generator.v3.adapter.persistir_adapter import persistir_video_v3 #Listo en V3
+from generator.v3.adapter.audio_adapter import crear_audio_v3 #Listo en V3
 
-from generator.image.decision import decidir_imagen_video
-from generator.cleanup import limpiar_temporales
+from generator.v3.generator.decision import decidir_imagen_video #Listo en V3
+from generator.v3.generator.cleanup import limpiar_temporales #Listo en V3
+
+from generator.v3.generator.audio.tts_edge import generar_voz_edge #Listo en V3
+from generator.v3.generator.audio.silence import generar_silencio #Listo en V3
+
+#from generator.audio.tts_edge import generar_voz_edge
+#from generator.audio.silence import generar_silencio
+
 
 from moviepy.editor import CompositeAudioClip, concatenate_audioclips
-from generator.audio.tts_edge import generar_voz_edge
-from generator.audio.silence import generar_silencio
+
 
 
 # ---------------------------------------------------------
@@ -42,10 +49,12 @@ def generar_short_stanza_generico(
     text_path: str,
     output_path: str,
     video_id: str,
-    modo_test: bool,
-    force_tts: bool | None,
+    modo_test: bool = False,
+    force_tts: bool | None = None,
     channel_id: int,
+    music_path: str,
 ):
+    print("[GENERAR SHORT STANZA GENÉRICO]")
     """
     Generador genérico de shorts por estrofas (stanzas).
 
@@ -72,7 +81,8 @@ def generar_short_stanza_generico(
     audio_cfg = resolved_config["audio"]
     cta_cfg = resolved_config.get("cta", {})
     layout_cfg = format_cfg.get("layout", {})
-
+    bg_cfg = resolved_config["visual"]["background"]
+    base_path_assest = bg_cfg.get("base_path")
     format_code = format_cfg["code"]
 
     print("[DEBUG][CONFIG]")
@@ -97,6 +107,7 @@ def generar_short_stanza_generico(
         tipo=format_code,
         titulo=os.path.basename(text_path),
         texto=texto,
+        base_path_assest=base_path_assest,
     )
 
     # ---------------------------------------------------------
@@ -106,7 +117,7 @@ def generar_short_stanza_generico(
 
     crear_imagen_titulo_v3(
         titulo=titulo,
-        output="titulo.png",
+        output=base_path_assest + "/tmp/titulo.png",
         **layout_cfg.get("title", {}),
     )
 
@@ -190,7 +201,7 @@ def generar_short_stanza_generico(
     # Título visual y clips de texto
     # ---------------------------------------------------------
     titulo_clip = (
-        ImageClip("titulo.png")
+        ImageClip(base_path_assest + "/tmp/titulo.png")
         .set_duration(dur_total)  # el título no necesita cubrir CTA
         .set_position(("center", layout_cfg.get("title", {}).get("y", 120)))
         .set_opacity(1)
@@ -217,12 +228,12 @@ def generar_short_stanza_generico(
 
             crear_imagen_texto_v3(
                 texto=estrofa,
-                output="bloque.png",
+                output=base_path_assest + "/tmp/bloque.png",
                 **layout_cfg.get("text", {}),
             )
 
             clip = (
-                ImageClip("bloque.png")
+                ImageClip(base_path_assest + "/tmp/bloque.png")
                 .set_duration(dur_voz)
                 .set_position("center")
                 .set_start(t)
@@ -247,12 +258,12 @@ def generar_short_stanza_generico(
         for estrofa, dur_b in zip(estrofas, duraciones_audio):
             crear_imagen_texto_v3(
                 texto=estrofa,
-                output="bloque.png",
+                output=base_path_assest + "/tmp/bloque.png",
                 **layout_cfg.get("text", {}),
             )
 
             clip = (
-                ImageClip("bloque.png")
+                ImageClip(base_path_assest + "/tmp/bloque.png")
                 .set_duration(float(dur_b))
                 .set_position("center")
                 .set_start(t)
@@ -292,11 +303,13 @@ def generar_short_stanza_generico(
 
 
     music_enabled = bool(audio_cfg.get("music", False))
+
     if music_enabled:
-        musica_clip, musica_usada = crear_audio(
-            audio_duracion,
-            None,
-            usar_tts=False
+        musica_clip, musica_usada = crear_audio_v3(
+            duracion=audio_duracion,
+            usar_tts=False,
+            texto_tts=None,
+            music_path=music_path
         )
         musica_clip = musica_clip.volumex(0.35)
 
@@ -332,8 +345,11 @@ def generar_short_stanza_generico(
     else:
         audio = musica_clip 
 
-    licencia_path = (
-        f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+
+    print("[DEBUG] Licencia path musica_usada:", audio_cfg['music']['base_path'] + "/licence/licence_" + musica_usada.replace('.mp3','') + ".txt")
+
+    licencia_path = ( 
+        audio_cfg['music']['base_path'] + "/licence/licence_" + musica_usada.replace('.mp3','') + ".txt"
         if musica_usada
         else None
     )
@@ -364,6 +380,9 @@ def generar_short_stanza_generico(
         audio=audio,
         text_clips=clips,
         output_path=output_path,
+        visual_cfg=resolved_config["visual"],
+        cta_cfg=cta_cfg,
+        base_path_assest=base_path_assest,
     )
 
     if not os.path.exists(output_path):
@@ -386,4 +405,4 @@ def generar_short_stanza_generico(
         licencia_path=licencia_path,
     )
 
-    limpiar_temporales()
+    limpiar_temporales(base_path_assest)

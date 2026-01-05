@@ -16,7 +16,7 @@ class YouTubePublisher(BasePublisher):
 
     platform_code = "youtube"
     allow_future_publication = True
-    max_days_a_publicar = 1
+    max_days_a_publicar = 5
 
     # -------------------------------------------------
     # PUBLICACIÓN REAL

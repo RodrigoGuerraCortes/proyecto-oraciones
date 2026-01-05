@@ -17,6 +17,8 @@ def crear_bloque_cta(duracion: float):
     if not os.path.exists(CTA_PATH):
         return None
 
+    print(f"[CTA] Creando bloque CTA de {duracion} segundos")
+
     try:
         cta = ImageClip(CTA_PATH).resize(width=int(ANCHO * 0.55))
         cta = cta.set_duration(duracion)

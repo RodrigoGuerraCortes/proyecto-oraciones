@@ -11,7 +11,19 @@ ALTO = 1920
 
 
 
-def componer_video(fondo, grad, titulo_clip, audio, clips_texto, salida: str, visual_cfg: dict | None = None):
+def componer_video(fondo,
+                    grad, 
+                    titulo_clip, 
+                    audio, 
+                    clips_texto, 
+                    salida: str, 
+                    visual_cfg: dict | None = None, 
+                    cta_cfg: dict | None = None,
+                    base_path_assest: str = ""):
+    
+
+    print(f"[COMPOSER] Base path assets: {base_path_assest}")
+
     """
     Une:
       - fondo + grad + titulo + bloques
@@ -32,9 +44,7 @@ def componer_video(fondo, grad, titulo_clip, audio, clips_texto, salida: str, vi
 
     print("[COMPOSER] Visual config:", visual_cfg)
     print("[COMPOSER] Watermark path:", WATERMARK_PATH)
-    print("[COMPOSER] Cta path:", visual_cfg['cta']['path'])
 
-    sys.exit(1)
 
     # watermark
     if os.path.exists(WATERMARK_PATH):
@@ -53,9 +63,9 @@ def componer_video(fondo, grad, titulo_clip, audio, clips_texto, salida: str, vi
     video_base = CompositeVideoClip(capas_principales).set_audio(audio)
 
     # CTA final
-    DUR_FINAL = 5
-    fondo_final = ImageClip("fondo_tmp.jpg").set_duration(DUR_FINAL).resize(lambda t: 1.04)
-    grad_final = ImageClip("grad_tmp.png").set_duration(DUR_FINAL)
+    DUR_FINAL = cta_cfg['seconds'] if cta_cfg and cta_cfg.get('enabled') else 0
+    fondo_final = ImageClip(base_path_assest + "/tmp/fondo_tmp.jpg").set_duration(DUR_FINAL).resize(lambda t: 1.04)
+    grad_final = ImageClip(base_path_assest + "/tmp/grad_tmp.png").set_duration(DUR_FINAL)
 
     capas_final = [fondo_final, grad_final]
     cta_clip = crear_bloque_cta(DUR_FINAL)
@@ -63,6 +73,7 @@ def componer_video(fondo, grad, titulo_clip, audio, clips_texto, salida: str, vi
         capas_final.append(cta_clip)
 
     video_cta = CompositeVideoClip(capas_final)
+    print("[COMPOSER] Renderizando video final a", salida)
 
     final = concatenate_videoclips([video_base, video_cta])
 

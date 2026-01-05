@@ -12,7 +12,7 @@ class FacebookPublisher(BasePublisher):
 
     platform_code = "facebook"
     allow_future_publication = True
-    max_days_a_publicar = 1
+    max_days_a_publicar = 5
 
     # -------------------------------------------------
     # PUBLICACIÓN REAL

@@ -6,13 +6,13 @@ from generator.v3.adapter.fondo_adapter import crear_fondo_v3 #Listo en V3
 from generator.v3.adapter.titulo_adapter import crear_imagen_titulo_v3 #Listo en V3
 from generator.v3.adapter.texto_adapter import crear_imagen_texto_v3 #Listo en V3
 from generator.v3.adapter.audio_adapter import crear_audio_v3 #Listo en V3
-from generator.v3.adapter.composer_adapter import componer_video_v3
-from generator.cleanup import limpiar_temporales
-from generator.utils.texto import dividir_en_bloques, calcular_duracion_bloque
-from generator.image.decision import decidir_imagen_video
-from generator.experiments.voice_ab import decidir_tts_para_video
-from generator.v3.adapter.audio_fingerprint_adapter import resolver_audio_y_fingerprint_v3
-from generator.v3.adapter.persistir_adapter import persistir_video_v3
+from generator.v3.adapter.composer_adapter import componer_video_v3 #Listo en V3
+from generator.v3.generator.cleanup import limpiar_temporales #Listo en V3
+from generator.v3.generator.utils.calculo_bloques import dividir_en_bloques, calcular_duracion_bloque #Listo en V3
+from generator.v3.generator.decision import decidir_imagen_video #Listo en V3
+from generator.v3.generator.utils.voice_ab import decidir_tts_para_video #Listo en V3
+from generator.v3.adapter.audio_fingerprint_adapter import resolver_audio_y_fingerprint_v3 #Listo en V3
+from generator.v3.adapter.persistir_adapter import persistir_video_v3 #Listo en V3
 
 def generar_short_plain(
     *,
@@ -50,6 +50,8 @@ def generar_short_plain(
     # ---------------------------------------------------------
     content_cfg = resolved_config["content"]
     max_lines = content_cfg.get("max_lines")
+    bg_cfg = resolved_config["visual"]["background"]
+    base_path_assest = bg_cfg.get("base_path")
 
     # ---------------------------------------------------------
     # CTA
@@ -81,9 +83,9 @@ def generar_short_plain(
         tipo=resolved_config["format"]["code"],
         titulo=titulo,
         texto=texto,
+        base_path_assest=base_path_assest,
     )
 
-    bg_cfg = resolved_config["visual"]["background"]
 
     fondo, grad = crear_fondo_v3(
         duracion=dur_total,
@@ -108,13 +110,17 @@ def generar_short_plain(
     #    line_spacing=title_cfg.get("line_spacing"),
     #)
 
+    # ---------------------------------------------------------
+    # Título V3
+    # -------------------------------------fcrear_fondo_v3--------------------    
+
     crear_imagen_titulo_v3(
         titulo=titulo,
-        output="titulo.png",
+        output=base_path_assest + "/tmp/titulo.png",
     )
 
     titulo_clip = (
-        ImageClip("titulo.png")
+        ImageClip(base_path_assest + "/tmp/titulo.png")
         .set_duration(dur_total)
         .set_position(("center", title_cfg.get("y", 120)))
     )
@@ -163,10 +169,15 @@ def generar_short_plain(
     tts_cfg = audio_cfg["tts"]
 
     usar_tts = False
+    porcentaje = tts_cfg.get("ratio")
+
+    if len(bloques) > 1: 
+        usar_tts = True
+        porcentaje = 1.0
 
     if tts_cfg.get("enabled"):
         usar_tts = decidir_tts_para_video(
-            porcentaje=tts_cfg.get("ratio", 1.0),
+            porcentaje=porcentaje,
             seed=f"{texto}|{imagen_usada}|{video_id}",
         )
 
@@ -229,6 +240,8 @@ def generar_short_plain(
     #    watermark_cfg=resolved_config["visual"].get("watermark"),
     #)
 
+
+    
     componer_video_v3(
         fondo=fondo,
         grad=grad,
@@ -238,16 +251,17 @@ def generar_short_plain(
         output_path=output_path,
         visual_cfg=resolved_config["visual"],
         cta_cfg=cta_cfg,
+        base_path_assest=base_path_assest,
     )
-
+#
     if not os.path.exists(output_path):
         raise RuntimeError(f"No se pudo generar el video: {output_path}")
-
+#
     # ---------------------------------------------------------
     # Persistencia
     # ---------------------------------------------------------
     print("[V3] Persistiendo video... Formato:", resolved_config["format"]["code"])
-
+    
     persistir_video_v3(
         video_id=video_id,
         channel_id=channel_id,
@@ -260,6 +274,6 @@ def generar_short_plain(
         usar_tts=usar_tts,
         modo_test=modo_test,
         licencia_path=licencia_path,
-    )    
+    )
 
-    limpiar_temporales()
+    limpiar_temporales(base_path_assest)
