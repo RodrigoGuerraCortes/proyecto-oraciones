@@ -86,15 +86,16 @@ def _elegir_archivo_script(script_dir: str) -> tuple[str, str]:
 # --------------------------------------------------
 # Generador principal
 # --------------------------------------------------
-def generar_long_oracion_generico(
+def generar_long_guiado_generico(
     *,
     resolved_config: dict,
-    text_filename: str,
+    text_path: str,
     output_path: str,
     video_id: str,
     channel_id: int,
     modo_test: bool = False,
     force_tts: bool | None = None,
+    music_path: str,
 ):
     """
     v3 LONG – enfoque simple (estilo short)
@@ -112,17 +113,17 @@ def generar_long_oracion_generico(
     base_path = content_cfg["base_path"]
     bg_cfg = resolved_config["visual"]["background"]
     base_path_assest = bg_cfg.get("base_path")
-
-    dir = content_cfg["path"]
     
 
     # --------------------------------------------------
     # 2) Leer texto base
     # --------------------------------------------------
-    text_path = os.path.join(base_path, dir, text_filename)
-    print("Leyendo texto base en:", text_path)
 
+    print("[GENERAR LONG]Leyendo texto base en:", text_path)
+   
     texto = _leer_archivo_texto(text_path)
+
+    print("[GENERAR LONG]Texto leído:", len(texto), "caracteres")
 
     if not texto:
         raise ValueError("Texto vacío")
@@ -140,9 +141,11 @@ def generar_long_oracion_generico(
     # 3) Leer guion guiado
     # --------------------------------------------------
     script_dir = os.path.join(
-    base_path,
+    content_cfg["base_storage_path"],
     content_cfg["script_guiado_path"],
     )
+
+    print("[GENERAR LONG]Leyendo guion guiado en:", script_dir)
 
     script_path, guion_guiado_id = _elegir_archivo_script(script_dir)
 

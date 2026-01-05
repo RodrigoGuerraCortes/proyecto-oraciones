@@ -39,13 +39,14 @@ def resolve_long_config(
     global_content = channel_config.get("content", {})
 
     content_base_rel = global_content.get("base_path", "")
+    content_path = content_cfg.get("path", "")
 
     content = {
         # base común donde viven los textos del canal
-        "base_path": os.path.join(base_storage_path, content_base_rel),
-
+        "base_path": os.path.join(base_storage_path, content_base_rel, content_path),
+        "base_storage_path": os.path.join(base_storage_path, content_base_rel),
         # paths relativos
-        "path": content_cfg.get("path"),
+        "path": content_path,
         "script_guiado_path": content_cfg.get("script_guiado_path"),
         "script_guiado_name": content_cfg.get("script_guiado_name"),
     }
@@ -139,6 +140,7 @@ def resolve_long_config(
             "code": format_code,
             "display_name": fmt.get("display_name"),
             "type": fmt.get("format", "long"),
+            "engine": fmt.get("engine"),
         },
         "content": content,
         "visual": {
