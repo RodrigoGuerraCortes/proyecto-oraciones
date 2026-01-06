@@ -158,7 +158,7 @@ def resolve_short_config(
         "format": {
             "code": format_code,
             "display_name": fmt.get("display_name"),
-            "type": fmt.get("format", "short"),
+            "type": fmt.get("format", "long"),
             "engine": fmt.get("engine"),
         },
         "content": content,

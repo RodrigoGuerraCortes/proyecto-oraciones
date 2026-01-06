@@ -30,7 +30,7 @@ def imagenes_symlink(base_path: str):
 def crear_fondo_v3(
     *,
     duracion: float,
-    ruta_imagen: str,
+    ruta_imagen: str | None,
     base_path: str,
 ):
     if not base_path:
@@ -43,6 +43,4 @@ def crear_fondo_v3(
     if not os.path.exists(ruta_absoluta):
         raise FileNotFoundError(ruta_absoluta)
 
-    # v1 cree que trabaja con ./imagenes
-    #with imagenes_symlink(base_path):
     return crear_fondo(duracion, ruta_absoluta, base_path)

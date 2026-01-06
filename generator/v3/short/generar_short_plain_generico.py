@@ -249,12 +249,11 @@ def generar_short_plain(
         audio_inicial=(audio, musica_usada),
     )
 
-    licencia_path = (
-        f"musica/licence/licence_{musica_usada.replace('.mp3','')}.txt"
+    licencia_path = ( 
+        audio_cfg['music']['base_path'] + "/licence/licence_" + musica_usada.replace('.mp3','') + ".txt"
         if musica_usada
         else None
     )
-
 
     # ---------------------------------------------------------
     # Composición final

@@ -37,8 +37,14 @@ def elegir_texto(
 
         return full_path, normalizar_slug(archivo_forzado), texto
 
+    print("[DECIDE - TXT] No se forzó archivo, eligiendo aleatoriamente")
+
     carpeta = content_base_path
+    
+    
     archivos = [f for f in os.listdir(carpeta) if f.endswith(".txt")]
+
+
 
     if not archivos:
         raise RuntimeError(f"No hay textos en {carpeta}")

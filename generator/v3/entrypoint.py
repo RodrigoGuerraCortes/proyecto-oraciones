@@ -10,6 +10,8 @@ from generator.v3.config.config_resolver import resolver_config
 from generator.v3.engine.registry import ENGINE_REGISTRY
 from generator.v3.storage.output_resolver import resolve_output_path
 from generator.v3.generator.selector_texto import elegir_texto
+from generator.v3.tractor.render_text_layers import render_layers_from_config
+
 load_dotenv()
 
 
@@ -78,6 +80,8 @@ def main():
         format_code=args.format,
     )
 
+    print("[Entrypoint] Resolved config :", resolved_config)
+
     print("[Entrypoint] Resolved config Identity :", resolved_config['identity']['code'])
 
     format_cfg = resolved_config["format"]
@@ -136,6 +140,14 @@ def main():
     print(" - test:", args.test)
     print(" - force_tts:", args.force_tts)
     print(" - video_id:", video_id)
+
+
+    print("[ENTRYPOINT] Config completa:", format_type)
+
+    if args.format == "long_tractor_oracion" and args.test:
+        print("[ENTRYPOINT] Ejecutando FASE A: render de capas de texto")
+    #    render_layers_from_config(resolved_config)
+    #    return
 
 
     # ---------------------------------------------------------
