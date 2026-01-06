@@ -7,10 +7,10 @@ from datetime import timedelta
 # ======================================================
 
 PLATFORM_REUSE_DAYS = {
-    1: 7,   # YouTube Shorts
-    2: 3,   # Facebook Reels
-    3: 3,   # Instagram Reels
-    4: 2,   # TikTok
+    1: 12,   # YouTube Shorts
+    2: 7,   # Facebook Reels
+    3: 7,   # Instagram Reels
+    4: 7,   # TikTok
 }
 
 

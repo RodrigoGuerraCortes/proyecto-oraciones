@@ -16,7 +16,7 @@ def get_canales_activos():
             return [row["id"] for row in cur.fetchall()]
 
 
-def main(dias: int = 7):
+def main(dias: int = 1):
     canales = get_canales_activos()
     for channel_id in canales:
         creadas = crear_publications(channel_id=channel_id, dias=dias)
@@ -24,4 +24,4 @@ def main(dias: int = 7):
 
 
 if __name__ == "__main__":
-    main(dias=7)
+    main(dias=1)

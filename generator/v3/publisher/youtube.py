@@ -18,7 +18,7 @@ class YouTubePublisher(BasePublisher):
 
     platform_code = "youtube"
     allow_future_publication = True
-    max_days_a_publicar = 5
+    max_days_a_publicar = 1
 
     print("[YOUTUBE PUBLISHER] Initialized")
     print(f"[YOUTUBE PUBLISHER] Timezone set to {CL_TZ}")

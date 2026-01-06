@@ -17,6 +17,19 @@ from generator.v3.publications.editorial_windows import (
 
 from db.repositories.channel_config_repo import get_channel_config
 
+
+def _log_skip(reason: str, *, video_id, platform_id, publicar_en, extra=None):
+    msg = (
+        f"[EDITORIAL][SKIP] reason={reason} "
+        f"video={video_id} "
+        f"platform={platform_id} "
+        f"fecha={publicar_en}"
+    )
+    if extra:
+        msg += f" extra={extra}"
+    print(msg)
+
+
 def get_publication_strategy(channel_id: int) -> dict:
     cfg = get_channel_config(channel_id)
     strategy = cfg.get("publication_strategy")
@@ -34,13 +47,13 @@ def get_publication_strategy(channel_id: int) -> dict:
 # ======================================================
 
 EDITORIAL_RULES = {
-    "short": {
+    "short_oracion": {
         1: {"dias": 60, "max_reps": 1},
         2: {"dias": 30, "max_reps": 3},
         3: {"dias": 30, "max_reps": 3},
         4: {"dias": 7,  "max_reps": 1},
     },
-    "long": {
+    "long_salmo": {
         1: {"dias": 3650, "max_reps": 1},  # YouTube long
     }
 }
@@ -56,9 +69,9 @@ PLATFORM_CODE_TO_ID = {
 }
 
 FORMAT_TO_TIPO = {
-    "short_oracion": "oracion",
-    "short_salmo": "salmo",
-    "long_oracion_guiada": "long",
+    "short_oracion": "short_oracion",
+    "short_salmo": "short_salmo",
+    "long_oracion_guiada": "long_oracion_guiada",
 }
 
 
@@ -107,6 +120,7 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
                 FROM videos
                 WHERE channel_id = %s
                   AND fecha_generado >= %s
+                  AND activo = TRUE
                 ORDER BY fecha_generado ASC
             """, (channel_id, bootstrap_date))
             videos = cur.fetchall()
@@ -170,6 +184,13 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
                     "tipo": tipo,
                     "format_code": format_code,
                 }
+
+                print(
+                    f"[DEBUG][SLOT] platform={platform_id} "
+                    f"format={format_code} "
+                    f"time={hora_str} "
+                    f"tipo={tipo}"
+                )
 
                 slots_del_dia.append(slot)
                 slots_por_plataforma[(platform_id, tipo)] += 1
@@ -345,9 +366,12 @@ def _buscar_video_valido(
                 publicar_en,
                 dias=3650,
             ):
-                print(
-                    f"[LONG][SKIP] ya publicado antes "
-                    f"id={video['id']}"
+                _log_skip(
+                    "GLOBAL_ANTISPAM",
+                    video_id=video["id"],
+                    platform_id=platform_id,
+                    publicar_en=publicar_en,
+                    extra={"dias": GLOBAL_ANTISPAM_DAYS},
                 )
                 continue
 
@@ -373,15 +397,33 @@ def _buscar_video_valido(
             publicar_en,
             dias_reuso_plataforma,
         ):
-            print(f"[DEBUG][SKIP] reuse_platform id={video['id']}")
+            _log_skip(
+                "PLATFORM_REUSE",
+                video_id=video["id"],
+                platform_id=platform_id,
+                publicar_en=publicar_en,
+                extra={"dias": dias_reuso_plataforma},
+            )
             continue
 
         if _slug_colision(video, publicar_en, ventana_slug, channel_id, platform_id):
-            print(f"[DEBUG][SKIP] slug_collision id={video['id']}")
+            _log_skip(
+                "SLUG_COLLISION",
+                video_id=video["id"],
+                platform_id=platform_id,
+                publicar_en=publicar_en,
+                extra={"ventana_horas": ventana_slug.total_seconds() / 3600},
+            )
             continue
 
         if _texto_colision(video, publicar_en, ventana_texto, channel_id, platform_id):
-            print(f"[DEBUG][SKIP] text_collision id={video['id']}")
+            _log_skip(
+                "TEXT_COLLISION",
+                video_id=video["id"],
+                platform_id=platform_id,
+                publicar_en=publicar_en,
+                extra={"ventana_horas": ventana_texto.total_seconds() / 3600},
+            )
             continue
 
         if _excede_exposicion_editorial(
@@ -390,7 +432,14 @@ def _buscar_video_valido(
             platform_id,
             tipo_logico,
         ):
-            print(f"[DEBUG][SKIP] editorial_limit id={video['id']}")
+            rule = EDITORIAL_RULES.get(tipo_logico, {}).get(platform_id)
+            _log_skip(
+                "EDITORIAL_LIMIT",
+                video_id=video["id"],
+                platform_id=platform_id,
+                publicar_en=publicar_en,
+                extra=rule,
+            )
             continue
 
         return video

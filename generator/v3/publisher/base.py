@@ -23,7 +23,7 @@ class BasePublisher:
 
     platform_code: Optional[str] = None
     allow_future_publication: bool = True
-    max_days_a_publicar: int = 30  # requerido si allow_future_publication=True
+    max_days_a_publicar: int = 1  # requerido si allow_future_publication=True
 
     # Default dry-run horizon (tu lo cambiaste a 15 días)
     dry_run_default_days: int = 15
