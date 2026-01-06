@@ -1,4 +1,5 @@
 import os
+import sys
 from moviepy.editor import ImageClip
 from moviepy.video.fx.fadein import fadein
 
@@ -7,6 +8,7 @@ from generator.v3.adapter.titulo_adapter import crear_imagen_titulo_v3 #Listo en
 from generator.v3.adapter.texto_adapter import crear_imagen_texto_v3 #Listo en V3
 from generator.v3.adapter.audio_adapter import crear_audio_v3 #Listo en V3
 from generator.v3.adapter.composer_adapter import componer_video_v3 #Listo en V3
+from generator.v3.adapter.tts_adapter import crear_tts_v3
 from generator.v3.generator.cleanup import limpiar_temporales #Listo en V3
 from generator.v3.generator.utils.calculo_bloques import dividir_en_bloques, calcular_duracion_bloque #Listo en V3
 from generator.v3.generator.decision import decidir_imagen_video #Listo en V3
@@ -60,6 +62,16 @@ def generar_short_plain(
     cta_seconds = int(cta_cfg.get("seconds", 0)) if cta_cfg.get("enabled") else 0
 
     # ---------------------------------------------------------
+    # Decidir  Imagen de fondo
+    # ---------------------------------------------------------
+    imagen_usada = decidir_imagen_video(
+        tipo=resolved_config["format"]["code"],
+        titulo=titulo,
+        texto=texto,
+        base_path_assest=base_path_assest,
+    )
+
+    # ---------------------------------------------------------
     # División en bloques
     # ---------------------------------------------------------
     if modo_test:
@@ -77,18 +89,94 @@ def generar_short_plain(
             duraciones = [dur_total]
 
     # ---------------------------------------------------------
-    # Imagen de fondo
+    # Audio / TTS decision
     # ---------------------------------------------------------
-    imagen_usada = decidir_imagen_video(
-        tipo=resolved_config["format"]["code"],
-        titulo=titulo,
-        texto=texto,
-        base_path_assest=base_path_assest,
-    )
+    audio_cfg = resolved_config["audio"]
+    tts_cfg = audio_cfg["tts"]
+
+    usar_tts = False
+    porcentaje = tts_cfg.get("ratio")
+
+    if len(bloques) > 1: 
+        usar_tts = True
+        porcentaje = 1.0
+
+    if tts_cfg.get("enabled"):
+        usar_tts = decidir_tts_para_video(
+            porcentaje=porcentaje,
+            seed=f"{texto}|{imagen_usada}|{video_id}",
+        )
+        
 
 
+    # ---------------------------------------------------------
+    # Bloques de texto
+    # ---------------------------------------------------------
+    text_cfg = resolved_config["visual"]["text"]
+
+    clips = []
+    t = 0
+
+    for bloque, dur_b in zip(bloques, duraciones):
+        #crear_imagen_texto(
+        #    bloque,
+        #    "bloque.png",
+        #    font=text_cfg["font"],
+        #    font_size=text_cfg["font_size"],
+        #    line_spacing=text_cfg["line_spacing"],
+        #    max_width=text_cfg["max_width"],
+        #    outline_px=text_cfg.get("outline_px", 0),
+        #    outline_color=text_cfg.get("outline_color"),
+        #)
+
+        crear_imagen_texto_v3(
+            texto=bloque,
+            output="bloque.png",
+        )
+
+        # Si se fuerza TTS, crear TTS para calcular duración
+        if force_tts is not None:
+
+            usar_tts = force_tts
+
+            #aca deberiamos crear el tts para calcular su duracion 
+            tts_audio = crear_tts_v3(
+                texto=bloque,
+                engine=resolved_config["audio"]["tts"].get("engine", "edge"),
+            )
+
+            print(f"[V3] Duración TTS bloque: {tts_audio.duration} segundos")
+
+            dur_b = tts_audio.duration
+        
+
+        clip = (
+            ImageClip("bloque.png")
+            .set_duration(dur_b)
+            .set_position(("center"))
+        )
+
+        if not modo_test and len(bloques) > 1:
+            clip = clip.fx(fadein, 1).set_start(t)
+
+        clips.append(clip)
+        t += dur_b
+
+    audio_duracion = t
+    
+    print(f"[V3] Duración total calculada: {audio_duracion} segundos")
+    print(f"[V3] Texto dividido en {len(bloques)} bloques.")
+    print(f"[V3] Duraciones bloques: {duraciones}")
+    print(f"[V3] Duración dur_b: {dur_b} segundos")
+    print(f"[V3] Duración t: {t} segundos")
+    print(f"[V3] Texto total duración={dur_total} segundos")
+
+
+    # ---------------------------------------------------------
+    # Crear Imagen de fondo
+    # ---------------------------------------------------------
     fondo, grad = crear_fondo_v3(
-        duracion=dur_total,
+        duracion=audio_duracion,
         ruta_imagen=imagen_usada,
         base_path=bg_cfg.get("base_path"),
     )
@@ -121,70 +209,12 @@ def generar_short_plain(
 
     titulo_clip = (
         ImageClip(base_path_assest + "/tmp/titulo.png")
-        .set_duration(dur_total)
+        .set_duration(audio_duracion)
         .set_position(("center", title_cfg.get("y", 120)))
     )
 
-    # ---------------------------------------------------------
-    # Bloques de texto
-    # ---------------------------------------------------------
-    text_cfg = resolved_config["visual"]["text"]
-
-    clips = []
-    t = 0
-
-    for bloque, dur_b in zip(bloques, duraciones):
-        #crear_imagen_texto(
-        #    bloque,
-        #    "bloque.png",
-        #    font=text_cfg["font"],
-        #    font_size=text_cfg["font_size"],
-        #    line_spacing=text_cfg["line_spacing"],
-        #    max_width=text_cfg["max_width"],
-        #    outline_px=text_cfg.get("outline_px", 0),
-        #    outline_color=text_cfg.get("outline_color"),
-        #)
-
-        crear_imagen_texto_v3(
-            texto=bloque,
-            output="bloque.png",
-        )
-
-        clip = (
-            ImageClip("bloque.png")
-            .set_duration(dur_b)
-            .set_position(("center"))
-        )
-
-        if not modo_test and len(bloques) > 1:
-            clip = clip.fx(fadein, 1).set_start(t)
-
-        clips.append(clip)
-        t += dur_b
-
-    # ---------------------------------------------------------
-    # Audio / TTS
-    # ---------------------------------------------------------
-    audio_cfg = resolved_config["audio"]
-    tts_cfg = audio_cfg["tts"]
-
-    usar_tts = False
-    porcentaje = tts_cfg.get("ratio")
-
-    if len(bloques) > 1: 
-        usar_tts = True
-        porcentaje = 1.0
-
-    if tts_cfg.get("enabled"):
-        usar_tts = decidir_tts_para_video(
-            porcentaje=porcentaje,
-            seed=f"{texto}|{imagen_usada}|{video_id}",
-        )
-
-    if force_tts is not None:
-        usar_tts = force_tts
-
-    audio_duracion = dur_total + cta_seconds
+   
+    #sys.exit()
 
     #audio, musica_usada = crear_audio(
     #    audio_duracion,
@@ -200,7 +230,7 @@ def generar_short_plain(
     #    pause_between_blocks=tts_cfg.get("pause_between_blocks", 0.0),
     #)
 
-    duracion_norm = int(round(audio_duracion))
+    duracion_norm = int(round(audio_duracion) + cta_seconds)
 
     audio, musica_usada = crear_audio_v3(
         duracion=duracion_norm,
@@ -208,6 +238,7 @@ def generar_short_plain(
         texto_tts=texto,
         music_path=music_path,
     )
+    #sys.exit()
 
     audio, musica_usada, fingerprint = resolver_audio_y_fingerprint_v3(
         tipo=resolved_config["format"]["code"],
