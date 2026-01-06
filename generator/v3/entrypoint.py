@@ -3,12 +3,13 @@
 import argparse
 import uuid
 import os
-
+import sys
 from dotenv import load_dotenv
 
 from generator.v3.config.config_resolver import resolver_config
 from generator.v3.engine.registry import ENGINE_REGISTRY
-
+from generator.v3.storage.output_resolver import resolve_output_path
+from generator.v3.generator.selector_texto import elegir_texto
 load_dotenv()
 
 
@@ -37,15 +38,15 @@ def parse_args():
     parser.add_argument(
         "--text",
         type=str,
-        required=True,
+        required=False,
         help="Archivo de texto a usar (filename o path relativo según engine)",
     )
 
     parser.add_argument(
         "--out",
         type=str,
-        required=True,
-        help="Ruta del archivo de salida (.mp4)",
+        required=False,
+        help="Ruta del archivo de salida (.mp4) (opcional, solo para override/manual)",
     )
 
     parser.add_argument(
@@ -77,11 +78,13 @@ def main():
         format_code=args.format,
     )
 
+    print("[Entrypoint] Resolved config Identity :", resolved_config['identity']['code'])
+
     format_cfg = resolved_config["format"]
     engine_code = format_cfg.get("engine")
     format_type = format_cfg.get("type")
 
-    print("Audio Music Path:", resolved_config["audio"]["music"]["base_path"])
+    print("[Entrypoint] Audio Music Path:", resolved_config["audio"]["music"]["base_path"])
     
     music_path = resolved_config["audio"]["music"]["base_path"]
 
@@ -98,13 +101,30 @@ def main():
         )
 
     video_id = str(uuid.uuid4())
-
+    video_id_short = str(video_id).split("-")[0]
+     
+    print("[Entrypoint] Resolve Config:", resolved_config)
+    print("[Entrypoint] Base Path Text:", resolved_config["content"]["base_path"])
 
     # 3. Resolver paths
-    text_path = os.path.join(
-        resolved_config["content"]["base_path"],
-        args.text,
+    text_path, slug, texto = elegir_texto(
+        content_base_path=resolved_config["content"]["base_path"],
+        tipo=resolved_config["format"]["code"],
+        archivo_forzado=args.text,
     )
+
+    print("[Entrypoint] Resolved text path:", text_path)
+    print("[Entrypoint] Resolved slug:", slug)
+
+    output_path = resolve_output_path(
+        override_out=args.out,
+        channel_code=resolved_config["identity"]["code"],
+        format_type=resolved_config["format"]["type"],
+        video_id=video_id_short,
+        slug=slug,
+    )
+
+    print("[Entrypoint] Resolved output path:", output_path)
 
     print("[ENTRYPOINT V3]")
     print(" - channel_id:", args.channel)
@@ -112,10 +132,11 @@ def main():
     print(" - format_type:", format_type)
     print(" - engine:", engine_code)
     print(" - text:", text_path)
-    print(" - output:", args.out)
+    print(" - output:", output_path)
     print(" - test:", args.test)
     print(" - force_tts:", args.force_tts)
     print(" - video_id:", video_id)
+
 
     # ---------------------------------------------------------
     # Ejecución del engine (GENÉRICA)
@@ -123,7 +144,7 @@ def main():
     generator_fn(
         resolved_config=resolved_config,
         text_path=text_path,
-        output_path=args.out,
+        output_path=output_path,
         video_id=video_id,
         channel_id=args.channel,
         modo_test=args.test,

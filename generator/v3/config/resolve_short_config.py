@@ -46,6 +46,7 @@ def resolve_short_config(
             content_base_rel,
             content_path,
         ),
+        "content_path": content_path,
         "max_lines": content_cfg.get("max_lines"),
         "max_blocks": content_cfg.get("max_blocks"),
         "seconds_per_block": content_cfg.get("seconds_per_block"),
