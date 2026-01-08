@@ -121,9 +121,24 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
                 WHERE channel_id = %s
                   AND fecha_generado >= %s
                   AND activo = TRUE
-                ORDER BY fecha_generado ASC
+                ORDER BY fecha_generado DESC
             """, (channel_id, bootstrap_date))
             videos = cur.fetchall()
+
+    print(
+        f"[DEBUG][VIDEOS][QUERY] channel={channel_id} "
+        f"bootstrap_date={bootstrap_date} "
+        f"total={len(videos)}"
+    )
+
+    for v in videos[:5]:
+        print(
+            "[DEBUG][VIDEOS][TOP] "
+            f"id={v['id']} "
+            f"format={v.get('tipo')} "
+            f"fecha_generado={v.get('fecha_generado')} "
+            f"archivo={os.path.basename(v['archivo'])}"
+        )
 
     publicaciones_creadas: List[Dict[str, Any]] = []
     bootstrap_day = bootstrap_date.date()
@@ -221,7 +236,19 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
             slots_totales = slots_por_plataforma.get(key, 0)
             ya_consumidas = consumidas_por_plataforma.get(key, 0)
 
+            print(
+                f"[DEBUG][SLOT TRY] platform={platform_id} "
+                f"format={s['format_code']} "
+                f"slots_totales={slots_totales} "
+                f"ya_consumidas={ya_consumidas}"
+            )
+
             if ya_consumidas >= slots_totales:
+                print(
+                    f"[DEBUG][SLOT SKIP] platform={platform_id} "
+                    f"format={s['format_code']} "
+                    f"todos los slots ya consumidos"
+                )
                 continue
 
             publicar_en = fecha_base.replace(
@@ -236,7 +263,14 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
             )
 
             if _slot_ocupado(channel_id, platform_id, publicar_en):
+                print(
+                    f"[DEBUG][SKIP] slot ocupado "
+                    f"platform={platform_id} "
+                    f"format={s['format_code']} "
+                    f"publicar_en={publicar_en}"
+                )
                 continue
+
 
             video = _buscar_video_valido(
                 videos,
@@ -292,9 +326,52 @@ def _buscar_video_valido(
     channel_id: int,
     platform_id: int
 ) -> Optional[Dict[str, Any]]:
+    
+    print(f"[SELECTOR][_buscar_video_valido]buscando video válido format={format_code} platform={platform_id} fecha={publicar_en}")
 
     is_long = _is_long_format(format_code)
     tipo_logico = _tipo_logico_desde_format(format_code)
+
+    # ======================================================
+    # PRIORIDAD EDITORIAL:
+    # 1) Videos NUEVOS para la plataforma
+    # 2) Videos reutilizables (fallback)
+    # ======================================================
+
+    videos_nuevos: List[Dict[str, Any]] = []
+    videos_reutilizables: List[Dict[str, Any]] = []
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            for v in videos:
+                cur.execute("""
+                    SELECT 1
+                    FROM publications p
+                    WHERE p.video_id = %s
+                      AND p.platform_id = %s
+                      AND p.estado IN ('scheduled','publishing','published')
+                    LIMIT 1
+                """, (v["id"], platform_id))
+
+                if cur.fetchone() is None:
+                    videos_nuevos.append(v)
+                else:
+                    videos_reutilizables.append(v)
+
+    print(
+        f"[SELECTOR] platform={platform_id} "
+        f"nuevos={len(videos_nuevos)} "
+        f"reutilizables={len(videos_reutilizables)}"
+    )
+
+    # Orden explícito por fecha_generado DESC (defensivo)
+    videos_nuevos.sort(key=lambda v: v["fecha_generado"], reverse=True)
+    videos_reutilizables.sort(key=lambda v: v["fecha_generado"], reverse=True)
+
+    # Concatenación con prioridad editorial
+    videos_ordenados = videos_nuevos + videos_reutilizables
+
+
 
     if is_long:
         print(
@@ -321,11 +398,11 @@ def _buscar_video_valido(
     dias_reuso_plataforma = PLATFORM_REUSE_DAYS.get(platform_id, 3)
 
     print(
-        f"[DEBUG][VIDEOS] total_videos={len(videos)} "
-        f"format_codes={set(v.get('format_code') for v in videos)}"
+        f"[DEBUG][VIDEOS] total_videos={len(videos_ordenados)} "
+        f"format_codes={set(v.get('format_code') for v in videos_ordenados)}"
     )
 
-    for video in videos:
+    for video in videos_ordenados:
 
         print(
            f"[DEBUG][VIDEO] id={video['id']} "
@@ -379,7 +456,7 @@ def _buscar_video_valido(
             return video
 
         # ==========================
-        # SHORTS (reglas existentes)
+        # SHORTS (reglas existentes)    
         # ==========================
         if _video_publicado_globalmente_reciente(
             channel_id,
@@ -555,7 +632,7 @@ def _contar_publicaciones_del_dia_por_plataforma(channel_id, fecha_base, platfor
                 JOIN videos v ON v.id = p.video_id
                 WHERE v.channel_id = %s
                   AND p.platform_id = ANY(%s)
-                  AND p.estado IN {ESTADOS_VIVOS}
+                  AND p.estado IN ('scheduled', 'publishing')
                   AND p.publicar_en >= %s
                   AND p.publicar_en < %s
                 GROUP BY p.platform_id, v.tipo

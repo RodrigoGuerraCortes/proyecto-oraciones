@@ -10,6 +10,8 @@ from generator.v3.config.config_resolver import resolver_config
 from generator.v3.engine.registry import ENGINE_REGISTRY
 from generator.v3.storage.output_resolver import resolve_output_path
 from generator.v3.generator.selector_texto import elegir_texto
+from generator.v3.tractor.fase_1_5_tts_layers import generar_tts_layers
+from generator.v3.tractor.fase_1_6_expandir_tractor import expandir_tractor
 from generator.v3.tractor.render_text_layers import render_layers_from_config
 
 load_dotenv()
@@ -144,12 +146,27 @@ def main():
 
     print("[ENTRYPOINT] Config completa:", format_type)
 
+   
+
     if args.format == "long_tractor_oracion" and args.test:
         print("[ENTRYPOINT] Ejecutando FASE A: render de capas de texto")
-    #    render_layers_from_config(resolved_config)
-    #    return
+        render_layers_from_config(resolved_config)
+        
+        print("[ENTRYPOINT] Forzando TTS según flag --force-tts")
+        generar_tts_layers(    
+            resolved_config=resolved_config,
+            layers_path=resolved_config["content"]["layers_path"],
+            audio_output_path=resolved_config["audio"]["audio_layers_path"],
+        )
 
-
+        print("[ENTRYPOINT] Ejecutando FASE 1.6: expansión de tractor")
+        expandir_tractor(
+            resolved_config=resolved_config,
+            layers_path=resolved_config["content"]["layers_path"],
+            audio_path=resolved_config["audio"]["audio_layers_path"],
+            output_sequence_path="/mnt/storage/generated/tractor_build/sequence.json",
+        )
+        
     # ---------------------------------------------------------
     # Ejecución del engine (GENÉRICA)
     # ---------------------------------------------------------

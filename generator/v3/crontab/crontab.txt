@@ -1,30 +1,24 @@
+
 #creación de videos
-0 */4 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && \
-.venv/bin/python -m generator.v3.entrypoint \
-  --channel 7 \
-  --format short_oracion \
->> logs/v3/cron_v3_gen_short.log 2>&1
+0 9,15,20 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.entrypoint  --channel 7 --format short_oracion >> logs/v3/cron_v3_gen_short_oracion.log 2>&1
 
-
-0 */5 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && \
-.venv/bin/python -m generator.v3.entrypoint \
-  --channel 7 \
-  --format short_salmo \
->> logs/v3/cron_v3_gen_short.log 2>&1
+30 10,21 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.entrypoint --channel 7 --format short_salmo >> logs/v3/cron_v3_gen_short_salmo.log 2>&1
 
 #bots
-10,40 * * * * cd /home/rgc/Documents/personal/proyecto-oraciones && \
-.venv/bin/python -m generator.v3.bots.pin_comment.worker >> logs/v3/cron_pin_comments.log 2>&1
+10,40 * * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.bots.pin_comment.worker >> logs/v3/cron_pin_comments.log 2>&1
 
-10,40 * * * * cd /home/rgc/Documents/personal/proyecto-oraciones && \
-.venv/bin/python -m generator.v3.bots.reply_comments.worker >> logs/v3/cron_reply_youtube.log 2>&1
+10,40 * * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.bots.reply_comments.worker >> logs/v3/cron_reply_youtube.log 2>&1
 
 
-#publish instagram
-0,15,30,45 12 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && \
-.venv/bin/python -m generator.v3.cli.publish_instagram >> logs/cron_instagram.log 2>&1
+#publish instagram 0,15,30,45 12 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.cli.publish_instagram >> logs/v3/cron_instagram.log 2>&1
 
-0,15,30,45 20 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && \
-.venv/bin/python -m generator.v3.cli.publish_instagram >> logs/cron_instagram.log 2>&1
+0,15,30,45 20 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.cli.publish_instagram >> logs/v3/cron_instagram.log 2>&1
+0,15,30,45 13 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.cli.publish_instagram >> logs/v3/cron_instagram.log 2>&1
 
+#publish youtube
+0,5,10 10 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.cli.publish_youtube >> logs/v3/cron_youtube_publish.log 2>&1
 
+#Pendiente Facebook
+
+#agendamiento 
+5 18 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.v3.publications.run_scheduler >> logs/v3/cron_agendamiento.log 2>&1

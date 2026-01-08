@@ -108,6 +108,7 @@ def resolve_tractor_config(
         },
 
         "audio": {
+            "audio_layers_path": _abs_path(base_storage_path, audio_cfg.get("audio_layers_path")),
             "tts": audio_cfg.get("tts", {}),
             "music": {
                 "enabled": music_cfg.get("enabled", False),

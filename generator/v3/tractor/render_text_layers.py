@@ -32,6 +32,10 @@ LINE_SPACING = 12
 
 OUTPUT_BASE = "/mnt/storage/generated/tractor_layers"
 
+TEXT_PANEL_LEFT = int(WIDTH * 0.55)
+TEXT_PANEL_RIGHT = WIDTH - 200
+TEXT_PANEL_WIDTH = TEXT_PANEL_RIGHT - TEXT_PANEL_LEFT
+
 
 # -------------------------------------------------
 # Utilidad: renderizar texto en una imagen
@@ -42,26 +46,64 @@ def render_text_to_image(text: str) -> Image.Image:
 
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
-    max_chars_per_line = 60
     lines = []
 
     for paragraph in text.split("\n"):
-        wrapped = textwrap.wrap(paragraph, width=max_chars_per_line)
-        if not wrapped:
-            lines.append("")
-        else:
-            lines.extend(wrapped)
-        lines.append("")
+        wrapped = wrap_text_by_width(
+            paragraph,
+            font,
+            TEXT_PANEL_WIDTH
+        )
+        lines.extend(wrapped)
+
+
+    #MAX_LINES = 4
+    #if len(lines) > MAX_LINES:
+    #    lines = lines[:MAX_LINES]
 
     line_height = font.getbbox("Ay")[3] + LINE_SPACING
     total_text_height = len(lines) * line_height
-    y = int((HEIGHT - total_text_height) / 2)
 
+    BOTTOM_MARGIN = 220
+    y = HEIGHT - total_text_height - BOTTOM_MARGIN
+
+    # -------------------------------
+    # Ajuste progresivo para textos cortos
+    # -------------------------------
+    MAX_LINES = 10          # referencia visual (lo que se ve "bien")
+    MIN_LINES = 2
+
+    if len(lines) < MAX_LINES:
+        missing_lines = MAX_LINES - len(lines)
+
+        # cuánto subir por cada línea faltante
+        SHIFT_PER_LINE = int(line_height * 0.6)
+
+        shift_up = missing_lines * SHIFT_PER_LINE
+        y -= shift_up
+
+        print(
+            f"[TEXT-LAYER] SHORT ADJUST:"
+            f" lines={len(lines)}"
+            f" missing={missing_lines}"
+            f" shift_up={shift_up}"
+            f" y_adjusted={y}"
+        )
+    else:
+        print("[TEXT-LAYER] NO SHORT ADJUST")
+        
     for line in lines:
         bbox = font.getbbox(line)
         text_width = bbox[2] - bbox[0]
-        x = int((WIDTH - text_width) / 2)
-        draw.text((x, y), line, font=font, fill=TEXT_COLOR,stroke_width=3, stroke_fill=(0,0,0,255))
+        x = TEXT_PANEL_LEFT + int((TEXT_PANEL_WIDTH - text_width) / 2)
+        draw.text(
+            (x, y),
+            line,
+            font=font,
+            fill=TEXT_COLOR,
+            stroke_width=3,
+            stroke_fill=(0, 0, 0, 255),
+        )
         y += line_height
 
     return img
@@ -116,6 +158,24 @@ def render_layers_from_config(resolved_config: dict):
     print("[TRACTOR][LAYERS] Render finalizado")
     print("[TRACTOR][LAYERS] Total capas:", index - 1)
 
+def wrap_text_by_width(text, font, max_width):
+    words = text.split()
+    lines = []
+    current = ""
+
+    for word in words:
+        test = f"{current} {word}".strip()
+        w = font.getbbox(test)[2]
+        if w <= max_width:
+            current = test
+        else:
+            lines.append(current)
+            current = word
+
+    if current:
+        lines.append(current)
+
+    return lines
 
 # -------------------------------------------------
 # Uso desde entrypoint / test manual
