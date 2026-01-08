@@ -14,9 +14,11 @@ import edge_tts
 # -------------------------------------------------
 # Configuración base
 # -------------------------------------------------
-DEFAULT_VOICE = "es-CL-CatalinaNeural"
-DEFAULT_RATE = "+0%"
+DEFAULT_VOICE = "es-MX-JorgeNeural"
+DEFAULT_RATE = "-8%"
 DEFAULT_VOLUME = "+0%"
+# Si habilitas pitch:
+DEFAULT_PITCH = "-2Hz"
 
 # -------------------------------------------------
 # Utilidad: generar un WAV con edge-tts
@@ -28,12 +30,14 @@ async def _tts_to_wav(
     voice: str,
     rate: str,
     volume: str,
+    pitch: str,
 ):
     communicate = edge_tts.Communicate(
         text=text,
         voice=voice,
         rate=rate,
         volume=volume,
+        pitch=pitch,
     )
     await communicate.save(output_wav)
 
@@ -64,6 +68,7 @@ def generar_tts_layers(
     voice = tts_cfg.get("voice", DEFAULT_VOICE)
     rate = tts_cfg.get("rate", DEFAULT_RATE)
     volume = tts_cfg.get("volume", DEFAULT_VOLUME)
+    
 
     os.makedirs(audio_output_path, exist_ok=True)
 
@@ -134,6 +139,7 @@ def generar_tts_layers(
                 voice=voice,
                 rate=rate,
                 volume=volume,
+                pitch=DEFAULT_PITCH
             )
         )
 

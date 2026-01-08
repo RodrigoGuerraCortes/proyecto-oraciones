@@ -146,26 +146,28 @@ def main():
 
     print("[ENTRYPOINT] Config completa:", format_type)
 
-   
 
-    if args.format == "long_tractor_oracion" and args.test:
-        print("[ENTRYPOINT] Ejecutando FASE A: render de capas de texto")
-        render_layers_from_config(resolved_config)
-        
-        print("[ENTRYPOINT] Forzando TTS según flag --force-tts")
-        generar_tts_layers(    
-            resolved_config=resolved_config,
-            layers_path=resolved_config["content"]["layers_path"],
-            audio_output_path=resolved_config["audio"]["audio_layers_path"],
-        )
 
-        print("[ENTRYPOINT] Ejecutando FASE 1.6: expansión de tractor")
-        expandir_tractor(
-            resolved_config=resolved_config,
-            layers_path=resolved_config["content"]["layers_path"],
-            audio_path=resolved_config["audio"]["audio_layers_path"],
-            output_sequence_path="/mnt/storage/generated/tractor_build/sequence.json",
-        )
+    #if args.format == "long_tractor_oracion" and args.test:
+    #    print("[ENTRYPOINT] Ejecutando FASE A: render de capas de texto")
+    #    render_layers_from_config(resolved_config)
+    #    return
+
+        #Se ocuparan audos de elevenLabs, tts queda deshabilitado
+        #print("[ENTRYPOINT] Forzando TTS según flag --force-tts")
+        #generar_tts_layers(    
+        #    resolved_config=resolved_config,
+        #    layers_path=resolved_config["content"]["layers_path"],
+        #    audio_output_path=resolved_config["audio"]["audio_layers_path"],
+        #)
+
+        #print("[ENTRYPOINT] Ejecutando FASE 1.6: expansión de tractor")
+        #expandir_tractor(
+        #    resolved_config=resolved_config,
+        #    layers_path=resolved_config["content"]["layers_path"],
+        #    audio_path=resolved_config["audio"]["audio_layers_path"],
+        #    output_sequence_path="/mnt/storage/generated/tractor_build/sequence.json",
+        #)
         
     # ---------------------------------------------------------
     # Ejecución del engine (GENÉRICA)
