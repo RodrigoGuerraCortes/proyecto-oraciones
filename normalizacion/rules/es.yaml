@@ -1,0 +1,100 @@
+# =========================================================
+# Normalización segura de texto en Español (ES)
+# Uso: títulos, overlays, subtítulos visibles
+# NO usar para corrección ortográfica heurística
+# =========================================================
+
+language: es
+mode: deterministic
+
+options:
+  preserve_original_if_no_match: true
+  apply_title_case: true
+  normalize_unicode: true
+  ascii_fold_input: true   # normaliza antes de aplicar reglas
+
+# ---------------------------------------------------------
+# Reemplazos exactos (palabra completa, en minúsculas)
+# ---------------------------------------------------------
+replacements:
+  # Palabras religiosas frecuentes
+  - from: "oracion"
+    to: "oración"
+  - from: "jesus"
+    to: "jesús"
+  - from: "espiritu"
+    to: "espíritu"
+  - from: "senor"
+    to: "señor"
+  - from: "virgen"
+    to: "virgen"   # explícito para evitar correcciones futuras erróneas
+  - from: "amen"
+    to: "amén"
+  - from: "salmo"
+    to: "salmo"
+
+  # Sustantivos comunes
+  - from: "nino"
+    to: "niño"
+  - from: "ninos"
+    to: "niños"
+  - from: "ano"
+    to: "año"
+  - from: "anos"
+    to: "años"
+  - from: "corazon"
+    to: "corazón"
+  - from: "misericordia"
+    to: "misericordia"
+
+# ---------------------------------------------------------
+# Reglas seguras por patrón (regex)
+# Solo reglas altamente confiables
+# ---------------------------------------------------------
+safe_patterns:
+  # Plural niño(s)
+  - pattern: "^nino(s?)$"
+    replace: "niño\\1"
+
+  # Año(s)
+  - pattern: "^ano(s?)$"
+    replace: "año\\1"
+
+  # Palabras terminadas en -cion → -ción (casos comunes)
+  - pattern: "^(.*)cion$"
+    replace: "\\1ción"
+
+  # Palabras terminadas en -on → -ón (muy conservador)
+  - pattern: "^(corazon|bendicion|oracion)$"
+    replace: "\\1"
+
+# ---------------------------------------------------------
+# Palabras que JAMÁS deben modificarse
+# (protección contra falsos positivos)
+# ---------------------------------------------------------
+protected_words:
+  - "por"
+  - "para"
+  - "los"
+  - "las"
+  - "el"
+  - "la"
+  - "de"
+  - "y"
+  - "en"
+  - "con"
+
+# ---------------------------------------------------------
+# Palabras que NO deben llevar Title Case
+# ---------------------------------------------------------
+lowercase_exceptions:
+  - "y"
+  - "o"
+  - "de"
+  - "del"
+  - "la"
+  - "el"
+  - "los"
+  - "las"
+  - "por"
+  - "para"

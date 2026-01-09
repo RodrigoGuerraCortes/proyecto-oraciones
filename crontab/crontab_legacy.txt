@@ -1,0 +1,28 @@
+
+#Publish Instagram
+0,15,30,45 12 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.cli.publish_instagram >> logs/cron_instagram.log 2>&1
+
+0,15,30,45 20 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.cli.publish_instagram >> logs/cron_instagram.log 2>&1
+
+#Ejecución de primer comentario (solo youtube) 
+#10,40 * * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.bots.pin_comments.worker >> logs/cron_pin_comments.log 2>&1
+
+#Ejecución de comment reply (solo youtube)
+#10,40 * * * * cd /home/rgc/Documents/personal/proyecto-oraciones &&  .venv/bin/python -m generator.bots.reply_comments.worker >> logs/cron_reply_youtube.log 2>&1
+
+#Creación de 4 oraciones y 2 salmos
+0 9 * * * cd /home/rgc/Documents/personal/proyecto-oraciones   && .venv/bin/python -m generator.entrypoint 2 oso >> logs/cron_youtube_oso.log 2>&1
+
+#Creacion de agendamiento de publicaciones
+45 10  * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.publications.run_scheduler >> logs/cron_agendamiento.log 2>&1
+
+#Publish Yotube
+15 11 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.cli.publish_youtube >> logs/cron_youtube.log 2>&1
+20 11 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.cli.publish_youtube >> logs/cron_youtube.log 2>&1
+25 11 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.cli.publish_youtube >> logs/cron_youtube.log 2>&1
+30 11 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.cli.publish_youtube >> logs/cron_youtube.log 2>&1
+
+
+#Publish Facebook
+20 11 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.cli.publish_facebook >> logs/cron_facebook.log 2>&1
+35 11 * * * cd /home/rgc/Documents/personal/proyecto-oraciones && .venv/bin/python -m generator.cli.publish_facebook >> logs/cron_facebook.log 2>&1

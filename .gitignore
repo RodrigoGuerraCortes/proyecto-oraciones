@@ -1,0 +1,10 @@
+.env
+client_secret.json
+*.mp4
+*.log
+token.pickle
+venv/
+__pycache__/
+*.wav
+*.pyc
+guiada_txt_*.png

@@ -1,0 +1,11 @@
+Configuración congelada:
+
+Voz: Michael C. Vincent
+
+Velocidad: 0.90
+
+Estabilidad: 70%
+
+Similitud: 80%
+
+Estilo: 15%

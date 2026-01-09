@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: video_scheduler_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: video_scheduler_v3
+      POSTGRES_USER: scheduler
+      POSTGRES_PASSWORD: scheduler123
+      TZ: America/Santiago
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
