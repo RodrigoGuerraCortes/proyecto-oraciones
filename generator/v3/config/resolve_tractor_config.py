@@ -50,6 +50,16 @@ def resolve_tractor_config(
     visual_cfg = fmt.get("visual", {})
     bg_cfg = visual_cfg.get("background", {})
 
+    branding = channel_config.get("branding", {})
+    layout = fmt.get("layout", {})
+    watermark_layout = layout.get("watermark", {})
+
+    watermark = {
+        "path": _abs_path(base_storage_path, branding.get("water_mark")),
+        "scale": watermark_layout.get("scale", 0.22),
+        "margin": watermark_layout.get("margin", 12),
+    }
+
     image_base_path = os.path.join(
         base_storage_path,
         bg_cfg["base_path"]
@@ -105,6 +115,7 @@ def resolve_tractor_config(
             "image_duration_seconds": bg_cfg.get("image_duration_seconds", 360),
             "transition": bg_cfg.get("transition", {}),
             "motion": bg_cfg.get("motion", {}),
+            "watermark": watermark,
         },
 
         "audio": {

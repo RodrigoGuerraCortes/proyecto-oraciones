@@ -14,7 +14,7 @@ from generator.v3.publications.editorial_windows import (
     PLATFORM_REUSE_DAYS,
     GLOBAL_ANTISPAM_DAYS,
 )
-
+from datetime import date
 from db.repositories.channel_config_repo import get_channel_config
 
 
@@ -169,6 +169,10 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
         slots_del_dia = []
         slots_por_plataforma = Counter()
 
+        SYSTEM_START_DATE = date(2025, 11, 30)
+        
+        dias_corridos = (fecha_base.date() - SYSTEM_START_DATE).days
+
         for platform_code, platform_cfg in strategy.items():
             platform_id = PLATFORM_CODE_TO_ID.get(platform_code)
             if not platform_id:
@@ -177,6 +181,20 @@ def crear_publications(channel_id: int, dias: int = 7) -> List[Dict[str, Any]]:
             for slot_code, slot_cfg in platform_cfg["slots"].items():
                 hora_str = slot_cfg["time"]
                 format_cfg = slot_cfg["format"]
+
+                # regla every_n_days
+                # Print de slot cfg 
+                print(f"[DEBUG][SLOT CFG] slot={slot_code} cfg={slot_cfg}")
+
+                if "every_n_days" in slot_cfg:
+                    print(f"[DEBUG][SLOT] slot={slot_code} applying every_n_days rule")
+                    n = slot_cfg["every_n_days"]
+                    if dias_corridos % n != 0:
+                        print(
+                            f"[DEBUG][SLOT] slot={slot_code} "
+                            f"SKIP (every {n} days)"
+                        )
+                        continue
 
                 # resolver format_code según paridad
                 if es_dia_olo and "odd_day" in format_cfg:

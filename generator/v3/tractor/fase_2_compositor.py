@@ -7,6 +7,7 @@ from moviepy.editor import (
     concatenate_videoclips,
 )
 from moviepy.audio.fx.all import audio_loop, volumex
+from moviepy.video.fx.all import fadein
 
 import os
 import json
@@ -34,6 +35,24 @@ def find_audio(base_name, audio_path):
         f"Audio faltante para layer {base_name} (.wav/.mp3)"
     )
 
+# -------------------------------------------------
+# Utilidad: aplicar watermark
+# -------------------------------------------------
+
+def aplicar_watermark(video, wm_cfg, width, height):
+    wm = (
+        ImageClip(wm_cfg["path"])
+        .resize(0.22)
+        .set_duration(video.duration)
+        .set_opacity(0.85)  # recomendado
+    )
+
+    wm = wm.set_position((
+        width - wm.w - 12,
+        height - wm.h - 16,
+    ))
+
+    return CompositeVideoClip([video, wm], size=(width, height))
 
 # -------------------------------------------------
 # Render de un chunk individual
@@ -114,6 +133,7 @@ def render_chunk(
 
     print(f"[CHUNK {chunk_index}] OK → {output_path}")
 
+INTRO_FADE_SECONDS = 5.0
 
 # -------------------------------------------------
 # FASE 2 — Composición sincronizada por AUDIO (chunked)
@@ -134,6 +154,9 @@ def generar_long_tractor(
 
     print("[LONG TRACTOR] Music path:", music_path)
 
+    print("WaterMark config:", resolved_config["visual"].get("watermark"))
+
+    watermark_cfg = resolved_config["visual"].get("watermark")
 
     #if not modo_test:
     #    raise RuntimeError("FASE 2 solo permitida en modo test")
@@ -232,7 +255,7 @@ def generar_long_tractor(
     # -------------------------------------------------
     # TEST corto (limitación de duración)
     # -------------------------------------------------
-    MAX_TEST_SECONDS = 900 if modo_test else None  # 2 minutos
+    MAX_TEST_SECONDS = 120 if modo_test else None  # 2 minutos
 
     if MAX_TEST_SECONDS:
         limited_timeline = []
@@ -289,10 +312,24 @@ def generar_long_tractor(
 
     videos = [VideoFileClip(p) for p in chunk_files]
 
+    INTRO_SECONDS = 5.0
+
+    intro_bg = ImageClip(timeline[0]["background"]) \
+        .resize((WIDTH, HEIGHT)) \
+        .set_duration(INTRO_SECONDS) \
+        .fx(fadein, INTRO_SECONDS)
+
+    # Intro SIN audio
+    intro_bg = intro_bg.set_audio(None)
+
     final = concatenate_videoclips(
-        videos,
+        [intro_bg] + videos,
         method="compose"
     )
+
+    # 🔹 Fade-in visual SOLO al inicio del video
+    # final = final.fx(fadein, INTRO_FADE_SECONDS)
+
     final_audio = final.audio
 
     if music_path and os.path.exists(music_path):
@@ -319,6 +356,15 @@ def generar_long_tractor(
         ])
 
     final = final.set_audio(final_audio)
+
+
+    if watermark_cfg:
+        final = aplicar_watermark(
+            final,
+            watermark_cfg,
+            WIDTH,
+            HEIGHT
+        )
 
     final.write_videofile(
         output_path,
