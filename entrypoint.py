@@ -7,7 +7,7 @@ import sys
 from dotenv import load_dotenv
 
 from config.config_resolver import resolver_config
-from engine.registry import ENGINE_REGISTRY
+from engine.engines.registry import ENGINE_REGISTRY
 from storage.output_resolver import resolve_output_path
 from generator.selector_texto import elegir_texto
 from tractor.fase_1_5_tts_layers import generar_tts_layers
