@@ -1,4 +1,4 @@
-# engine/registry.py
+# engine/engines/registry.py
 
 from long.generar_long_guiado_generico import generar_long_guiado_generico
 from short.generar_short_stanza_generico import generar_short_stanza_generico
