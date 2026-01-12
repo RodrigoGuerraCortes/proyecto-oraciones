@@ -12,6 +12,7 @@ def resolver_config(
     *,
     channel_id: int,
     format_code: str,
+    tractor: str | None = None,
 ) -> dict:
 
     base_storage_path = os.getenv("BASE_STORAGE_PATH")
@@ -43,11 +44,17 @@ def resolver_config(
             base_storage_path=base_storage_path,
         )
 
+
+
     if engine == "long_tractor":
+
+        print("Tractor : ", tractor)
+
         return resolve_tractor_config(
             channel_config=channel_config,
             format_code=format_code,
             base_storage_path=base_storage_path,
+            tractor=tractor,
         )
 
     raise ValueError(f"Engine no soportado: {engine}")

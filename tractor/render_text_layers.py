@@ -13,6 +13,7 @@ Objetivo:
 from PIL import Image, ImageDraw, ImageFont
 import os
 import textwrap
+import sys
 
 
 # -------------------------------------------------
@@ -30,8 +31,6 @@ BACKGROUND_COLOR = (0, 0, 0, 0)  # negro sólido
 MARGIN_X = 200
 LINE_SPACING = 12
 
-OUTPUT_BASE = "/mnt/storage/generated/tractor_layers"
-
 TEXT_PANEL_LEFT = int(WIDTH * 0.55)
 TEXT_PANEL_RIGHT = WIDTH - 200
 TEXT_PANEL_WIDTH = TEXT_PANEL_RIGHT - TEXT_PANEL_LEFT
@@ -40,7 +39,7 @@ TEXT_PANEL_WIDTH = TEXT_PANEL_RIGHT - TEXT_PANEL_LEFT
 # -------------------------------------------------
 # Utilidad: renderizar texto en una imagen
 # -------------------------------------------------
-def render_text_to_image(text: str) -> Image.Image:
+def render_text_to_image(text: str, output_path: str) -> Image.Image:
     img = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
@@ -116,14 +115,17 @@ def render_layers_from_config(resolved_config: dict):
     content_cfg = resolved_config["content"]
     base_path = content_cfg["base_path"]
     blocks = content_cfg["blocks"]
-
-    os.makedirs(OUTPUT_BASE, exist_ok=True)
+    output_path = content_cfg["layers_path"]
+    os.makedirs(output_path, exist_ok=True)
 
     index = 1
 
     print("[TRACTOR][LAYERS] Renderizando capas de texto...")
+
+    print("[TRACTOR][LAYERS] Output base:", output_path)
     print("[TRACTOR][LAYERS] Base path:", base_path)
     print("[TRACTOR][LAYERS] Bloques:", blocks)
+
 
     for block_file in blocks:
         txt_path = os.path.join(base_path, block_file)
@@ -141,7 +143,7 @@ def render_layers_from_config(resolved_config: dict):
         )
 
         for sub_idx, block_text in enumerate(sub_blocks, start=1):
-            img = render_text_to_image(block_text)
+            img = render_text_to_image(block_text, output_path)
 
             filename = (
                 f"{index:04d}_"
@@ -149,10 +151,10 @@ def render_layers_from_config(resolved_config: dict):
                 f"{sub_idx:02d}.png"
             )
 
-            output_path = os.path.join(OUTPUT_BASE, filename)
-            img.save(output_path, format="PNG")
+            output_path_png = os.path.join(output_path, filename)
+            img.save(output_path_png, format="PNG")
 
-            print("  ✔", output_path)
+            print("  ✔", output_path_png)
             index += 1
 
     print("[TRACTOR][LAYERS] Render finalizado")

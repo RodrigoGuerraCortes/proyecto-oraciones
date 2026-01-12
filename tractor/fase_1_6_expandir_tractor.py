@@ -9,7 +9,7 @@ FASE 1.6 — Expansión del tractor por repetición controlada
 import os
 import json
 from moviepy.editor import AudioFileClip
-
+import sys
 
 def expandir_tractor(
     *,
@@ -18,11 +18,34 @@ def expandir_tractor(
     audio_path: str,
     output_sequence_path: str,
 ):
+    
+    print("[FASE 1.6] Iniciando expansión del tractor...")
+    print("[FASE 1.6] Layers path:", layers_path)
+    print("[FASE 1.6] Audio path:", audio_path)
+    print("[FASE 1.6] Output sequence path:", output_sequence_path)
+
+
     content_cfg = resolved_config["content"]
     target_minutes = resolved_config.get("target_duration_minutes", 55)
 
     blocks = content_cfg["blocks"]
     repeatable_blocks = content_cfg.get("repeatable_blocks", [])
+    silence_rules = content_cfg.get("silence_rules", [])
+
+    print("[FASE 1.6] Silence rules:", silence_rules)
+    
+    silence_after_block = {
+        r["after_block"]: float(r["duration_seconds"])
+        for r in silence_rules
+        if "after_block" in r
+    }
+
+    cycle_silence = next(
+        (float(r["duration_seconds"])
+        for r in silence_rules
+        if r.get("after_every_cycle")),
+        0.0
+    )
 
     # -------------------------------------------------
     # 1. Mapear layers por bloque
@@ -53,7 +76,7 @@ def expandir_tractor(
     for block_key, files in layers_by_block.items():
         total = 0.0
         for f in files:
-            wav = os.path.join(audio_path, f.replace(".png", ".wav"))
+            wav = os.path.join(audio_path, f.replace(".png", ".mp3"))
             if not os.path.exists(wav):
                 raise FileNotFoundError(wav)
 
@@ -85,7 +108,17 @@ def expandir_tractor(
     # 4. Duración base
     # -------------------------------------------------
     base_keys = apertura_keys + fixed_middle_keys + cierre_keys
-    base_duration = sum(block_durations[k] for k in base_keys)
+   #base_duration = sum(block_durations[k] for k in base_keys)
+
+    base_duration = 0.0
+
+    for k in base_keys:
+        base_duration += block_durations[k]
+
+        # silencio después del bloque
+        if k in silence_after_block:
+            base_duration += silence_after_block[k]
+
 
     target_seconds = target_minutes * 60
     remaining = target_seconds - base_duration
@@ -97,6 +130,7 @@ def expandir_tractor(
     # 5. Construir ciclos repetibles
     # -------------------------------------------------
     cycle_duration = sum(block_durations[k] for k in repeatable_keys)
+    cycle_duration += cycle_silence
     cycles_needed = int(remaining // cycle_duration) + 1
 
     # -------------------------------------------------
@@ -106,39 +140,58 @@ def expandir_tractor(
 
     # apertura
     for k in apertura_keys:
-        sequence.extend(layers_by_block[k])
+        for fname in layers_by_block[k]:
+            sequence.append(fname.replace(".png", ""))
+
+        if k in silence_after_block:
+            sequence.append({
+                "type": "silence",
+                "duration_seconds": silence_after_block[k]
+            })
 
     # ciclos
     for _ in range(cycles_needed):
         for k in repeatable_keys:
-            sequence.extend(layers_by_block[k])
+            for fname in layers_by_block[k]:
+                sequence.append(fname.replace(".png", ""))
+
+        if cycle_silence > 0:
+            sequence.append({
+                "type": "silence",
+                "duration_seconds": cycle_silence
+            })
 
     # cierre
     for k in cierre_keys:
-        sequence.extend(layers_by_block[k])
+        for fname in layers_by_block[k]:
+            sequence.append(fname.replace(".png", ""))
 
     # -------------------------------------------------
     # 7. Medir duración final
     # -------------------------------------------------
     expanded_duration = 0.0
-    for fname in sequence:
-        wav = os.path.join(audio_path, fname.replace(".png", ".wav"))
-        with AudioFileClip(wav) as a:
-            expanded_duration += a.duration
+
+    for item in sequence:
+        if isinstance(item, dict) and item.get("type") == "silence":
+            expanded_duration += float(item["duration_seconds"])
+        else:
+            wav = os.path.join(audio_path, item + ".mp3")
+            with AudioFileClip(wav) as a:
+                expanded_duration += a.duration
 
     # -------------------------------------------------
     # 8. Guardar resultado
     # -------------------------------------------------
     os.makedirs(os.path.dirname(output_sequence_path), exist_ok=True)
 
-    with open(output_sequence_path, "w", encoding="utf-8") as f:
+    with open(output_sequence_path + '/sequence.json', "w", encoding="utf-8") as f:
         json.dump(
             {
                 "target_minutes": target_minutes,
                 "base_duration_sec": round(base_duration, 2),
                 "expanded_duration_sec": round(expanded_duration, 2),
                 "cycles": cycles_needed,
-                "sequence": [f.replace(".png", "") for f in sequence],
+                "sequence": sequence,
             },
             f,
             indent=2,

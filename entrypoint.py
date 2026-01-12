@@ -13,6 +13,7 @@ from generator.selector_texto import elegir_texto
 from tractor.fase_1_5_tts_layers import generar_tts_layers
 from tractor.fase_1_6_expandir_tractor import expandir_tractor
 from tractor.render_text_layers import render_layers_from_config
+from tractor.generate_tts_layers_eleven_labs import create_audio_eleven_lab
 
 load_dotenv()
 
@@ -65,6 +66,12 @@ def parse_args():
         help="Forzar TTS (override config)",
     )
 
+    parser.add_argument(
+        "--tractor",
+        type=str,
+        help="Nombre del tractor a procesar (solo para engine long_tractor)",
+    )
+
     return parser.parse_args()
 
 
@@ -80,6 +87,7 @@ def main():
     resolved_config = resolver_config(
         channel_id=args.channel,
         format_code=args.format,
+        tractor=args.tractor if args.tractor else None,
     )
 
     print("[Entrypoint] Resolved config :", resolved_config)
@@ -147,28 +155,30 @@ def main():
     print("[ENTRYPOINT] Config completa:", format_type)
 
 
-
     #if args.format == "long_tractor_oracion" and args.test:
-    #    print("[ENTRYPOINT] Ejecutando FASE A: render de capas de texto")
-    #    render_layers_from_config(resolved_config)
-    #    return
 
-        #Se ocuparan audos de elevenLabs, tts queda deshabilitado
+
+        #RENDER DE LAYERS DE TEXTO A PNG
+        #print("[ENTRYPOINT] Ejecutando FASE A: render de capas de texto")
+        #render_layers_from_config(resolved_config)
+        #return
+#
+#   
+        #GENERACION DE MP3 TTS PARA CADA LAYER
+        ##Se ocuparan audos de elevenLabs, tts queda deshabilitado
         #print("[ENTRYPOINT] Forzando TTS según flag --force-tts")
-        #generar_tts_layers(    
-        #    resolved_config=resolved_config,
-        #    layers_path=resolved_config["content"]["layers_path"],
-        #    audio_output_path=resolved_config["audio"]["audio_layers_path"],
-        #)
+        #create_audio_eleven_lab()
 
+
+        #GENERACION DE AUDIO FINAL EXPANDIENDO EL TRACTOR 
         #print("[ENTRYPOINT] Ejecutando FASE 1.6: expansión de tractor")
         #expandir_tractor(
         #    resolved_config=resolved_config,
         #    layers_path=resolved_config["content"]["layers_path"],
         #    audio_path=resolved_config["audio"]["audio_layers_path"],
-        #    output_sequence_path="/mnt/storage/generated/tractor_build/sequence.json",
+        #    output_sequence_path=resolved_config["sequence_path"],
         #)
-        
+
     # ---------------------------------------------------------
     # Ejecución del engine (GENÉRICA)
     # ---------------------------------------------------------
