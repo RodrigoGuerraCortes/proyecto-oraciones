@@ -21,7 +21,7 @@ def _get_service():
             creds = pickle.load(token)
 
     # -------------------------------
-    # REFRESH TOKEN SI ES NECESARIO
+    # INTENTO DE REFRESH
     # -------------------------------
     if creds and creds.expired and creds.refresh_token:
         try:
@@ -29,16 +29,17 @@ def _get_service():
             with open(TOKEN_FILE, "wb") as token:
                 pickle.dump(creds, token)
         except RefreshError:
-            raise RuntimeError(
-                "OAuth token inválido o revocado. Reautoriza YouTube API."
-            )
+            # token irrecuperable
+            os.remove(TOKEN_FILE)
+            creds = None
 
     # -------------------------------
-    # NO HAY CREDENCIALES → AUTH FLOW
+    # AUTH FLOW SI NO HAY CREDS
     # -------------------------------
     if not creds or not creds.valid:
         flow = InstalledAppFlow.from_client_secrets_file(
-            CLIENT_SECRETS_FILE, SCOPES
+            CLIENT_SECRETS_FILE,
+            SCOPES
         )
         creds = flow.run_local_server(port=0)
 
@@ -46,6 +47,7 @@ def _get_service():
             pickle.dump(creds, token)
 
     return build("youtube", "v3", credentials=creds)
+
 
 def upload_video(
     *,
