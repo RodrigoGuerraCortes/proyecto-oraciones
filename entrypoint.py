@@ -163,12 +163,12 @@ def main():
         #render_layers_from_config(resolved_config)
         #return
 #
-#   
+#  
         #GENERACION DE MP3 TTS PARA CADA LAYER
-        ##Se ocuparan audos de elevenLabs, tts queda deshabilitado
+        #Se ocuparan audos de elevenLabs, tts queda deshabilitado
         #print("[ENTRYPOINT] Forzando TTS según flag --force-tts")
-        #create_audio_eleven_lab()
-
+        #create_audio_eleven_lab(resolved_config["content"]["base_path"], resolved_config["audio"]["audio_layers_path"], resolved_config["content"]["tts_prompt"])
+        #return
 
         #GENERACION DE AUDIO FINAL EXPANDIENDO EL TRACTOR 
         #print("[ENTRYPOINT] Ejecutando FASE 1.6: expansión de tractor")
@@ -178,7 +178,8 @@ def main():
         #    audio_path=resolved_config["audio"]["audio_layers_path"],
         #    output_sequence_path=resolved_config["sequence_path"],
         #)
-
+#
+        #return
     # ---------------------------------------------------------
     # Ejecución del engine (GENÉRICA)
     # ---------------------------------------------------------

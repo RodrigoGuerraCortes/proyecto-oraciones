@@ -24,7 +24,6 @@ def expandir_tractor(
     print("[FASE 1.6] Audio path:", audio_path)
     print("[FASE 1.6] Output sequence path:", output_sequence_path)
 
-
     content_cfg = resolved_config["content"]
     target_minutes = resolved_config.get("target_duration_minutes", 55)
 
@@ -129,10 +128,14 @@ def expandir_tractor(
     # -------------------------------------------------
     # 5. Construir ciclos repetibles
     # -------------------------------------------------
-    cycle_duration = sum(block_durations[k] for k in repeatable_keys)
-    cycle_duration += cycle_silence
-    cycles_needed = int(remaining // cycle_duration) + 1
 
+    if repeatable_keys:
+        cycle_duration = sum(block_durations[k] for k in repeatable_keys)
+        cycle_duration += cycle_silence
+
+        cycles_needed = int(remaining // cycle_duration) + 1
+    else:
+        cycles_needed = 0
     # -------------------------------------------------
     # 6. Construir SECUENCIA FINAL
     # -------------------------------------------------

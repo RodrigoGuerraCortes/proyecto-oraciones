@@ -113,6 +113,7 @@ def resolve_tractor_config(
     blocks = tractor_desc.get("blocks", [])
     repeatable_blocks = tractor_desc.get("repeatable_blocks", [])
     silence_rules = tractor_desc.get("silence_rules", {})
+    tts_prompt = tractor_desc.get("tts_prompt", {})
 
     print("[TractorDesc]", silence_rules)
 
@@ -184,6 +185,7 @@ def resolve_tractor_config(
             "blocks": blocks,
             "repeatable_blocks": repeatable_blocks,
             "silence_rules": silence_rules,
+            "tts_prompt": tts_prompt,
         },
 
         "visual": {

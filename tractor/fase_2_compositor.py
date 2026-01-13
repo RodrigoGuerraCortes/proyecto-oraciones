@@ -24,8 +24,8 @@ DEBUG_CHUNK_PREVIEW_N = 2          # cuántos layers imprimir por chunk
 DEBUG_OVERLAP_EPS = 0.02             # tolerancia segundos para "no overlap"
 
 # Test controls
-TEST_MAX_SECONDS = 500               # en modo_test, corta timeline en 500s
-TEST_SILENCE_SECONDS = 25.0          # en modo_test, fuerza silencios a 50s
+TEST_MAX_SECONDS = 120             # en modo_test, corta timeline en 500s
+TEST_SILENCE_SECONDS = 10.0          # en modo_test, fuerza silencios a 50s
 
 
 # -------------------------------------------------
@@ -586,8 +586,8 @@ def generar_long_tractor(
             f"-i \"{music_path}\" "
             f"-filter_complex "
             f"\""
-            f"[0:a]volume=0.50[a_tts];"
-            f"[1:a]aloop=loop=-1:size=2e+09,volume=0.45[a_music];"
+            f"[0:a]acompressor=threshold=-18dB:ratio=2:attack=20:release=250,volume=0.75[a_tts];"
+            f"[1:a]aloop=loop=-1:size=2e+09,volume=0.35[a_music];"
             f"[a_tts][a_music]amix=inputs=2:weights=1 1:dropout_transition=6[aout]"
             f"\" "
             f"-map 0:v "
