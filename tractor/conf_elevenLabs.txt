@@ -1,5 +1,7 @@
 Configuración congelada:
 
+Oración para empezar el día
+
 Voz: Michael C. Vincent
 
 Velocidad: 0.90
@@ -9,3 +11,18 @@ Estabilidad: 70%
 Similitud: 80%
 
 Estilo: 15%
+
+
+Oración para dormir
+
+Voz: Brian - Deep,  Resonant and Comforting
+
+Velocidad: 0.80
+
+Estabilidad: 85%
+
+Similitud: 75%
+
+Estilo: 8%
+
+sk_814dcbc76ef2180404d01e3b56678e45d4442bb4c79a6b08

@@ -21,7 +21,7 @@ from generator.audio.tts_edge import generar_voz_edge, _normalizar_texto_tts, su
 from adapter.audio_adapter import crear_audio_v3 
 from generator.audio.silence import generar_silencio 
 from normalizacion.es import normalize_spanish
-
+import sys
 
 from generator.decision import decidir_imagen_video 
 from generator.cleanup import limpiar_temporales
@@ -129,8 +129,8 @@ def generar_long_guiado_generico(
         raise ValueError("Texto vacío")
 
     base = os.path.splitext(os.path.basename(text_path))[0]
-    titulo = normalize_spanish(base)
-
+    titulo = base.replace("_", " ").title()
+    
     parrafos = _split_parrafos(texto)
     if not parrafos:
         raise ValueError("Texto base no tiene párrafos")
