@@ -1,0 +1,32 @@
+{
+  "id": "oracion_guiada_v1",
+  "engine": "sequence",
+  "description": "Narrativa base para oración guiada larga",
+  "blocks": [
+    {
+      "id": "titulo",
+      "type": "tts",
+      "source": "Oración Padre Nuestro",
+      "output": "script_guiados/FORMATO_A",
+      "pause_after": 1.5
+    },
+    {
+      "id": "oracion_principal",
+      "type": "tts",
+      "source": "texto_principal",
+      "pause_after": 2.0
+    },
+    {
+      "id": "guia_contemplativa",
+      "type": "tts_sequence",
+      "source": "script_guiados/FORMATO_A.txt", 
+      "output": "script_guiados/FORMATO_A",
+      "pause_between": 2.5
+    },
+    {
+      "id": "silencio_final",
+      "type": "silence",
+      "seconds": 60
+    }
+  ]
+}

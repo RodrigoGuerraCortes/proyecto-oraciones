@@ -3,6 +3,11 @@
 
 import os
 import uuid
+import json
+import sys
+
+from pathlib import Path
+
 
 from moviepy.editor import ImageClip, CompositeAudioClip
 from moviepy.video.fx.fadein import fadein
@@ -21,7 +26,6 @@ from generator.audio.tts_edge import generar_voz_edge, _normalizar_texto_tts, su
 from adapter.audio_adapter import crear_audio_v3 
 from generator.audio.silence import generar_silencio 
 from normalizacion.es import normalize_spanish
-import sys
 
 from generator.decision import decidir_imagen_video 
 from generator.cleanup import limpiar_temporales
